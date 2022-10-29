@@ -1,0 +1,25 @@
+DBAR -- File with the information of the system's buses
+
+id,type,V,teta,Pg,Qg,Pd,Qd,Bs
+
+id - identification  of the bus
+type - type of the bus (0 = ref, 1 = PV, 2 - PQ) 
+V - Voltage in p.u.
+teta - angle in grad
+Pg - Active Power Generation p.u.
+Qg - Reactive Power Generation p.u.
+Pd - Load Active Power p.u.
+Qd - Load Reactive Power p.u.
+
+------------------------------------------------------------------------------------------
+
+DBRAN -- File with the information of the system's branches
+
+id - identification of the branches
+type - Tipe of branch (1 = line, 2 = Trafo)
+from - from bus id 
+to - to bus id
+x - series reactance (pu)
+r - series resistence (pu)
+bsh - line shunt suceptance (pu)
+tap - tap of transforme (Vfrom/Vto)
