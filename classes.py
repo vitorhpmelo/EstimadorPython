@@ -8,18 +8,18 @@ class bar():
         self.id=id
         self.tipo=tipo
         self.i=contador
-    V=1
-    teta=0
-    Sbase=100
-    Vbase=138
-    Pg=0
-    Qg=0
-    Pd=0
-    Qd=0
-    Bs=0
-    nloads=0
-    nshunts=0
-    ngds=0
+        self.V=1
+        self.teta=0
+        self.Sbase=100
+        self.Vbase=138
+        self.Pg=0
+        self.Qg=0
+        self.Pd=0
+        self.Qd=0
+        self.Bs=0
+        self.nloads=0
+        self.nshunts=0
+        self.ngds=0
 
 class branch():
     def __init__(self,id,de,para,tipo,i):
@@ -28,14 +28,14 @@ class branch():
         self.para=para
         self.tipo=tipo
         self.i=i
-    x=-1
-    r=-1
-    ykm=0
-    Y=np.zeros((2,2),dtype=complex)
-    bsh=-1
-    tap=-1
-    limPA=-999
-    flagLimP=0
+        self.x=-1
+        self.r=-1
+        self.ykm=0
+        self.Y=np.zeros((2,2),dtype=complex)
+        self.bsh=-1
+        self.tap=-1
+        self.limPA=-999
+        self.flagLimP=0
     def cykm(self):
         self.ykm=1/complex(self.r,self.x)
     def twoPortCircuit(self):
@@ -49,16 +49,65 @@ class branch():
             self.Y[1][1]=self.ykm
             self.Y[1][0]=-(1/self.tap)*self.ykm
             self.Y[0][1]=-(1/self.tap)*self.ykm
+    def Pf(self,grafo,flagT):
+        k=self.de
+        m=self.para
+        if flagT==0:
+            P=(grafo[k].V**2)*np.real(self.Y[0][0]) + grafo[k].V* grafo[m].V*(\
+            np.real(self.Y[0][1])*np.cos(grafo[k].teta-grafo[m].teta)\
+            +np.imag(self.Y[0][1])*np.sin(grafo[k].teta-grafo[m].teta))
+            return P
+        elif flagT==1:
+            P=(grafo[m].V**2)*np.real(self.Y[1][1]) + grafo[m].V* grafo[k].V*(\
+            np.real(self.Y[1][0])*np.cos(grafo[m].teta-grafo[k].teta)\
+            +np.imag(self.Y[0][1])*np.sin(grafo[m].teta-grafo[k].teta))
+            return P
+        else:
+            return 0
+    def Qf(self,grafo,flagT):
+        k=self.de
+        m=self.para
+        if flagT==0:
+            Qf=-(grafo[k].V**2)*np.imag(self.Y[0][0]) - grafo[k].V* grafo[m].V*(\
+            np.imag(self.Y[0][1])*np.cos(grafo[k].teta-grafo[m].teta)\
+            -np.real(self.Y[0][1])*np.sin(grafo[k].teta-grafo[m].teta))
+            return Qf
+        elif flagT==1:
+            Qf=-(grafo[m].V**2)*np.imag(self.Y[1][1]) - grafo[m].V* grafo[k].V*(\
+            np.imag(self.Y[1][0])*np.cos(grafo[m].teta-grafo[k].teta)\
+            -np.real(self.Y[1][0])*np.sin(grafo[m].teta-grafo[k].teta))
+            return Qf
+        else:
+            return 0                
+            
 
 class node_graph():
-    V=1
-    teta=0
-    Bs=0
     def __init__(self,id,bar):
         self.id=id
-        self.bar=bar    
-        
-
+        self.bar=bar
+        self.V=1
+        self.teta=0
+        self.FlagBS=0
+        self.Bs=0
+        self.adjk=dict()
+        self.adjm=dict()    
+    def P(self,graph):
+        P=0
+        for key,item in self.adjk.items():
+            P=P+item.Pf(graph,0)
+        for key,item in self.adjm.items():
+            P=P+item.Pf(graph,1)
+        return P
+    def Q(self,graph):
+        if self.FlagBS==0:
+            Q=0
+        else:    
+            Q=-self.Bs*self.V**2 
+        for key,item in self.adjk.items():
+            Q=Q+item.Qf(graph,0)
+        for key,item in self.adjm.items():
+            Q=Q+item.Qf(graph,1)
+        return Q    
 
 class netinfo():
     def __init__(self,nbar,nram,nvar,nteta,nv) -> None:
