@@ -8,18 +8,18 @@ class bar():
         self.id=id
         self.tipo=tipo
         self.i=contador
-    V=1
-    teta=0
-    Sbase=100
-    Vbase=138
-    Pg=0
-    Qg=0
-    Pd=0
-    Qd=0
-    Bs=0
-    nloads=0
-    nshunts=0
-    ngds=0
+        self.V=1
+        self.teta=0
+        self.Sbase=100
+        self.Vbase=138
+        self.Pg=0
+        self.Qg=0
+        self.Pd=0
+        self.Qd=0
+        self.Bs=0
+        self.nloads=0
+        self.nshunts=0
+        self.ngds=0
 
 class branch():
     def __init__(self,id,de,para,tipo,i):
@@ -28,14 +28,14 @@ class branch():
         self.para=para
         self.tipo=tipo
         self.i=i
-    x=-1
-    r=-1
-    ykm=0
-    Y=np.zeros((2,2),dtype=complex)
-    bsh=-1
-    tap=-1
-    limPA=-999
-    flagLimP=0
+        self.x=-1
+        self.r=-1
+        self.ykm=0
+        self.Y=np.zeros((2,2),dtype=complex)
+        self.bsh=-1
+        self.tap=-1
+        self.limPA=-999
+        self.flagLimP=0
     def cykm(self):
         self.ykm=1/complex(self.r,self.x)
     def twoPortCircuit(self):
@@ -51,10 +51,13 @@ class branch():
             self.Y[0][1]=-(1/self.tap)*self.ykm
 
 class node_graph():
-    V=1
-    teta=0
-    Bs=0
+
     def __init__(self,id,bar):
+        self.V=1
+        self.teta=0
+        self.Bs=0
+        self.adjk=dict()
+        self.adjm=dict()
         self.id=id
         self.bar=bar    
         

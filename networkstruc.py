@@ -47,8 +47,6 @@ def create_graph(bars,ram):
     graph=[]
     for item in bars:
         node=node_graph(item.i,item)
-        node.adjk=dict()
-        node.adjm=dict()
         graph.append(node)
     for key,item in ram.items():
         k=int(key.split("-")[0])
