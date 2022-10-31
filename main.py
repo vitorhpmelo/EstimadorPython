@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #%%
 
+from platform import node
 from classes import *
 from readfiles import *
 from networkstruc import *
@@ -26,4 +27,10 @@ network=netinfo(nbars,nbran,2*nbars-1,nteta=nbars-1,nv=nbars)
 graph=create_graph(bars,ram)
 
 
+
 # %%
+k=0
+
+m=1
+
+graph[k]

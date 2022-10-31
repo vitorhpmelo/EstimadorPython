@@ -51,8 +51,8 @@ class branch():
             self.Y[0][1]=-(1/self.tap)*self.ykm
 
 class node_graph():
-    adjk={}
-    adjm={}
+    adjk=dict()
+    adjm=dict()
     V=1
     teta=0
     Bs=0

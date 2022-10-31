@@ -50,6 +50,6 @@ def create_graph(bars,ram):
         k=int(key.split("-")[0])
         m=int(key.split("-")[1])
         graph[k].adjk[key]=item
-        graph[m].adjk[key]=item
+        graph[m].adjm[key]=item
     
     return graph
