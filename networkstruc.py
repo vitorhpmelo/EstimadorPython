@@ -1,3 +1,4 @@
+from csv import DictReader
 from classes import *
 import numpy as np
 
@@ -45,11 +46,14 @@ def create_bran(dfDBRAN,ind_i):
 def create_graph(bars,ram):
     graph=[]
     for item in bars:
-        graph.append(node_graph(item.i,item))
+        node=node_graph(item.i,item)
+        node.adjk=dict()
+        node.adjm=dict()
+        graph.append(node)
     for key,item in ram.items():
         k=int(key.split("-")[0])
         m=int(key.split("-")[1])
-        graph[k].adjk[key]=item
-        graph[m].adjm[key]=item
+        graph[k].adjk.update({key:item})
+        graph[m].adjm.update({key:item})
     
     return graph
