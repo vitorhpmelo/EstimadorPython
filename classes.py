@@ -127,10 +127,61 @@ class branch():
             Gmk=np.real(self.Y[1][0])
             if k==var: #dPkm/dVk  
                 return Vm*(-Bmk*np.sin(tk-tm)+Gmk*np.cos(tk-tm))
-            elif m==var:
-                return 2*Gmm*Vm + Vk(-Bmk*np.sin(tk-tm)+Gmk*np.cos(tk-tm))
+            elif m==var:#dPkm/dVm
+                return 2*Gmm*Vm + Vk*(-Bmk*np.sin(tk-tm)+Gmk*np.cos(tk-tm))
             else:
                 return 0
+    def dQfdt(self,grafo,flagT,var):
+        k=self.de
+        m=self.para
+        Vk=grafo[k].V
+        Vm=grafo[m].V
+        tk=grafo[k].teta
+        tm=grafo[m].teta  
+        if flagT==0: #dQkm
+            Bkm=np.imag(self.Y[0][1])
+            Gkm=np.real(self.Y[0][1])
+            if k==var: #dQkm/dtk
+                return Vk*Vm*(Bkm*np.sin(tk-tm)+Gkm*np.cos(tk-tm))
+            elif m==var: #dQkm/dtm
+                return Vk*Vm*(-Bkm*np.sin(tk-tm)-Gkm*np.cos(tk-tm))
+        elif flagT==1: #dQmk
+            Bmk=np.imag(self.Y[1][0])
+            Gmk=np.real(self.Y[1][0])
+            if k==var: #dQmk/dtk
+                return Vk*Vm*(Bmk*np.sin(tk-tm)-Gmk*np.cos(tk-tm))            
+            elif m==var: #dQmk/dtm
+                return Vk*Vm*(-Bmk*np.sin(tk-tm)+Gmk*np.cos(tk-tm))
+            else:
+                return 0
+    def dQfdV(self,grafo,flagT,var):
+        k=self.de
+        m=self.para
+        Vk=grafo[k].V
+        Vm=grafo[m].V
+        tk=grafo[k].teta
+        tm=grafo[m].teta
+        if flagT==0: #dQkm  
+            Bkk=np.imag(self.Y[0][0])
+            Bkm=np.imag(self.Y[0][1])
+            Gkm=np.real(self.Y[0][1])
+            if k==var: #dQkm/dvk
+                return -2*Bkk*Vk+Vm*(-Bkm*np.cos(tk-tm)+Gkm*np.sin(tk-tm))
+            elif m==var: #dQkm/dvm
+                return Vk*(-Bkm*np.cos(tk-tm)+Gkm*np.sin(tk-tm))
+            else:
+                return 0
+        elif flagT==1:
+            Bmm=np.imag(self.Y[1][1])
+            Bmk=np.imag(self.Y[1][0])
+            Gmk=np.real(self.Y[1][0])
+            if k==var: #dQmk/dvk
+                return Vk*(-Bmk*np.cos(tk-tm)-Gmk*np.sin(tk-tm))
+            elif m==var: #dQmk/dvm
+                return -2*Bmm*Vm + Vk*(-Bmk*np.cos(tk-tm)-Gmk*np.sin(tk-tm))
+            else:
+                return 0
+
 
 class node_graph():
     def __init__(self,id,bar):
