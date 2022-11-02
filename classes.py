@@ -209,7 +209,68 @@ class node_graph():
             Q=Q+item.Qf(graph,0)
         for key,item in self.adjm.items():
             Q=Q+item.Qf(graph,1)
-        return Q    
+        return Q
+    def dPdt(self,graph,bar):
+        
+        if self.i==bar:
+            dPdt=0
+            for key,item in self.adjk.items(): 
+                dPdt=dPdt+item.dPfdt(graph,FlagT=0,var=bar)
+            for key,item in self.adjm.items():
+                dPdt=dPdt+item.dPfdt(graph,FlagT=0,var=bar)
+            return dPdt
+        elif str(self.i)+"-"+str(bar) in self.adjk.keys():
+            return self.adjk[str(self.i)+"-"+str(bar)].dPfdt(graph,0,bar)
+        elif str(bar)+"-"+str(self.i) in self.adjk.keys():
+            return self.adjk[str(self.i)+"-"+str(bar)].dPfdt(graph,1,bar)
+        else:
+            return 0
+    def dPdV(self,graph,bar):
+        dPdV=0
+        if self.i==bar:
+            for key,item in self.adjk.items(): 
+                dPdV=dPdV+item.dPfdV(graph,FlagT=0,var=bar)
+            for key,item in self.adjm.items():
+                dPdV=dPdV+item.dPfdV(graph,FlagT=0,var=bar)
+            return dPdV
+        elif str(self.i)+"-"+str(bar) in self.adjk.keys():
+            return self.adjk[str(self.i)+"-"+str(bar)].dPfdV(graph,0,bar)
+        elif str(bar)+"-"+str(self.i) in self.adjk.keys():
+            return self.adjk[str(self.i)+"-"+str(bar)].dPfdV(graph,1,bar)
+        else:
+            return 0
+
+    def dQdt(self,graph,bar):
+        dQdt=0
+        if self.i==bar:
+            for key,item in self.adjk.items(): 
+                dQdt=dQdt+item.dQdt(graph,FlagT=0,var=bar)
+            for key,item in self.adjm.items():
+                dQdt=dQdt+item.dQdt(graph,FlagT=0,var=bar)
+            return dQdt
+        elif str(self.i)+"-"+str(bar) in self.adjk.keys():
+            return self.adjk[str(self.i)+"-"+str(bar)].dQdt(graph,0,bar)
+        elif str(bar)+"-"+str(self.i) in self.adjk.keys():
+            return  self.adjk[str(self.i)+"-"+str(bar)].dQdt(graph,1,bar)
+        else:
+            return 0
+    def dQdV(self,graph,bar):
+        if self.i==bar:
+            if self.FlagBS==0:
+                dQdV=0
+            else:    
+                dQdV=-2*self.Bs*self.V 
+            for key,item in self.adjk.items(): 
+                dQdV=dQdV+item.dQdV(graph,FlagT=0,var=bar)
+            for key,item in self.adjm.items():
+                dQdV=dQdV+item.dQdV(graph,FlagT=0,var=bar)
+            return dQdV
+        elif str(self.i)+"-"+str(bar) in self.adjk.keys():
+            return  self.adjk[str(self.i)+"-"+str(bar)].dQdV(graph,0,bar)
+        elif str(bar)+"-"+str(self.i) in self.adjk.keys():
+            return  self.adjk[str(self.i)+"-"+str(bar)].dQdV(graph,1,bar)
+        else:
+            return  0  
 
 class netinfo():
     def __init__(self,nbar,nram,nvar,nteta,nv) -> None:

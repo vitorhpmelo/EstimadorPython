@@ -35,4 +35,6 @@ Vinici(graph)
 # %%
 PowerFlows(ram,graph,print=1)
 PowerInjc(graph,print=1)
+
+varlist=[]
 # %%
