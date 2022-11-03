@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 #%%
 
-from platform import node
 from classes import *
 from readfiles import *
 from networkstruc import *
 import pandas as pd
 import numpy as np
-
+from networkcalc import *
 
 
 
@@ -28,9 +27,14 @@ graph=create_graph(bars,ram)
 
 
 
+
 # %%
-k=0
 
-m=1
+Vinici(graph)
 
-graph[k]
+# %%
+PowerFlows(ram,graph,print=1)
+PowerInjc(graph,print=1)
+
+varlist=[]
+# %%
