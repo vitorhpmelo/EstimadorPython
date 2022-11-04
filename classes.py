@@ -185,6 +185,13 @@ class branch():
 
 class node_graph():
     def __init__(self,id,bar):
+        self.V=1
+        self.teta=0
+        self.Bs=0
+        self.adjk=dict()
+        self.adjm=dict()
+        self.ladjk=[]
+        self.ladjm=[]
         self.id=id
         self.bar=bar
         self.V=1
@@ -279,3 +286,13 @@ class netinfo():
         self.nvar=nvar
         self.nteta=nteta
         self.nv=nv
+
+class meas():
+    def __init__(self,k,m,type,val,prec) -> None:
+        self.k=k
+        self.m=m
+        self.type=type
+        self.val=val
+        self.prec=prec
+        self.sigma=val*prec/3
+
