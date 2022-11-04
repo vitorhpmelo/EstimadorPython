@@ -55,6 +55,8 @@ def create_graph(bars,ram):
         k=int(key.split("-")[0])
         m=int(key.split("-")[1])
         graph[k].adjk.update({key:item})
+        graph[k].ladjk.append(m)
         graph[m].adjm.update({key:item})
+        graph[m].ladjm.append(k)
     
     return graph

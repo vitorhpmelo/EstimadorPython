@@ -38,3 +38,6 @@ PowerInjc(graph,print=1)
 
 varlist=[]
 # %%
+
+[z,var_t,var_v]=create_z_x_loadflow(graph)
+# %%
