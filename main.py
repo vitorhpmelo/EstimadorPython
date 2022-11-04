@@ -26,8 +26,6 @@ network=netinfo(nbars,nbran,2*nbars-1,nteta=nbars-1,nv=nbars)
 graph=create_graph(bars,ram)
 
 
-
-
 # %%
 
 Vinici(graph)
