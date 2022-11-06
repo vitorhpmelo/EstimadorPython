@@ -45,15 +45,17 @@ varlist=[]
 # %%
 dx=np.ones(len(var_t))
 it=0
-while(np.amax(np.abs(dx))>1e-9 and it <20):
+while(np.amax(np.abs(dx))>1e-6 and it <20):
     print(np.amax(np.abs(dx)))
     dz=calc_dz(z,graph)
     H=calc_H(z,var_t,var_v,graph)
+    if(it==0):
+        np.savetxt("H.csv",H,delimiter=",")
     A=sparse.csc_matrix(H, dtype=float)
     dx=sliang.spsolve(A,dz)
     new_X(graph,var_t,var_v,dx)
     it=it+1
-
+np.savetxt("Hfinal.csv",H,delimiter=",")
 
 # %%
 
