@@ -10,6 +10,19 @@ def Vinici(graph):
         no.V=no.bar.V
         no.teta=no.bar.teta
 
+def Vinici_lf(graph):
+    '''
+    Function to initate the voltages acording with DBAR
+    '''
+    for no in graph:
+        if no.bar.type == 1 or no.bar.type == 0:
+            no.V=no.bar.V
+            no.teta=0
+        else:
+            no.V=1
+            no.teta=0
+
+
 
 def PowerFlows(ram,graph,print=0):
     dpf={}
@@ -43,28 +56,86 @@ def PowerInjc(graph,print=0):
 def create_z_x_loadflow(graph):
     zP=[]
     zQ=[]
-    var_t=[]
-    var_v=[]
+    var_t={}
+    var_v={}
+    i=0
+    j=0
     for item in graph:
-        if item.bar.tipo==1 or item.bar.tipo==2:
+        if item.bar.type==1 or item.bar.type==2:
             mes=meas(item.id,-1,0,item.bar.Pg-item.bar.Pd,1)
             zP.append(mes)
-            var_t.append(item.id)
-        if item.bar.tipo==2:
+            var_t[item.id]=i
+            i=i+1
+        if item.bar.type==2:
             mes=meas(item.id,-1,1,item.bar.Qg-item.bar.Qd,1)
             zQ.append(mes)
-            var_v.append(item.id)
+            var_v[item.id]=j
+            j=j+1
     return zP+zQ,var_t,var_v
 
-def calc_H_(z,var_t,var_x,graph):
-    H=np.zeros((len(z),len(var_t+var_x)))
+def calc_H(z,var_t,var_v,graph):
+    H=np.zeros((len(z),len(var_t)+len(var_v)))
+    i=0
+    n_teta=len(var_t)
     for item in z:
+        soma1=0
+        soma2=0
         if item.type==0:
-            print("teste")
-            #medida de injecao de potencia ativa
+            for key,branch in graph[item.k].adjk.items():#calcula as derivadas relativa as barras de e a do próprio angulo
+                if  graph[item.k].bar.type!=0:
+                    soma1=soma1+branch.dPfdt(graph,0,item.k)
+                if  branch.para in var_t.keys():
+                    H[i][var_t[branch.para]]=branch.dPfdt(graph,0,branch.para)
+            for key,branch in graph[item.k].adjm.items():
+                if  graph[item.k].bar.type!=0:
+                    soma1=soma1+branch.dPfdt(graph,1,item.k) 
+                if  branch.de in var_t.keys():
+                    H[i][var_t[branch.de]]=branch.dPfdt(graph,1,branch.de)
+            if  graph[item.k].bar.type!=0:
+                H[i][var_t[item.k]]=soma1
+            soma1=0
+            for key,branch in graph[item.k].adjk.items(): ##derivadas modulo de tensão
+                if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1:
+                    soma2=soma2+branch.dPfdV(graph,0,item.k)
+                if  branch.para in var_v.keys():
+                    H[i][var_v[branch.para]+n_teta]=branch.dPfdV(graph,0,branch.para)
+            for key,branch in graph[item.k].adjm.items():
+                if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1:
+                    soma2=soma2+branch.dPfdV(graph,1,item.k) 
+                if  branch.de in var_v.keys():
+                    H[i][var_v[branch.de]+n_teta]=branch.dPfdV(graph,1,branch.de)
+            if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1:
+                H[i][var_v[item.k]+n_teta]=soma2
+            soma2=0
         elif item.type==1:
-            print("teste")
-            #medida de injeção de potencia reativa
+            for key,branch in graph[item.k].adjk.items():#calcula as derivadas relativa as barras de e a do próprio angulo
+                if  graph[item.k].bar.type!=0:
+                    soma1=soma1+branch.dQfdt(graph,0,item.k)
+                if  branch.para in var_t.keys():
+                    H[i][var_t[branch.para]]=branch.dQfdt(graph,0,branch.para)
+            for key,branch in graph[item.k].adjm.items():
+                if  graph[item.k].bar.type!=0:
+                    soma1=soma1+branch.dQfdt(graph,1,item.k) 
+                if  branch.de in var_t.keys():
+                    H[i][var_t[branch.de]]=branch.dQfdt(graph,1,branch.de)
+            if  graph[item.k].bar.type!=0:
+                H[i][var_t[item.k]]=soma1
+            soma1=0
+            for key,branch in graph[item.k].adjk.items(): ##derivadas modulo de tensão
+                if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1:
+                    soma2=soma2+branch.dQfdV(graph,0,item.k)
+                if  branch.para in var_v.keys():
+                    H[i][var_v[branch.para]+n_teta]=branch.dQfdV(graph,0,branch.para)
+            for key,branch in graph[item.k].adjm.items():
+                if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1:
+                    soma2=soma2+branch.dQfdV(graph,1,item.k) 
+                if  branch.de in var_v.keys():
+                    H[i][var_v[branch.de]+n_teta]=branch.dQfdV(graph,1,branch.de)
+            if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1:
+                if graph[item.k].FlagBS==1:
+                    soma2=soma2-2*graph[item.k].Bs*graph[item.k].V 
+                H[i][var_v[item.k]+n_teta]=soma2
+            soma2=0
         elif item.type==2:
             print("teste")
         
@@ -73,4 +144,19 @@ def calc_H_(z,var_t,var_x,graph):
 
         elif item.type==4:
             print("teste")
-    
+        i=i+1
+    return H
+
+def calc_dz(vecZ,graph):
+    dz=np.zeros(len(vecZ))
+    i=0
+    for z in vecZ:
+        dz[i]=z.dz(graph)
+        i=i+1
+    return dz
+def new_X(graph,var_t,var_v,dx):
+    n_teta=len(var_t)
+    for key,item in var_t.items():
+        graph[key].teta=graph[key].teta+dx[item]
+    for key,item in var_v.items():
+        graph[key].V=graph[key].V+dx[item+n_teta]

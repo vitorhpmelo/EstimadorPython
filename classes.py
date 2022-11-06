@@ -4,9 +4,9 @@
 import numpy as np
 
 class bar():
-    def __init__(self,id,tipo,contador):
+    def __init__(self,id,type,contador):
         self.id=id
-        self.tipo=tipo
+        self.type=type
         self.i=contador
         self.V=1
         self.teta=0
@@ -22,11 +22,11 @@ class bar():
         self.ngds=0
 
 class branch():
-    def __init__(self,id,de,para,tipo,i):
+    def __init__(self,id,de,para,type,i):
         self.id=id
         self.de=de
         self.para=para
-        self.tipo=tipo
+        self.type=type
         self.i=i
         self.x=-1
         self.r=-1
@@ -39,12 +39,12 @@ class branch():
     def cykm(self):
         self.ykm=1/complex(self.r,self.x)
     def twoPortCircuit(self):
-        if self.tipo == 1:
+        if self.type == 1:
             self.Y[0][0]=self.ykm+self.bsh
             self.Y[1][1]=self.ykm+self.bsh
             self.Y[1][0]=-self.ykm
             self.Y[0][1]=-self.ykm
-        elif self.tipo ==2:
+        elif self.type ==2:
             self.Y[0][0]=((1/self.tap)**2)*self.ykm
             self.Y[1][1]=self.ykm
             self.Y[1][0]=-(1/self.tap)*self.ykm
@@ -218,7 +218,6 @@ class node_graph():
             Q=Q+item.Qf(graph,1)
         return Q
     def dPdt(self,graph,bar):
-        
         if self.i==bar:
             dPdt=0
             for key,item in self.adjk.items(): 
@@ -295,4 +294,33 @@ class meas():
         self.val=val
         self.prec=prec
         self.sigma=val*prec/3
-
+    def dz(self,graph):
+        if self.type==0:
+            return self.val-graph[self.k].P(graph)
+        elif self.type==1:
+            return self.val-graph[self.k].Q(graph)
+        elif self.type==2:
+            keyk=str(self.k)+(self.m)
+            keym=str(self.m)+(self.k)
+            if keyk in graph[self.k].adjk.keys():
+                return self.val-graph[self.k].adjk[keyk].Pf(graph,0)
+            elif keym in graph[self.k].adjm.keys():
+                return self.val-graph[self.k].adjm[keym].Pf(graph,1)
+            else:
+                print("medida de fluxo de potencia ativa com ramo não existente")
+                exit(1)
+        elif self.type==3:
+            keyk=str(self.k)+(self.m)
+            keym=str(self.m)+(self.k)
+            if keyk in graph[self.k].adjk.keys():
+                return self.val-graph[self.k].adjk[keyk].Qf(graph,0)
+            elif keym in graph[self.k].adjm.keys():
+                return self.val-graph[self.k].adjm[keym].Qf(graph,1)
+            else:
+                print("medida de fluxo de potencia reativa com ramo não existente")
+                exit(1)
+        elif self.type==4:
+            return self.val-graph[self.k].V
+        else:
+            print("Tipo de medida não existente")
+            exit(1)

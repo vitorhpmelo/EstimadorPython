@@ -13,11 +13,11 @@ def creat_bar(dfDBAR):
         item=bar(int(row["id"]),int(row["type"]),i)
         item.V=row.V
         item.teta=row.teta*np.pi/180
-        item.Pg=row["Pg"]
-        item.Qg=row["Qg"]
-        item.Pd=row["Pd"]
-        item.Qd=row["Qd"]
-        item.Bs=row["Bs"]
+        item.Pg=row["Pg"]/100
+        item.Qg=row["Qg"]/100
+        item.Pd=row["Pd"]/100
+        item.Qd=row["Qd"]/100
+        item.Bs=row["Bs"]/100
         if int(row["type"])==1:
             pv.append(i)
         elif int(row["type"])==2:
