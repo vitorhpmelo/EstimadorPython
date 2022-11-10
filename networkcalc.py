@@ -5,13 +5,18 @@ from readfiles import *
 import scipy.sparse.linalg as sliang 
 import scipy.sparse as sparse 
 
-def Vinici(graph):
+def Vinici(graph,flatStart=0):
     '''
     Function to initate the voltages acording with DBAR
     '''
-    for no in graph:
-        no.V=no.bar.V
-        no.teta=no.bar.teta
+    if flatStart==0:
+        for no in graph:
+            no.V=no.bar.V
+            no.teta=no.bar.teta
+    else:
+        for no in graph:
+            no.V=1
+            no.teta=0
 
 def Vinici_lf(graph):
     '''
@@ -78,8 +83,7 @@ def create_z_x_loadflow(graph):
 
 
 
-def calc_H(z,var_t,var_v,graph):
-    H=np.zeros((len(z),len(var_t)+len(var_v)))
+def calc_H(z,var_t,var_v,graph,H):
     i=0
     n_teta=len(var_t)
     for item in z:
@@ -189,15 +193,14 @@ def calc_H(z,var_t,var_v,graph):
                 k=item.k
                 H[i][var_v[k]+n_teta]=1
         i=i+1
-    return H
 
-def calc_dz(vecZ,graph):
-    dz=np.zeros(len(vecZ))
+
+def calc_dz(vecZ,graph,dz):
     i=0
     for z in vecZ:
         dz[i]=z.dz(graph)
         i=i+1
-    return dz
+
 def new_X(graph,var_t,var_v,dx):
     n_teta=len(var_t)
     for key,item in var_t.items():
@@ -210,11 +213,13 @@ def load_flow(graph,prt=0,tol=1e-6):
     Vinici_lf(graph)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     dx=np.ones(len(var_t))
+    dz=np.zeros(len(z))
     it=0
     conv=0
+    H=np.zeros((len(z),len(var_t)+len(var_v)))
     while(it <20):
-        dz=calc_dz(z,graph)
-        H=calc_H(z,var_t,var_v,graph)
+        calc_dz(z,graph,dz)
+        calc_H(z,var_t,var_v,graph,H)
         if(it==0 and prt):
             np.savetxt("H.csv",H,delimiter=",")
         A=sparse.csc_matrix(H, dtype=float)
@@ -255,7 +260,7 @@ def create_z_x(graph,dfDMED,ind_i):
     return z,var_t,var_v
 
 
-def crete_W(z):
+def crete_W(z,prec_virtual=1e-4):
     W=np.zeros((len(z),len(z)))
     i=0
     for item in z:

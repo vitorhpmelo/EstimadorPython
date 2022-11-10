@@ -304,8 +304,8 @@ class meas():
         elif self.type==1:
             return self.val-graph[self.k].Q(graph)
         elif self.type==2:
-            keyk=str(self.k)+(self.m)
-            keym=str(self.m)+(self.k)
+            keyk=str(self.k)+"-"+str(self.m)
+            keym=str(self.m)+"-"+str(self.k)
             if keyk in graph[self.k].adjk.keys():
                 return self.val-graph[self.k].adjk[keyk].Pf(graph,0)
             elif keym in graph[self.k].adjm.keys():
@@ -314,8 +314,8 @@ class meas():
                 print("medida de fluxo de potencia ativa com ramo não existente")
                 exit(1)
         elif self.type==3:
-            keyk=str(self.k)+(self.m)
-            keym=str(self.m)+(self.k)
+            keyk=str(self.k)+"-"+str(self.m)
+            keym=str(self.m)+"-"+str(self.k)
             if keyk in graph[self.k].adjk.keys():
                 return self.val-graph[self.k].adjk[keyk].Qf(graph,0)
             elif keym in graph[self.k].adjm.keys():
