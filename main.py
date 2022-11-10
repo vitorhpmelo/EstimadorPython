@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#%%
-
 from classes import *
 from readfiles import *
 from networkstruc import *
@@ -10,11 +8,7 @@ import numpy as np
 from networkcalc import *
 
 
-
-
-#%%
-
-
+prec_virtual=1e-7
 sys="IEEE14"
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
@@ -25,12 +19,13 @@ dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 network=netinfo(nbars,nbran,2*nbars-1,nteta=nbars-1,nv=nbars)
 
 graph=create_graph(bars,ram)
-#%%
 conv = load_flow(graph)
 
 save_DMED_fp(graph,ram,sys)
 
 
-#%%
 [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
-# %%
+
+H=calc_H(z,var_t,var_v,graph)
+
+

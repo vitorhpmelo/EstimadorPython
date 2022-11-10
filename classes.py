@@ -297,7 +297,7 @@ class meas():
         self.type=type
         self.val=val
         self.prec=prec
-        self.sigma=val*prec/3
+        self.sigma=np.abs(val)*prec/3
     def dz(self,graph):
         if self.type==0:
             return self.val-graph[self.k].P(graph)

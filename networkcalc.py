@@ -142,13 +142,52 @@ def calc_H(z,var_t,var_v,graph):
                 H[i][var_v[item.k]+n_teta]=soma2
             soma2=0
         elif item.type==2:
-            print("teste")
-        
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            mk=str(m)+"-"+str(k)
+            if km in graph[k].adjk.keys():
+                if k in var_t.keys():
+                    H[i][var_t[k]]= graph[k].adjk[km].dPfdt(graph,0,k)
+                H[i][var_v[k]+n_teta]= graph[k].adjk[km].dPfdV(graph,0,k)
+                if m in var_t.keys():
+                    H[i][var_t[m]]= graph[k].adjk[km].dPfdt(graph,0,m)
+                H[i][var_v[m]+n_teta]= graph[k].adjk[km].dPfdV(graph,0,m)
+            elif mk in graph[k].adjm.keys():
+                if k in var_t.keys():
+                    H[i][var_t[k]]= graph[k].adjm[mk].dPfdt(graph,1,k)
+                H[i][var_v[k]+n_teta]= graph[k].adjm[mk].dPfdV(graph,1,k)
+                if m in var_t.keys():
+                    H[i][var_t[m]]= graph[k].adjm[mk].dPfdt(graph,1,m)
+                H[i][var_v[m]+n_teta]= graph[k].adjm[mk].dPfdV(graph,1,m)
+            else:
+                print("erro ao calcular fluxo na Jacobiana, medida Fluxo de P {:d}-{:d}".format(graph[k].id,graph[m].id))
+                exit(1)
         elif item.type==3:
-            print("teste")
-
+                k=item.k
+                m=item.m
+                km=str(k)+"-"+str(m)
+                mk=str(m)+"-"+str(k)
+                if km in graph[k].adjk.keys():
+                    if k in var_t.keys():
+                        H[i][var_t[k]]= graph[k].adjk[km].dQfdt(graph,0,k)
+                    H[i][var_v[k]+n_teta]= graph[k].adjk[km].dQfdV(graph,0,k)
+                    if m in var_t.keys():
+                        H[i][var_t[m]]= graph[k].adjk[km].dQfdt(graph,0,m)
+                    H[i][var_v[m]+n_teta]= graph[k].adjk[km].dQfdV(graph,0,m)
+                elif mk in graph[k].adjm.keys():
+                    if k in var_t.keys():
+                        H[i][var_t[k]]= graph[k].adjm[mk].dQfdt(graph,1,k)
+                    H[i][var_v[k]+n_teta]= graph[k].adjm[mk].dQfdV(graph,1,k)
+                    if m in var_t.keys():
+                        H[i][var_t[m]]= graph[k].adjm[mk].dQfdt(graph,1,m)
+                    H[i][var_v[m]+n_teta]= graph[k].adjm[mk].dQfdV(graph,1,m)
+                else:
+                    print("erro ao calcular fluxo na Jacobiana, medida Fluxo de P {:d}-{:d}".format(graph[k].id,graph[m].id))
+                    exit(1)
         elif item.type==4:
-            print("teste")
+                k=item.k
+                H[i][var_v[k]+n_teta]=1
         i=i+1
     return H
 
@@ -214,3 +253,15 @@ def create_z_x(graph,dfDMED,ind_i):
         z.append(mes)
 
     return z,var_t,var_v
+
+
+def crete_W(z):
+    W=np.zeros((len(z),len(z)))
+    i=0
+    for item in z:
+        if item.val<1e-7:
+            W[i][i]=1/prec_virtual
+        else:
+            W[i][i]=1/item.sigma
+        i=i+1
+    return W
