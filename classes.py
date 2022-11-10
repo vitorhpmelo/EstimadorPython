@@ -206,6 +206,8 @@ class node_graph():
             P=P+item.Pf(graph,0)
         for key,item in self.adjm.items():
             P=P+item.Pf(graph,1)
+        if np.abs(P)<1e-12:
+            P=0
         return P
     def Q(self,graph):
         if self.FlagBS==0:
@@ -216,6 +218,8 @@ class node_graph():
             Q=Q+item.Qf(graph,0)
         for key,item in self.adjm.items():
             Q=Q+item.Qf(graph,1)
+        if np.abs(Q)<1e-12:
+            Q=0
         return Q
     def dPdt(self,graph,bar):
         if self.i==bar:

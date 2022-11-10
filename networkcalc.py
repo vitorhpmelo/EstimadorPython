@@ -1,6 +1,9 @@
 from classes import *
 import numpy as np
 import pandas as pd
+from readfiles import *
+import scipy.sparse.linalg as sliang 
+import scipy.sparse as sparse 
 
 def Vinici(graph):
     '''
@@ -72,6 +75,8 @@ def create_z_x_loadflow(graph):
             var_v[item.id]=j
             j=j+1
     return zP+zQ,var_t,var_v
+
+
 
 def calc_H(z,var_t,var_v,graph):
     H=np.zeros((len(z),len(var_t)+len(var_v)))
@@ -160,3 +165,52 @@ def new_X(graph,var_t,var_v,dx):
         graph[key].teta=graph[key].teta+dx[item]
     for key,item in var_v.items():
         graph[key].V=graph[key].V+dx[item+n_teta]
+
+
+def load_flow(graph,prt=0,tol=1e-6):
+    Vinici_lf(graph)
+    [z,var_t,var_v]=create_z_x_loadflow(graph)
+    dx=np.ones(len(var_t))
+    it=0
+    conv=0
+    while(it <20):
+        dz=calc_dz(z,graph)
+        H=calc_H(z,var_t,var_v,graph)
+        if(it==0 and prt):
+            np.savetxt("H.csv",H,delimiter=",")
+        A=sparse.csc_matrix(H, dtype=float)
+        dx=sliang.spsolve(A,dz)
+        new_X(graph,var_t,var_v,dx)
+        it=it+1
+        if (np.amax(np.abs(dx))<tol):
+            conv=1
+            txt="Convergiu em {:d} iteracoes".format(it)
+            print(txt)
+            prt_state(graph)
+            break
+    if(it==0 and prt):
+        np.savetxt("Hfinal.csv",H,delimiter=",")
+    return conv
+
+
+def create_z_x(graph,dfDMED,ind_i):
+    z=[]
+    var_t={}
+    var_v={}
+    i=0
+    j=0
+    for item in graph:
+        if item.bar.type==1 or item.bar.type==2:
+            var_t[item.id]=i
+            i=i+1
+        var_v[item.id]=j
+        j=j+1
+
+    for idx,row in dfDMED.iterrows():
+        if int(row["type"])==0 or int(row["type"])==1 or  int(row["type"])==4:
+            mes=meas(ind_i[int(row["de"])],-1,int(row["type"]),row["zmed"],row["prec"])
+        else:  
+            mes=meas(ind_i[int(row["de"])],ind_i[int(row["para"])],int(row["type"]),row["zmed"],row["prec"])
+        z.append(mes)
+
+    return z,var_t,var_v
