@@ -211,6 +211,7 @@ def new_X(graph,var_t,var_v,dx):
 
 def load_flow(graph,prt=0,tol=1e-6):
     Vinici_lf(graph)
+    #Vinici(graph,flatStart=1)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     dx=np.ones(len(var_t))
     dz=np.zeros(len(z))
@@ -264,7 +265,7 @@ def crete_W(z,prec_virtual=1e-4):
     W=np.zeros((len(z),len(z)))
     i=0
     for item in z:
-        if item.val<1e-7:
+        if np.abs(item.val)<1e-7:
             W[i][i]=1/prec_virtual
         else:
             W[i][i]=1/item.sigma
