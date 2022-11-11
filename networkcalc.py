@@ -261,13 +261,17 @@ def create_z_x(graph,dfDMED,ind_i):
     return z,var_t,var_v
 
 
-def crete_W(z,prec_virtual=1e-4):
-    W=np.zeros((len(z),len(z)))
-    i=0
-    for item in z:
-        if np.abs(item.val)<1e-7:
-            W[i][i]=1/prec_virtual
-        else:
-            W[i][i]=1/item.sigma
-        i=i+1
+def create_W(z,prec_virtual=1e-5,flag_ones=0):
+
+    if flag_ones==0:
+        W=np.zeros((len(z),len(z)))
+        i=0
+        for item in z:
+            if np.abs(item.val)<1e-4:
+                W[i][i]=1/prec_virtual
+            else:
+                W[i][i]=1/item.sigma
+            i=i+1
+    else:
+        W=np.eye(len(z))
     return W

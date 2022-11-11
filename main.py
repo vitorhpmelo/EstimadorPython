@@ -29,7 +29,7 @@ conv = load_flow(graph,tol=1e-10,prt=1)
 [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
 
 
-W=crete_W(z)
+W=create_W(z)
 Vinici(graph,flatStart=1)
 H=np.zeros((len(z),len(var_t)+len(var_v)))
 dz=np.zeros(len(z))
