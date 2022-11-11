@@ -28,7 +28,7 @@ save_DMED_fp(graph,ram,sys)
 #%%
 [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
 
-W=crete_W(z)
+W=create_W(z,flag_ones=1)
 Vinici(graph,flatStart=1)
 H=np.zeros((len(z),len(var_t)+len(var_v)))
 dz=np.zeros(len(z))
