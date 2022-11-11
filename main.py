@@ -29,7 +29,7 @@ conv = load_flow(graph,tol=1e-10,prt=1)
 [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
 
 
-W=create_W(z)
+W=create_W(z,flag_ones=1)
 Vinici(graph,flatStart=1)
 H=np.zeros((len(z),len(var_t)+len(var_v)))
 dz=np.zeros(len(z))
@@ -38,9 +38,11 @@ dz=np.zeros(len(z))
 #%%
 it=0
 tol=1e-6
-while(it <1):
+while(it <5):
     calc_dz(z,graph,dz)
     calc_H(z,var_t,var_v,graph,H)
+    if(it==0 and 1):
+            np.savetxt("HEE.csv",H,delimiter=",")
     grad=np.matmul(np.matmul(H.T,W),dz)
     G=np.matmul(np.matmul(H.T,W),H)
     A=sparse.csc_matrix(G, dtype=float)
