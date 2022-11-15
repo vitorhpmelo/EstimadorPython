@@ -30,6 +30,7 @@ graph=create_graph(bars,ram)
 Vinici(graph,flatStart=1)
 H=np.zeros((len(z),len(var_t)+len(var_v)))
 dz=np.zeros(len(z))
+#%%
 
 #%%
 W=create_W(z,flag_ones=0,prec_virtual=1e-5)

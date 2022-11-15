@@ -321,7 +321,8 @@ def new_X(graph,var_t,var_v,dx):
 
 
 def load_flow(graph,prt=0,tol=1e-6):
-    Vinici_lf(graph)
+    # Vinici_lf(graph)
+    Vinici(graph,flatStart=1)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     dx=np.ones(len(var_t))
     dz=np.zeros(len(z))
