@@ -176,7 +176,7 @@ class branch():
             Bmk=np.imag(self.Y[1][0])
             Gmk=np.real(self.Y[1][0])
             if k==var: #dQmk/dvk
-                return Vk*(-Bmk*np.cos(tk-tm)-Gmk*np.sin(tk-tm))
+                return Vm*(-Bmk*np.cos(tk-tm)-Gmk*np.sin(tk-tm))
             elif m==var: #dQmk/dvm
                 return -2*Bmm*Vm + Vk*(-Bmk*np.cos(tk-tm)-Gmk*np.sin(tk-tm))
             else:

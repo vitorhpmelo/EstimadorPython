@@ -81,9 +81,7 @@ def create_z_x_loadflow(graph):
             j=j+1
     return zP+zQ,var_t,var_v
 
-
-
-def calc_H(z,var_t,var_v,graph,H):
+def calc_H_fp(z,var_t,var_v,graph,H):
     i=0
     n_teta=len(var_t)
     for item in z:
@@ -194,6 +192,119 @@ def calc_H(z,var_t,var_v,graph,H):
                 H[i][var_v[k]+n_teta]=1
         i=i+1
 
+def calc_H_EE(z,var_t,var_v,graph,H):
+    #refazer
+    i=0
+    n_teta=len(var_t)
+    bar_v=var_v.keys()
+    bar_t=var_t.keys()
+    for item in z:
+        soma1=0
+        soma2=0
+        if item.type==0:
+            for key,branch in graph[item.k].adjk.items():#calcula as derivadas relativa as barras de e a do próprio angulo
+                if  item.k in bar_t: #checa se o angulo daquela barra é variável
+                    soma1=soma1+branch.dPfdt(graph,0,item.k) #soma a derivada de cada fluxo incidente a barra de
+                if  branch.para in bar_t:
+                    H[i][var_t[branch.para]]=branch.dPfdt(graph,0,branch.para)  # calcula a derivada daquela barra em relação a seguinte
+            for key,branch in graph[item.k].adjm.items(): #calcula as derivadas em relação aos fluxo em relação aos nos que aquela barra é para
+                if  item.k in bar_t: #checa se o angulo daquela barra é variável
+                    soma1=soma1+branch.dPfdt(graph,1,item.k) #soma a derivada de cada fluxo incidente a barra de
+                if  branch.de in bar_t:#checa se o angulo daquela barra é variável
+                    H[i][var_t[branch.de]]=branch.dPfdt(graph,1,branch.de) 
+            if  item.k in bar_t:
+                H[i][var_t[item.k]]=soma1
+            soma1=0
+            for key,branch in graph[item.k].adjk.items(): ##derivadas modulo de tensão
+                if item.k in bar_v:
+                    soma2=soma2+branch.dPfdV(graph,0,item.k)
+                if  branch.de in var_v.keys():
+                    H[i][var_v[branch.para]+n_teta]=branch.dPfdV(graph,0,branch.para)
+            for key,branch in graph[item.k].adjm.items():
+                if item.k in bar_v:
+                    soma2=soma2+branch.dPfdV(graph,1,item.k) 
+                if  branch.de in var_v.keys():
+                    H[i][var_v[branch.de]+n_teta]=branch.dPfdV(graph,1,branch.de)
+            if item.k in bar_v:
+                H[i][var_v[item.k]+n_teta]=soma2
+            soma2=0
+        elif item.type==1:
+            for key,branch in graph[item.k].adjk.items():#calcula as derivadas relativa as barras de e a do próprio angulo
+                if  item.k in bar_t:
+                    soma1=soma1+branch.dQfdt(graph,0,item.k)
+                if  branch.para in bar_t:
+                    H[i][var_t[branch.para]]=branch.dQfdt(graph,0,branch.para)
+            for key,branch in graph[item.k].adjm.items():
+                if  item.k in bar_t:
+                    soma1=soma1+branch.dQfdt(graph,1,item.k) 
+                if  branch.de in bar_t:
+                    H[i][var_t[branch.de]]=branch.dQfdt(graph,1,branch.de)
+            if  item.k in bar_t:
+                H[i][var_t[item.k]]=soma1
+            soma1=0
+            for key,branch in graph[item.k].adjk.items(): ##derivadas modulo de tensão
+                if item.k in bar_v:
+                    soma2=soma2+branch.dQfdV(graph,0,item.k)
+                if  branch.para in bar_v:
+                    H[i][var_v[branch.para]+n_teta]=branch.dQfdV(graph,0,branch.para)
+            for key,branch in graph[item.k].adjm.items():
+                if item.k in bar_v:
+                    soma2=soma2+branch.dQfdV(graph,1,item.k) 
+                if  branch.de in bar_v:
+                    H[i][var_v[branch.de]+n_teta]=branch.dQfdV(graph,1,branch.de)
+                if graph[item.k].FlagBS==1:
+                    soma2=soma2-2*graph[item.k].Bs*graph[item.k].V 
+            H[i][var_v[item.k]+n_teta]=soma2
+            soma2=0
+        elif item.type==2:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            mk=str(m)+"-"+str(k)
+            if km in graph[k].adjk.keys():
+                if k in bar_t:
+                    H[i][var_t[k]]= graph[k].adjk[km].dPfdt(graph,0,k)
+                H[i][var_v[k]+n_teta]= graph[k].adjk[km].dPfdV(graph,0,k)
+                if m in bar_t:
+                    H[i][var_t[m]]= graph[k].adjk[km].dPfdt(graph,0,m)
+                H[i][var_v[m]+n_teta]= graph[k].adjk[km].dPfdV(graph,0,m)
+            elif mk in graph[k].adjm.keys():
+                if k in bar_t:
+                    H[i][var_t[k]]= graph[k].adjm[mk].dPfdt(graph,1,k)
+                H[i][var_v[k]+n_teta]= graph[k].adjm[mk].dPfdV(graph,1,k)
+                if m in bar_t:
+                    H[i][var_t[m]]= graph[k].adjm[mk].dPfdt(graph,1,m)
+                H[i][var_v[m]+n_teta]= graph[k].adjm[mk].dPfdV(graph,1,m)
+            else:
+                print("erro ao calcular fluxo na Jacobiana, medida Fluxo de P {:d}-{:d}".format(graph[k].id,graph[m].id))
+                exit(1)
+        elif item.type==3:
+                k=item.k
+                m=item.m
+                km=str(k)+"-"+str(m)
+                mk=str(m)+"-"+str(k)
+                if km in graph[k].adjk.keys():
+                    if k in bar_t:
+                        H[i][var_t[k]]= graph[k].adjk[km].dQfdt(graph,0,k)
+                    H[i][var_v[k]+n_teta]= graph[k].adjk[km].dQfdV(graph,0,k)
+                    if m in bar_t:
+                        H[i][var_t[m]]= graph[k].adjk[km].dQfdt(graph,0,m)
+                    H[i][var_v[m]+n_teta]= graph[k].adjk[km].dQfdV(graph,0,m)
+                elif mk in graph[k].adjm.keys():
+                    if k in bar_t:
+                        H[i][var_t[k]]= graph[k].adjm[mk].dQfdt(graph,1,k)
+                    H[i][var_v[k]+n_teta]= graph[k].adjm[mk].dQfdV(graph,1,k)
+                    if m in bar_t:
+                        H[i][var_t[m]]= graph[k].adjm[mk].dQfdt(graph,1,m)
+                    H[i][var_v[m]+n_teta]= graph[k].adjm[mk].dQfdV(graph,1,m)
+                else:
+                    print("erro ao calcular fluxo na Jacobiana, medida Fluxo de P {:d}-{:d}".format(graph[k].id,graph[m].id))
+                    exit(1)
+        elif item.type==4:
+                k=item.k
+                H[i][var_v[k]+n_teta]=1
+        i=i+1
+
 
 def calc_dz(vecZ,graph,dz):
     i=0
@@ -219,7 +330,7 @@ def load_flow(graph,prt=0,tol=1e-6):
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     while(it <20):
         calc_dz(z,graph,dz)
-        calc_H(z,var_t,var_v,graph,H)
+        calc_H_fp(z,var_t,var_v,graph,H)
         if(it==0 and prt):
             np.savetxt("H.csv",H,delimiter=",")
         A=sparse.csc_matrix(H, dtype=float)
@@ -260,16 +371,16 @@ def create_z_x(graph,dfDMED,ind_i):
     return z,var_t,var_v
 
 
-def create_W(z,prec_virtual=1e-5,flag_ones=0):
+def create_W(z,prec_virtual=1e-4,flag_ones=0):
 
     if flag_ones==0:
         W=np.zeros((len(z),len(z)))
         i=0
         for item in z:
-            if item.val<1e-4:
+            if np.abs(item.val)<1e-6:
                 W[i][i]=1/prec_virtual
             else:
-                W[i][i]=1/item.sigma
+                W[i][i]=1/(item.sigma**2)
             i=i+1
     else:
         W=np.eye(len(z))
