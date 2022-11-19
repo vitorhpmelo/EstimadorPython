@@ -9,6 +9,11 @@ import numpy as np
 from networkcalc import *
 
 
+def SS_WLS():
+    """
+    
+    """
+
 prec_virtual=1e-7
 sys="IEEE14"
 
@@ -38,13 +43,13 @@ dz=np.zeros(len(z))
 #%%
 it=0
 tol=1e-6
-while(it <5):
+while(it <10):
     calc_dz(z,graph,dz)
     calc_H(z,var_t,var_v,graph,H)
     if(it==0 and 1):
             np.savetxt("HEE.csv",H,delimiter=",")
     grad=np.matmul(np.matmul(H.T,W),dz)
-    G=np.matmul(np.matmul(H.T,W),H)
+    # G=np.matmul(np.matmul(H.T,W),H)
     A=sparse.csc_matrix(G, dtype=float)
     dx=sliang.spsolve(A,grad)
     new_X(graph,var_t,var_v,dx)
