@@ -6,7 +6,7 @@ import scipy.sparse.linalg as sliang
 import scipy.sparse as sparse 
 from networkcalc import *
 import numpy.linalg as liang
-
+#file with the information of the libary
 
 def NormalEQ(H,W,dz,prtG=0):
     grad=np.matmul(np.matmul(H.T,W),dz)
@@ -71,6 +71,7 @@ def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-5):
     Vinici(graph,flatStart=1)
     [z,c,var_t,var_v]=create_z_c_x_LGI(graph,dfDMED,ind_i)
     C=np.zeros((len(c),len(var_t)+len(var_v)))
+    print("existem {:d} medidas virtuais".format(len(c)))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     dz=np.zeros(len(z))
     cx=np.zeros(len(c))

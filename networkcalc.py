@@ -7,7 +7,12 @@ import scipy.sparse as sparse
 
 def Vinici(graph,flatStart=0):
     '''
-    Function to initate the voltages acording with DBAR
+    Function to initate the voltages (state variables)
+    If flagStart != 0 with flat start (i.e. all the voltage modules equal to one and angles equal to 0)
+    If flagStart == 0 the voltages from the DBAR
+    @param: graph list of instances of the node class with all the information about the network
+    @param: flagStart: 0 if the voltages should be initated with the values from the DBAR and different from 0 if they should initate with flat start  
+
     '''
     if flatStart==0:
         for no in graph:
@@ -20,7 +25,11 @@ def Vinici(graph,flatStart=0):
 
 def Vinici_lf(graph):
     '''
-    Function to initate the voltages acording with DBAR
+    Function to initate the voltages (state variables) for the load flow, 
+    PQ buses recive 1 for the voltage module and 0 for the angle,
+    PV recive the V from the DBAR for the module
+    slack initate with the voltage from the DB 
+    @param: graph list of instances of the node class with all the information about the network
     '''
     for no in graph:
         if no.bar.type == 1 or no.bar.type == 0:
@@ -33,6 +42,10 @@ def Vinici_lf(graph):
 
 
 def PowerFlows(ram,graph,print=0):
+    """
+    Funtion to calculate the power flows acros the all the network branches and return them into the dpf (for active) and dqf (for reactive)
+    dictionary 
+    """
     dpf={}
     dqf={}
     for key,bran in ram.items():
