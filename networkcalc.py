@@ -312,6 +312,14 @@ def calc_dz(vecZ,graph,dz):
         dz[i]=z.dz(graph)
         i=i+1
 
+
+def calc_cx(vecc,graph,cx):
+    i=0
+    for c in vecc:
+        cx[i]=c.cx(graph)
+        i=i+1
+
+
 def new_X(graph,var_t,var_v,dx):
     n_teta=len(var_t)
     for key,item in var_t.items():
@@ -321,8 +329,8 @@ def new_X(graph,var_t,var_v,dx):
 
 
 def load_flow(graph,prt=0,tol=1e-6):
-    # Vinici_lf(graph)
-    Vinici(graph,flatStart=1)
+    Vinici_lf(graph)
+    #Vinici(graph,flatStart=1)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     dx=np.ones(len(var_t))
     dz=np.zeros(len(z))
@@ -371,6 +379,33 @@ def create_z_x(graph,dfDMED,ind_i):
 
     return z,var_t,var_v
 
+
+
+def create_z_c_x_LGI(graph,dfDMED,ind_i):
+    z=[]
+    c=[]
+    var_t={}
+    var_v={}
+    i=0
+    j=0
+    for item in graph:
+        if item.bar.type==1 or item.bar.type==2:
+            var_t[item.id]=i
+            i=i+1
+        var_v[item.id]=j
+        j=j+1
+
+    for idx,row in dfDMED.iterrows():
+        if int(row["type"])==0 or int(row["type"])==1 or  int(row["type"])==4:
+            mes=meas(ind_i[int(row["de"])],-1,int(row["type"]),row["zmed"],row["prec"])
+        else:  
+            mes=meas(ind_i[int(row["de"])],ind_i[int(row["para"])],int(row["type"]),row["zmed"],row["prec"])
+        if (int(row["type"])==0 or int(row["type"])==1) and row["zmed"]==0:
+            c.append(mes)
+        else:
+            z.append(mes)
+
+    return z,c,var_t,var_v
 
 def create_W(z,prec_virtual=1e-4,flag_ones=0):
 
