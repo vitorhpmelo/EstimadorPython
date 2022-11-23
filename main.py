@@ -8,16 +8,15 @@ from SS import *
 import pandas as pd
 import numpy as np
 from networkcalc import *
+from BadData import *
 import numpy.linalg as liang
 import scipy.sparse.linalg as sliang 
-
-
 
 
 #%% Constroi lê a estrutura da rede
 
 prec_virtual=1e-7
-sys="IEEE30"
+sys="IEEE14"
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
@@ -47,4 +46,11 @@ SS_WLS(graph,dfDMED,ind_i,solver="Normal")
 # %%
 
 SS_WLS_lagrangian(graph,dfDMED,ind_i)
+# %%
+
+
+Cov=calcCovRes(graph,dfDMED,ind_i)
+# %%
+dfRe=renorm(graph,dfDMED,ind_i,Cov)
+dfRe.to_csv("Residuos.csv")
 # %%
