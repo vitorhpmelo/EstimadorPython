@@ -17,6 +17,16 @@ def NormalEQ(H,W,dz,prtG=0):
     dx=sliang.spsolve(A,grad)
     return dx
 
+def NormalEQ_CG(H,W,dz,prtG=0):
+    grad=np.matmul(np.matmul(H.T,W),dz)
+    G=np.matmul(np.matmul(H.T,W),H)
+    if(prtG==1):
+        np.savetxt("G.csv",G,delimiter=",")
+    A=sparse.csc_matrix(G)
+    dx,flag=sliang.cg(A,grad)
+    return dx
+
+
 
 def NormalEQ_QR(H,W,dz,prtG=0):
     """
@@ -55,6 +65,8 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-5,solver="QR"):
             dx=NormalEQ(H,W,dz)
         elif solver =="QR":
             dx=NormalEQ_QR(H,W,dz)
+        elif solver == "cg":
+            dx=NormalEQ_CG(H,W,dz)
         #dx=np.linalg.solve(G,grad)
         new_X(graph,var_t,var_v,dx)
         print("max dx {:e} ".format(np.amax(np.abs(dx))))
