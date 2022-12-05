@@ -23,7 +23,7 @@ def Vinici(graph,flatStart=0):
             no.V=1
             no.teta=0
 
-def Vinici_lf(graph):
+def Vinici_lf(graph,useDBAR=1):
     '''
     Function to initate the voltages (state variables) for the load flow, 
     PQ buses recive 1 for the voltage module and 0 for the angle,
@@ -33,8 +33,15 @@ def Vinici_lf(graph):
     '''
     for no in graph:
         if no.bar.type == 1 or no.bar.type == 0:
-            no.V=no.bar.V
-            no.teta=0
+            if useDBAR==0:
+                no.V=1
+                no.teta=0
+            elif useDBAR==1:
+                no.V=no.bar.V
+                if no.bar.type == 0:
+                    no.teta=no.bar.teta
+                else:
+                    no.teta=0  
         else:
             no.V=1
             no.teta=0
@@ -343,7 +350,7 @@ def new_X(graph,var_t,var_v,dx):
 
 def load_flow(graph,prt=0,tol=1e-6):
     Vinici_lf(graph)
-    #Vinici(graph,flatStart=1)
+    Vinici(graph,flatStart=0)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     dx=np.ones(len(var_t))
     dz=np.zeros(len(z))

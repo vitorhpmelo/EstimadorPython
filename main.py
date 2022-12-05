@@ -17,7 +17,7 @@ import scipy.sparse.linalg as sliang
 #%% Constroi lê a estrutura da rede
 
 prec_virtual=1e-7
-sys="IEEE14"
+sys="IEEE118"
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
@@ -30,7 +30,7 @@ graph=create_graph(bars,ram)
 
 
 #%% fluxo de potência
-conv = load_flow(graph,tol=1e-10)
+conv = load_flow(graph,tol=1e-7)
 #%% salva o DMEDFP
 save_DMED_fp(graph,ram,sys)
 
@@ -48,11 +48,6 @@ SS_WLS(graph,dfDMED,ind_i,solver="cg")
 SS_WLS_lagrangian(graph,dfDMED,ind_i)
 # %% Residuos normalizados
 Cov=calcCovRes(graph,dfDMED,ind_i)
-<<<<<<< HEAD
-np.savetxt("Cov.csv",Cov,delimiter=",")
-# %%
-=======
->>>>>>> refs/remotes/origin/main
 dfRe=renorm(graph,dfDMED,ind_i,Cov)
 dfRe.to_csv("Residuos.csv")
 

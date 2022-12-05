@@ -15,7 +15,7 @@ def read_files(sys):
         dfDBAR.columns=["id","type","V","teta","Pg","Qg","Pd","Qd","Bs"]
     except:
         print("Error while reading DBAR file")
-        exit(1)
+        quit()
 
     try: # if the DBRAN exists the program reads it, if not it stops. This file is mandatory
         dfDBRAN=pd.read_csv(sys+"/DBRAN.csv",header=None,dtype={0:np.int64,1:np.int64,2:np.int64,3:np.int64})

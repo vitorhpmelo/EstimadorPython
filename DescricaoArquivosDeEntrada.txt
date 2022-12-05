@@ -19,7 +19,7 @@ id - identification of the branches
 type - Tipe of branch (1 = line, 2 = Trafo)
 from - from bus id 
 to - to bus id
-x - series reactance (pu)
 r - series resistence (pu)
+x - series reactance (pu)
 bsh - line shunt suceptance (pu)
 tap - tap of transforme (Vfrom/Vto)
