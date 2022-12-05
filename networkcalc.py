@@ -7,7 +7,12 @@ import scipy.sparse as sparse
 
 def Vinici(graph,flatStart=0):
     '''
-    Function to initate the voltages acording with DBAR
+    Function to initate the voltages (state variables)
+    If flagStart != 0 with flat start (i.e. all the voltage modules equal to one and angles equal to 0)
+    If flagStart == 0 the voltages from the DBAR
+    @param: graph list of instances of the node class with all the information about the network
+    @param: flagStart: 0 if the voltages should be initated with the values from the DBAR and different from 0 if they should initate with flat start  
+
     '''
     if flatStart==0:
         for no in graph:
@@ -20,7 +25,11 @@ def Vinici(graph,flatStart=0):
 
 def Vinici_lf(graph):
     '''
-    Function to initate the voltages acording with DBAR
+    Function to initate the voltages (state variables) for the load flow, 
+    PQ buses recive 1 for the voltage module and 0 for the angle,
+    PV recive the V from the DBAR for the module
+    slack initate with the voltage from the DB 
+    @param: graph list of instances of the node class with all the information about the network
     '''
     for no in graph:
         if no.bar.type == 1 or no.bar.type == 0:
@@ -33,6 +42,10 @@ def Vinici_lf(graph):
 
 
 def PowerFlows(ram,graph,print=0):
+    """
+    Funtion to calculate the power flows acros the all the network branches and return them into the dpf (for active) and dqf (for reactive)
+    dictionary 
+    """
     dpf={}
     dqf={}
     for key,bran in ram.items():
@@ -252,7 +265,7 @@ def calc_H_EE(z,var_t,var_v,graph,H):
                     soma2=soma2+branch.dQfdV(graph,1,item.k) 
                 if  branch.de in bar_v:
                     H[i][var_v[branch.de]+n_teta]=branch.dQfdV(graph,1,branch.de)
-                if graph[item.k].FlagBS==1:
+            if graph[item.k].FlagBS==1:
                     soma2=soma2-2*graph[item.k].Bs*graph[item.k].V 
             H[i][var_v[item.k]+n_teta]=soma2
             soma2=0
@@ -312,6 +325,14 @@ def calc_dz(vecZ,graph,dz):
         dz[i]=z.dz(graph)
         i=i+1
 
+
+def calc_cx(vecc,graph,cx):
+    i=0
+    for c in vecc:
+        cx[i]=c.cx(graph)
+        i=i+1
+
+
 def new_X(graph,var_t,var_v,dx):
     n_teta=len(var_t)
     for key,item in var_t.items():
@@ -321,8 +342,8 @@ def new_X(graph,var_t,var_v,dx):
 
 
 def load_flow(graph,prt=0,tol=1e-6):
-    # Vinici_lf(graph)
-    Vinici(graph,flatStart=1)
+    Vinici_lf(graph)
+    #Vinici(graph,flatStart=1)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     dx=np.ones(len(var_t))
     dz=np.zeros(len(z))
@@ -371,6 +392,33 @@ def create_z_x(graph,dfDMED,ind_i):
 
     return z,var_t,var_v
 
+
+
+def create_z_c_x_LGI(graph,dfDMED,ind_i):
+    z=[]
+    c=[]
+    var_t={}
+    var_v={}
+    i=0
+    j=0
+    for item in graph:
+        if item.bar.type==1 or item.bar.type==2:
+            var_t[item.id]=i
+            i=i+1
+        var_v[item.id]=j
+        j=j+1
+
+    for idx,row in dfDMED.iterrows():
+        if int(row["type"])==0 or int(row["type"])==1 or  int(row["type"])==4:
+            mes=meas(ind_i[int(row["de"])],-1,int(row["type"]),row["zmed"],row["prec"])
+        else:  
+            mes=meas(ind_i[int(row["de"])],ind_i[int(row["para"])],int(row["type"]),row["zmed"],row["prec"])
+        if (int(row["type"])==0 or int(row["type"])==1) and row["zmed"]==0:
+            c.append(mes)
+        else:
+            z.append(mes)
+
+    return z,c,var_t,var_v
 
 def create_W(z,prec_virtual=1e-4,flag_ones=0):
 

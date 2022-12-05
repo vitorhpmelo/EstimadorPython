@@ -8,12 +8,12 @@ from SS import *
 import pandas as pd
 import numpy as np
 from networkcalc import *
+from BadData import *
 import numpy.linalg as liang
 import scipy.sparse.linalg as sliang 
 
 
-
-
+#%% Constroi lê a estrutura da rede
 
 prec_virtual=1e-7
 sys="IEEE14"
@@ -27,24 +27,31 @@ network=netinfo(nbars,nbran,2*nbars-1,nteta=nbars-1,nv=nbars)
 
 graph=create_graph(bars,ram)
 #%%
-#conv = load_flow(graph,tol=1e-10)
+#Rodar o fluxo de potência
 
-#save_DMED_fp(graph,ram,sys)
+conv = load_flow(graph,tol=1e-10)
+
+save_DMED_fp(graph,ram,sys)
 
 #%%
-SS_WLS(graph,dfDMED,ind_i)
+#Rodar o EE
+SS_WLS(graph,dfDMED,ind_i,solver="QR")
+
+
+#%%
+
+
+SS_WLS(graph,dfDMED,ind_i,solver="Normal")
+
 # %%
-[z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
-W=create_W(z,flag_ones=0,prec_virtual=1e-5)
-Wmei=np.sqrt(np.diag(W))
 
-Vinici(graph,flatStart=1)
-H=np.zeros((len(z),len(var_t)+len(var_v)))
-dz=np.zeros(len(z))
-calc_dz(z,graph,dz)
-calc_H_EE(z,var_t,var_v,graph,H)
+SS_WLS_lagrangian(graph,dfDMED,ind_i)
+# %%
 
 
-#R=NormalEQ(H,W,dz)
-
+Cov=calcCovRes(graph,dfDMED,ind_i)
+np.savetxt("Cov.csv",Cov,delimiter=",")
+# %%
+dfRe=renorm(graph,dfDMED,ind_i,Cov)
+dfRe.to_csv("Residuos.csv")
 # %%

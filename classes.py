@@ -328,3 +328,33 @@ class meas():
         else:
             print("Tipo de medida não existente")
             exit(1)
+    def cx(self,graph):
+        if self.type==0:
+            return graph[self.k].P(graph)
+        elif self.type==1:
+            return graph[self.k].Q(graph)
+        elif self.type==2:
+            keyk=str(self.k)+"-"+str(self.m)
+            keym=str(self.m)+"-"+str(self.k)
+            if keyk in graph[self.k].adjk.keys():
+                return graph[self.k].adjk[keyk].Pf(graph,0)
+            elif keym in graph[self.k].adjm.keys():
+                return graph[self.k].adjm[keym].Pf(graph,1)
+            else:
+                print("medida de fluxo de potencia ativa com ramo não existente")
+                exit(1)
+        elif self.type==3:
+            keyk=str(self.k)+"-"+str(self.m)
+            keym=str(self.m)+"-"+str(self.k)
+            if keyk in graph[self.k].adjk.keys():
+                return graph[self.k].adjk[keyk].Qf(graph,0)
+            elif keym in graph[self.k].adjm.keys():
+                return graph[self.k].adjm[keym].Qf(graph,1)
+            else:
+                print("medida de fluxo de potencia reativa com ramo não existente")
+                exit(1)
+        elif self.type==4:
+            return graph[self.k].V
+        else:
+            print("Tipo de medida não existente")
+            exit(1)
