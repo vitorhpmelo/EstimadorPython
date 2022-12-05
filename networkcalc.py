@@ -266,7 +266,7 @@ def calc_H_EE(z,var_t,var_v,graph,H):
                 if  branch.de in bar_v:
                     H[i][var_v[branch.de]+n_teta]=branch.dQfdV(graph,1,branch.de)
             if graph[item.k].FlagBS==1:
-                    soma2=soma2-2*graph[item.k].Bs*graph[item.k].V 
+                soma2=soma2-2*graph[item.k].Bs*graph[item.k].V 
             H[i][var_v[item.k]+n_teta]=soma2
             soma2=0
         elif item.type==2:
