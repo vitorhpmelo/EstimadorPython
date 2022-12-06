@@ -50,6 +50,34 @@ def create_bran(dfDBRAN,ind_i):
     d={}
   
 
+  ##determina linhas paralelas
+    dparalelas={}
+    for idx, row in dfDBRAN.iterrows():
+        mask1=(dfDBRAN["de"]== row["de"]) & (dfDBRAN["para"]== row["para"])
+        mask2=(dfDBRAN["de"]== row["para"]) & (dfDBRAN["para"]== row["de"])
+        if sum(mask1) + sum(mask2)>1:
+            if str(row["de"])+"-"+str(row["para"]) in dparalelas.keys():
+                dparalelas[str(row["de"])+"-"+str(row["para"])].append(idx)
+            elif str(row["para"])+"-"+str(row["de"]) in dparalelas.keys():
+                dparalelas[str(row["para"])+"-"+str(row["de"])].append(idx)
+            else:
+                dparalelas[str(row["de"])+"-"+str(row["para"])]=[idx]
+
+    # remove linhas paralelas
+    for key,item in dparalelas.items():
+        bsh=0
+        y=0
+        for line in item:
+            y=y+1/complex(dfDBRAN.loc[line,"r"],dfDBRAN.loc[line,"x"])
+            bsh=bsh+dfDBRAN.loc[line,"bsh"]
+        dfDBRAN.loc[item[0],"r"]=np.real(1/y)
+        dfDBRAN.loc[item[0],"x"]=np.imag(1/y)
+        dfDBRAN.loc[item[0],"bsh"]=bsh
+
+        dfDBRAN.drop(item[1:],inplace=True)
+        
+    dfDBRAN.reindex()
+
     for id, row in dfDBRAN.iterrows():
         key=str(ind_i[int(row["de"])])+"-"+str(ind_i[int(row["para"])])
         item=branch(int(row["id"]),ind_i[int(row["de"])],ind_i[int(row["para"])],int(row["type"]),i)

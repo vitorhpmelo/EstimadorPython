@@ -22,40 +22,6 @@ sys="IEEE118"
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
 
-#%%
-dparalelas={}
-for idx, row in dfDBRAN.iterrows():
-    mask1=(dfDBRAN["de"]== row["de"]) & (dfDBRAN["para"]== row["para"])
-    mask2=(dfDBRAN["de"]== row["para"]) & (dfDBRAN["para"]== row["de"])
-    if sum(mask1) + sum(mask2)>1:
-        print(str(row["id"])+'|'+str(row["type"])+"|"+str(row["de"])+"-"+str(row["para"]))
-        if str(row["de"])+"-"+str(row["para"]) in dparalelas.keys():
-            dparalelas[str(row["de"])+"-"+str(row["para"])].append(idx)
-        elif str(row["para"])+"-"+str(row["de"]) in dparalelas.keys():
-            dparalelas[str(row["para"])+"-"+str(row["de"])].append(idx)
-        else:
-            dparalelas[str(row["de"])+"-"+str(row["para"])]=[idx]
-
-#%%
-for key,item in dparalelas.items():
-    bsh=0
-    x=0
-    r=0
-    y=0
-    for line in item:
-        y=y+1/complex(dfDBRAN.loc[line,"r"],dfDBRAN.loc[line,"x"])
-        bsh=bsh+dfDBRAN.loc[line,"bsh"]
-    dfDBRAN.loc[item[0],"r"]=np.real(1/y)
-    dfDBRAN.loc[item[0],"x"]=np.imag(1/y)
-    dfDBRAN.loc[item[0],"bsh"]=bsh
-
-    dfDBRAN.drop(item[1:],inplace=True)
-    
-dfDBRAN.reindex()
-
-
-#%%
-
 [bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
 [ram,nbran]=create_bran(dfDBRAN,ind_i)
 
