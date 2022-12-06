@@ -8,16 +8,27 @@ import scipy.sparse as sparse
 def Vinici(graph,flatStart=0):
     '''
     Function to initate the voltages (state variables)
-    If flagStart != 0 with flat start (i.e. all the voltage modules equal to one and angles equal to 0)
+    If flagStart != 0 and != 1  with flat start (i.e. all the voltage modules equal to one and angles equal to 0)
     If flagStart == 0 the voltages from the DBAR
+    If flagStart == 1 the voltages from the DBAR only in the ref bus
     @param: graph list of instances of the node class with all the information about the network
     @param: flagStart: 0 if the voltages should be initated with the values from the DBAR and different from 0 if they should initate with flat start  
 
     '''
+    idxref=0
+    for no in graph:
+        if no.bar.type==0:
+            idxref=no.id
+            break
+
     if flatStart==0:
         for no in graph:
             no.V=no.bar.V
             no.teta=no.bar.teta
+    if flatStart==1:
+        for no in graph:
+            no.V=1
+            no.teta=graph[idxref].bar.teta
     else:
         for no in graph:
             no.V=1
@@ -350,7 +361,7 @@ def new_X(graph,var_t,var_v,dx):
 
 def load_flow(graph,prt=0,tol=1e-6):
     Vinici_lf(graph)
-    Vinici(graph,flatStart=0)
+    #Vinici(graph,flatStart=0)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     dx=np.ones(len(var_t))
     dz=np.zeros(len(z))

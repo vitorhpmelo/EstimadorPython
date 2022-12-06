@@ -47,6 +47,9 @@ def create_bran(dfDBRAN,ind_i):
     """
     ram={}
     i=0
+    d={}
+  
+
     for id, row in dfDBRAN.iterrows():
         key=str(ind_i[int(row["de"])])+"-"+str(ind_i[int(row["para"])])
         item=branch(int(row["id"]),ind_i[int(row["de"])],ind_i[int(row["para"])],int(row["type"]),i)
