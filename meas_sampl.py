@@ -77,6 +77,7 @@ def create_DMED(sys,prec,graph,ram):
     Plst=dfDMEDfp[((dfDMEDfp["zmed"]==0.000) & (dfDMEDfp["type"]==0))]["de"].tolist()
     Qlst=dfDMEDfp[((dfDMEDfp["zmed"]==0.000) & (dfDMEDfp["type"]==1))]["de"].tolist()
     Vistuaislst=list(set(Plst).intersection(Qlst))
+    Vistuaislst=list(set(Vistuaislst)-set(Vistuaislst).intersection(SCADAlstIP+SMlstIP+PSEUDOlst))
 
     dfPISCADA=create_dfIP(dfDMEDfp,SCADAlstIP)
 

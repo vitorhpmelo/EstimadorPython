@@ -8,11 +8,13 @@ from networkcalc import *
 import numpy.linalg as liang
 #file with the information of the libary
 
-def NormalEQ(H,W,dz,prtG=0):
+def NormalEQ(H,W,dz,prtG=0,printcond=0):
     grad=np.matmul(np.matmul(H.T,W),dz)
     G=np.matmul(np.matmul(H.T,W),H)
     if(prtG==1):
         np.savetxt("G.csv",G,delimiter=",")
+    if(printcond==1):
+        print("Ncond G(x) {:e}, Ncond H(x) {:e}".format(np.linalg.cond(G),np.linalg.cond(H)))
     A=sparse.csc_matrix(G)
     dx=sliang.spsolve(A,grad)
     return dx
@@ -43,7 +45,7 @@ def NormalEQ_QR(H,W,dz,prtG=0):
 
 
 
-def SS_WLS(graph,dfDMED,ind_i,tol=1e-5,solver="QR"):
+def SS_WLS(graph,dfDMED,ind_i,tol=1e-5,solver="QR",prec_virtual=1e-5,printcond=0):
     """
     
     """
@@ -53,7 +55,7 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-5,solver="QR"):
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     dz=np.zeros(len(z))
 
-    W=create_W(z,flag_ones=0,prec_virtual=1e-5)
+    W=create_W(z,flag_ones=0,prec_virtual=prec_virtual)
 
     it=0
     while(it <10):
@@ -62,7 +64,7 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-5,solver="QR"):
         if(it==0 or it == 4):
             np.savetxt("H"+str(it)+".csv",H,delimiter=",")
         if solver=="Normal":
-            dx=NormalEQ(H,W,dz)
+            dx=NormalEQ(H,W,dz,printcond=1)
         elif solver =="QR":
             dx=NormalEQ_QR(H,W,dz)
         elif solver == "cg":

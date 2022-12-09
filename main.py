@@ -16,8 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Constroi lê a estrutura da rede
 
-prec_virtual=1e-7
-sys="IEEE118"
+sys="IEEE30"
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
@@ -57,11 +56,21 @@ dfRe.to_csv("Residuos.csv")
 #%%
 
 prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
-dfDMEDsr=create_DMED("IEEE14",prec,graph,ram)
+dfDMEDsr=create_DMED(sys,prec,graph,ram)
 dfDMEDr=insert_res(dfDMEDsr)
-SS_WLS(graph,dfDMEDsr,ind_i,solver="QR")
-SS_WLS_lagrangian(graph,dfDMEDsr,ind_i)
-Cov=calcCovRes(graph,dfDMEDr,ind_i)
-dfRe=renorm(graph,dfDMEDr,ind_i,Cov)
-dfRe.to_csv("Residuos.csv")
+dfDMEDr.to_csv(sys+"/DMED.csv",header=None,index=None,float_format="%.9f")
+print("teste 1------------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-7)
+print("teste 2-----------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-8)
+print("teste 3-----------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-9)
+print("teste 4-----------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-10)
+print("teste 5-----------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-11)
+#SS_WLS_lagrangian(graph,dfDMEDsr,ind_i)
+#Cov=calcCovRes(graph,dfDMEDr,ind_i)
+#dfRe=renorm(graph,dfDMEDr,ind_i,Cov)
+#dfRe.to_csv("Residuos.csv")
 # %%
