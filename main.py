@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Constroi lê a estrutura da rede
 
-sys="IEEE14"
+sys="IEEE118"
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
@@ -58,25 +58,48 @@ dfDMEDsr=create_DMED(sys,prec,graph,ram)
 dfDMEDr=insert_res(dfDMEDsr)
 dfDMEDr.to_csv(sys+"/DMED.csv",header=None,index=None,float_format="%.9f")
 #%%
+print("teste 5-----------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="cg",prec_virtual=1e-5,printcond=1,prinnormgrad=1)
+#%%
 print("teste 1------------------")
 SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-5,printcond=1,prinnormgrad=1)
-
-
 print("teste 2-----------------")
-SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-8,printcond=1,prinnormgrad=1)
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-6,printcond=1,prinnormgrad=1)
 print("teste 3-----------------")
-SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-9,printcond=1,prinnormgrad=1)
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-7,printcond=1,prinnormgrad=1)
 print("teste 4-----------------")
-SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-10,printcond=1,prinnormgrad=1)
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-8,printcond=1,prinnormgrad=1)
 print("teste 5-----------------")
-SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-11,printcond=1,prinnormgrad=1)
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-9,printcond=1,prinnormgrad=1)
+print("teste 1------------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",prec_virtual=1e-5,printcond=1,prinnormgrad=1)
+print("teste 2-----------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",prec_virtual=1e-6,printcond=1,prinnormgrad=1)
+print("teste 3-----------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",prec_virtual=1e-7,printcond=1,prinnormgrad=1)
+print("teste 4-----------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",prec_virtual=1e-8,printcond=1,prinnormgrad=1)
+print("teste 5-----------------")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",prec_virtual=1e-9,printcond=1,prinnormgrad=1)
+
+# print("teste 1------------------")
+# SS_WLS(graph,dfDMEDsr,ind_i,solver="cg",prec_virtual=1e-5,printcond=1,prinnormgrad=1)
+# print("teste 2-----------------")
+# SS_WLS(graph,dfDMEDsr,ind_i,solver="cg",prec_virtual=1e-6,printcond=1,prinnormgrad=1)
+# print("teste 3-----------------")
+# SS_WLS(graph,dfDMEDsr,ind_i,solver="cg",prec_virtual=1e-7,printcond=1,prinnormgrad=1)
+# print("teste 4-----------------")
+# SS_WLS(graph,dfDMEDsr,ind_i,solver="cg",prec_virtual=1e-8,printcond=1,prinnormgrad=1)
+# print("teste 5-----------------")
+# SS_WLS(graph,dfDMEDsr,ind_i,solver="cg",prec_virtual=1e-9,printcond=1,prinnormgrad=1)
+#%%
 print("teste 6---Lagrangeano-------")
+SS_WLS_lagrangian(graph,dfDMEDsr,ind_i,tol=1e-7,printcond=1,printnormgrad=1,printmat=1)
 
 #SS_WLS_lagrangian(graph,dfDMEDsr,ind_i)
 #Cov=calcCovRes(graph,dfDMEDr,ind_i)
 #dfRe=renorm(graph,dfDMEDr,ind_i,Cov)
 #dfRe.to_csv("Residuos.csv")
 # %%
-SS_WLS_lagrangian(graph,dfDMEDsr,ind_i,tol=1e-8,printcond=1,printnormgrad=1)
 
 # %%
