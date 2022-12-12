@@ -78,7 +78,7 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,p
 
     f=open('convIEEE'+str(len(graph))+solver+str(int(-np.log10(prec_virtual)))+".csv","w")
 
-    while(it <9):
+    while(it <10):
         t1=tm.time()
         calc_dz(z,graph,dz)
         calc_H_EE(z,var_t,var_v,graph,H)
@@ -222,8 +222,8 @@ def get_state(graph):
     v=[]
     teta=[]
     for no in graph:
-        v.append(no.V)
-        teta.append(no.teta)
+        v.append(float(no.V))
+        teta.append(float(no.teta))
     v=np.array(v)
     teta=np.array(teta)
     state(v,teta)
@@ -245,8 +245,8 @@ def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=
     it=0
     tit=[]
     ts=tm.time()
-
-    while(it <9):
+    conv=0
+    while(it <20):
         t1=tm.time()
         calc_dz(z,graph,dz)
         calc_H_EE(z,var_t,var_v,graph,H)
@@ -296,6 +296,8 @@ def SS_WLS_lagrangian_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,pr
     """
     Withouth printing options
     """
+
+    conv=0
     Vinici(graph,flatStart=1)
     [z,c,var_t,var_v]=create_z_c_x_LGI(graph,dfDMED,ind_i)
     C=np.zeros((len(c),len(var_t)+len(var_v)))
@@ -308,7 +310,7 @@ def SS_WLS_lagrangian_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,pr
     tit=[]
     ts=tm.time()
 
-    while(it <10):
+    while(it <20):
         t1=tm.time()
         calc_dz(z,graph,dz)
         calc_cx(c,graph,cx)

@@ -114,13 +114,13 @@ def insert_res(dfDMEDsr,N=100):
     Inserts gaussian noise in the measurement set, with variance according with the 
     precision and the magnitude of the measurement.
     """
-    np.random.seed(N)
+    # np.random.seed(N)
     e=np.random.normal(size=(len(dfDMEDsr)))
-    for i in range(len(e)):
-        if e[i]>3:
-            e[i]=3
-        elif e[i]<-3:
-            e[i]=-3
+    # for i in range(len(e)):
+    #     if e[i]>3:
+    #         e[i]=3
+    #     elif e[i]<-3:
+    #         e[i]=-3
     dfDMEDr=dfDMEDsr.copy()
     dfDMEDr.loc[:,"zmed"]=dfDMEDsr["zmed"]+e*dfDMEDsr["prec"]*np.abs(dfDMEDsr["zmed"])/3
     return dfDMEDr

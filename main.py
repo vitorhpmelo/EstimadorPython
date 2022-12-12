@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Constroi lê a estrutura da rede
 
-sys="IEEE14"
+sys="IEEE118"
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
@@ -112,37 +112,69 @@ state_ref=get_state(graph)
 prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
 dfDMEDsr=create_DMED(sys,prec,graph,ram)
 N=100
-sateNormal=[]
-stateQR=[]
+sateNormal5=[]
+sateNormal7=[]
+stateQR5=[]
+stateQR7=[]
 statelagran=[]
-TemposTotaisNormal=[]
-TemposTotaisQR=[]
+TemposTotaisNormal5=[]
+TemposTotaisNormal7=[]
+TemposTotaisQR5=[]
+TemposTotaisQR7=[]
 TemposTotaisLagrange=[]
-TemposiTNormal=[]
-TemposiTQR=[]
+TemposiTNormal5=[]
+TemposiTNormal7=[]
+TemposiTQR5=[]
+TemposiTQR7=[]
 TemposiTLagrange=[]
-NumeroItsNormal=[]
-NumeroItsQR=[]
+NumeroItsNormal5=[]
+NumeroItsNormal7=[]
+NumeroItsQR5=[]
+NumeroItsQR7=[]
 NumeroItslagran=[]
-
+nconvsNormal5=[]
+nconvsNormal7=[]
+nconvsQR5=[]
+nconvsQR7=[]
+nconvsLagran=[]
+pre1=1e-5
+prec2=1e-8
 for i in range(N):
     dfDMEDr=insert_res(dfDMEDsr,i)
     print("{:d}/{:d}".format(i+1,N))
     # print(dfDMEDr)
-    [T,tits,conv,nits]=SS_WLS_clean(graph,dfDMEDr,ind_i,solver="Normal",prec_virtual=1e-5)
+    [T,tits,conv,nits]=SS_WLS_clean(graph,dfDMEDr,ind_i,solver="Normal",prec_virtual=pre1)
+    nconvsNormal5.append(conv)
     if conv == 1:
-        sateNormal.append(get_state(graph))
-        TemposTotaisNormal.append(T)
-        TemposiTNormal.append(np.mean(tits))
-        NumeroItsNormal.append(nits)
+        sateNormal5.append(get_state(graph))
+        TemposTotaisNormal5.append(T)
+        TemposiTNormal5.append(np.mean(tits))
+        NumeroItsNormal5.append(nits)
     del nits,tits,T
-    [T,tits,conv,nits]=SS_WLS_clean(graph,dfDMEDr,ind_i,solver="QR",prec_virtual=1e-5)
+    [T,tits,conv,nits]=SS_WLS_clean(graph,dfDMEDr,ind_i,solver="QR",prec_virtual=pre1)
+    nconvsQR5.append(conv)
     if conv == 1:
-        stateQR.append(get_state(graph))
-        TemposTotaisQR.append(T)
-        TemposiTQR.append(np.mean(tits))
-        NumeroItsQR.append(nits)
+        stateQR5.append(get_state(graph))
+        TemposTotaisQR5.append(T)
+        TemposiTQR5.append(np.mean(tits))
+        NumeroItsQR5.append(nits)
+    [T,tits,conv,nits]=SS_WLS_clean(graph,dfDMEDr,ind_i,solver="Normal",prec_virtual=prec2)
+    nconvsNormal7.append(conv)
+    if conv == 1:
+        sateNormal7.append(get_state(graph))
+        TemposTotaisNormal7.append(T)
+        TemposiTNormal7.append(np.mean(tits))
+        NumeroItsNormal7.append(nits)
+    del nits,tits,T
+    [T,tits,conv,nits]=SS_WLS_clean(graph,dfDMEDr,ind_i,solver="QR",prec_virtual=prec2)
+    nconvsQR7.append(conv)
+    if conv == 1:
+        stateQR7.append(get_state(graph))
+        TemposTotaisQR7.append(T)
+        TemposiTQR7.append(np.mean(tits))
+        NumeroItsQR7.append(nits)    
     [T,tits,conv,nits]=SS_WLS_lagrangian_clean(graph,dfDMEDr,ind_i)
+    nconvsLagran.append(conv)
     if conv == 1:
         statelagran.append(get_state(graph))
         TemposTotaisLagrange.append(T)
@@ -150,27 +182,49 @@ for i in range(N):
         NumeroItslagran.append(nits)  
     del nits,tits,T
     
-# %%
+# %% calculo erros
 
-erroNormalV=[]
-erroNormalT=[]
-for ste in sateNormal:
-    erroNormalV.append(np.abs(state_ref.v-ste.v))
-    erroNormalT.append(np.abs(state_ref.t-ste.t))
+erroNormal5V=[]
+erroNormal5T=[]
+for ste in sateNormal5:
+    erroNormal5V.append(np.abs(state_ref.v-ste.v))
+    erroNormal5T.append(np.abs(state_ref.t-ste.t))
 
-EMA_Normal_V=np.mean(np.mean(erroNormalV))
-EMA_Normal_T=np.mean(np.mean(erroNormalT))
-EMA_Normal_total=np.mean([EMA_Normal_V,EMA_Normal_T])    
+EMA_Normal_5_V=np.mean(np.mean(erroNormal5V))
+EMA_Normal_5_T=np.mean(np.mean(erroNormal5T))
+EMA_Normal_5_total=np.mean([EMA_Normal_5_V,EMA_Normal_5_T])    
 
-erroQRV=[]
-erroQRT=[]
-for ste in stateQR:
-    erroQRV.append(np.abs(state_ref.v-ste.v))
-    erroQRT.append(np.abs(state_ref.t-ste.t))    
+erroQR5V=[]
+erroQR5T=[]
+for ste in stateQR5:
+    erroQR5V.append(np.abs(state_ref.v-ste.v))
+    erroQR5T.append(np.abs(state_ref.t-ste.t))    
 
-EMA_QR_V=np.mean(np.mean(erroQRV))
-EMA_QR_T=np.mean(np.mean(erroQRT))    
-EMA_QR_total=np.mean([EMA_QR_V,EMA_QR_T])    
+EMA_QR_5_V=np.mean(np.mean(erroQR5V))
+EMA_QR_5_T=np.mean(np.mean(erroQR5T))    
+EMA_QR_5_total=np.mean([EMA_QR_5_V,EMA_QR_5_T])    
+
+
+erroNormal7V=[]
+erroNormal7T=[]
+for ste in sateNormal7:
+    erroNormal7V.append(np.abs(state_ref.v-ste.v))
+    erroNormal7T.append(np.abs(state_ref.t-ste.t))
+
+EMA_Normal_7_V=np.mean(np.mean(erroNormal7V))
+EMA_Normal_7_T=np.mean(np.mean(erroNormal7T))
+EMA_Normal_7_total=np.mean([EMA_Normal_7_V,EMA_Normal_7_T])    
+
+erroQR7V=[]
+erroQR7T=[]
+for ste in stateQR7:
+    erroQR7V.append(np.abs(state_ref.v-ste.v))
+    erroQR7T.append(np.abs(state_ref.t-ste.t))    
+
+EMA_QR_7_V=np.mean(np.mean(erroQR7V))
+EMA_QR_7_T=np.mean(np.mean(erroQR7T))    
+EMA_QR_7_total=np.mean([EMA_QR_7_V,EMA_QR_7_T])    
+
 
 
 erroLagranV=[]
@@ -183,15 +237,17 @@ EMA_Lagran_V=np.mean(np.mean(erroLagranV))
 EMA_Lagran_T=np.mean(np.mean(erroLagranT))   
 EMA_Lagran_total=np.mean([EMA_Lagran_V,EMA_Lagran_T])     
 
-#%%
 
 
 #%%
-dNormal={"Solver":"Normal","EMA_V":EMA_Normal_V,"EMA_T":EMA_Normal_T,"EMA_total":EMA_Normal_total,"Media Tempo total":np.mean(TemposTotaisNormal),"Media Tempo iteçoes":np.mean(TemposiTNormal),"Númeoro Médio de Iterações":np.mean(NumeroItsNormal)}
-dQR={"Solver":"QR","EMA_V":EMA_QR_V,"EMA_T":EMA_QR_T,"EMA_total":EMA_QR_total,"Media Tempo total":np.mean(TemposTotaisQR),"Media Tempo iteçoes":np.mean(TemposiTQR),"Númeoro Médio de Iterações":np.mean(NumeroItsQR)}
-dLagran={"Solver":"Lagran","EMA_V":EMA_Lagran_V,"EMA_T":EMA_Lagran_T,"EMA_total":EMA_Lagran_total,"Media Tempo total":np.mean(TemposiTLagrange),"Media Tempo iteçoes":np.mean(TemposiTLagrange),"Númeoro Médio de Iterações":np.mean(NumeroItslagran)}
+dNormal5={"Solver":"Normal","prec":pre1,"EMA_V":EMA_Normal_5_V,"EMA_T":EMA_Normal_5_T,"EMA_total":EMA_Normal_5_total,"Media Tempo total":np.mean(TemposTotaisNormal5),"Media Tempo iteçoes":np.mean(TemposiTNormal5),"Númeoro Médio de Iterações":np.mean(NumeroItsNormal5),"Max itera":max(NumeroItsNormal5),"Numero Convs":np.sum(nconvsNormal5)}
+dQR5={"Solver":"QR","prec":pre1,"EMA_V":EMA_QR_5_V,"EMA_T":EMA_QR_5_T,"EMA_total":EMA_QR_5_total,"Media Tempo total":np.mean(TemposTotaisQR5),"Media Tempo iteçoes":np.mean(TemposiTQR5),"Númeoro Médio de Iterações":np.mean(NumeroItsQR5),"Max itera":max(NumeroItsQR5),"Numero Convs":np.sum(nconvsQR5)}
+dNormal7={"Solver":"Normal","prec":prec2,"EMA_V":EMA_Normal_7_V,"EMA_T":EMA_Normal_7_T,"EMA_total":EMA_Normal_7_total,"Media Tempo total":np.mean(TemposTotaisNormal7),"Media Tempo iteçoes":np.mean(TemposiTNormal7),"Númeoro Médio de Iterações":np.mean(NumeroItsNormal7),"Max itera":max(NumeroItsNormal7),"Numero Convs":np.sum(nconvsNormal7)}
+dQR7={"Solver":"QR","prec":prec2,"EMA_V":EMA_QR_7_V,"EMA_T":EMA_QR_7_T,"EMA_total":EMA_QR_7_total,"Media Tempo total":np.mean(TemposTotaisQR7),"Media Tempo iteçoes":np.mean(TemposiTQR7),"Númeoro Médio de Iterações":np.mean(NumeroItsQR7),"Max itera":max(NumeroItsQR7),"Numero Convs":np.sum(nconvsQR7)}
+dLagran={"Solver":"Lagran","prec":0,"EMA_V":EMA_Lagran_V,"EMA_T":EMA_Lagran_T,"EMA_total":EMA_Lagran_total,"Media Tempo total":np.mean(TemposTotaisLagrange),"Media Tempo iteçoes":np.mean(TemposiTLagrange),"Númeoro Médio de Iterações":np.mean(NumeroItslagran),"Max itera":max(NumeroItslagran),"Numero Convs":np.sum(nconvsLagran)}
 #%%
-dfResults=pd.DataFrame([dNormal,dQR,dLagran])
+dfResults=pd.DataFrame([dNormal5,dQR5,dNormal7,dQR7,dLagran])
+dfResults.to_csv("resultados/"+sys+".csv")
 
 
 
