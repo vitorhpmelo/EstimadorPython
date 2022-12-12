@@ -226,7 +226,8 @@ def get_state(graph):
         teta.append(no.teta)
     v=np.array(v)
     teta=np.array(teta)
-    return v,teta
+    state(v,teta)
+    return state(v,teta)
 
 
 def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0):
@@ -287,7 +288,7 @@ def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=
         it=it+1
     tf=tm.time()
     print("convergência {:d}".format(conv))
-    return (tf-ts),tit,conv
+    return (tf-ts),tit,conv,it
 
 
 
@@ -348,4 +349,4 @@ def SS_WLS_lagrangian_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,pr
         it=it+1
     tf=tm.time()
     print("convergência {:d}".format(conv))
-    return tf-ts,tit,conv
+    return tf-ts,tit,conv,it
