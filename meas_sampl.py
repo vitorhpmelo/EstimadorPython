@@ -14,6 +14,9 @@ def create_dfFluxo(dfDMEDfp,lstFP):
     @return: dfFLOW: pandas dataframe with the measurements filterd
     """
     dfFLOW=pd.DataFrame()
+
+    if len(lstFP)<1:
+        return dfDMEDfp[dfDMEDfp['type']==-1]
     for item in lstFP:
         [de,para]=item.split("-")
         dfFLOW=pd.concat([dfFLOW,dfDMEDfp[((dfDMEDfp["type"]==2) |(dfDMEDfp["type"]==3)) &(dfDMEDfp["de"]==int(de)) & (dfDMEDfp["para"]==int(para))]])
@@ -94,23 +97,24 @@ def create_DMED(sys,prec,graph,ram):
     dfPSEUDO=create_dfIP(dfDMEDfp,PSEUDOlst)
 
     dfVirtuais=create_dfIP(dfDMEDfp,Vistuaislst)
-    dfPFSCADA.loc[:]["prec"]=prec["SCADAPF"]
-    dfPISCADA.loc[:]["prec"]=prec["SCADAPI"]
-    dfVSCADA.loc[:]["prec"]=prec["SCADAV"]
-    dfIPSM.loc[:]["prec"]=prec["SMP"]
-    dfFPSM.loc[:]["prec"]=prec["SMP"]
-    dfVSM.loc[:]["prec"]=prec["SMV"]
-    dfPSEUDO.loc[:]["prec"]=prec["PSEUDO"]
-    dfVirtuais.loc[:]["prec"]=prec["VIRTUAL"]
+    dfPFSCADA.loc[:,"prec"]=prec["SCADAPF"]
+    dfPISCADA.loc[:,"prec"]=prec["SCADAPI"]
+    dfVSCADA.loc[:,"prec"]=prec["SCADAV"]
+    dfIPSM.loc[:,"prec"]=prec["SMP"]
+    dfFPSM.loc[:,"prec"]=prec["SMP"]
+    dfVSM.loc[:,"prec"]=prec["SMV"]
+    dfPSEUDO.loc[:,"prec"]=prec["PSEUDO"]
+    dfVirtuais.loc[:,"prec"]=prec["VIRTUAL"]
 
     dfDMED=pd.concat([dfPISCADA,dfIPSM,dfPSEUDO,dfVirtuais,dfPFSCADA,dfFPSM,dfVSCADA,dfVSM])
     return dfDMED
 
-def insert_res(dfDMEDsr):
+def insert_res(dfDMEDsr,N=100):
     """
     Inserts gaussian noise in the measurement set, with variance according with the 
     precision and the magnitude of the measurement.
     """
+    np.random.seed(N)
     e=np.random.normal(size=(len(dfDMEDsr)))
     for i in range(len(e)):
         if e[i]>3:
@@ -118,5 +122,5 @@ def insert_res(dfDMEDsr):
         elif e[i]<-3:
             e[i]=-3
     dfDMEDr=dfDMEDsr.copy()
-    dfDMEDr.iloc[:]["zmed"]=dfDMEDsr["zmed"]+e*dfDMEDsr["prec"]*np.abs(dfDMEDsr["zmed"])/3
+    dfDMEDr.loc[:,"zmed"]=dfDMEDsr["zmed"]+e*dfDMEDsr["prec"]*np.abs(dfDMEDsr["zmed"])/3
     return dfDMEDr

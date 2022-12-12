@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Constroi lê a estrutura da rede
 
-sys="IEEE118"
+sys="IEEE14"
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
@@ -27,6 +27,39 @@ dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 network=netinfo(nbars,nbran,2*nbars-1,nteta=nbars-1,nv=nbars)
 
 graph=create_graph(bars,ram)
+
+prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
+dfDMEDsr=create_DMED(sys,prec,graph,ram)
+N=2
+sateNormal=[]
+stateQR=[]
+statelagran=[]
+TemposTotaisNormal=[]
+TemposTotaisQR=[]
+TemposTotaisLagrange=[]
+TemposiTNormal=[]
+TemposiTQR=[]
+TemposiTLagrange=[]
+for i in range(N):
+    dfDMEDr=insert_res(dfDMEDsr,i)
+    print("{:d}/{:d}".format(i,N))
+    # print(dfDMEDr)
+    [T,tits,conv]=SS_WLS_clean(graph,dfDMEDr,ind_i,solver="Normal",prec_virtual=1e-5)
+    if conv == 1:
+        sateNormal.append(get_state(graph))
+        TemposTotaisNormal.append(T)
+        TemposiTNormal.append(np.mean(tits))
+    [T,tits,conv]=SS_WLS_clean(graph,dfDMEDr,ind_i,solver="QR",prec_virtual=1e-5)
+    if conv == 1:
+        stateQR.append(get_state(graph))
+        TemposTotaisQR.append(T)
+        TemposiTQR.append(np.mean(tits))
+    [T,tits,conv]=SS_WLS_lagrangian_clean(graph,dfDMEDr,ind_i)
+    if conv == 1:
+        sateNormal.append(get_state(graph))
+        TemposTotaisLagrange.append(T)
+        TemposiTLagrange.append(np.mean(tits))        
+    
 
 
 #%% fluxo de potência
@@ -59,7 +92,7 @@ dfDMEDr=insert_res(dfDMEDsr)
 dfDMEDr.to_csv(sys+"/DMED.csv",header=None,index=None,float_format="%.9f")
 #%%
 print("teste 5-----------------")
-SS_WLS(graph,dfDMEDsr,ind_i,solver="cg",prec_virtual=1e-5,printcond=1,prinnormgrad=1)
+SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",prec_virtual=1e-5,printcond=1,prinnormgrad=1)
 #%%
 print("teste 1------------------")
 SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-5,printcond=1,prinnormgrad=1)
@@ -94,12 +127,15 @@ SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",prec_virtual=1e-9,printcond=1,prinnormgr
 # SS_WLS(graph,dfDMEDsr,ind_i,solver="cg",prec_virtual=1e-9,printcond=1,prinnormgrad=1)
 #%%
 print("teste 6---Lagrangeano-------")
-SS_WLS_lagrangian(graph,dfDMEDsr,ind_i,tol=1e-7,printcond=1,printnormgrad=1,printmat=1)
+SS_WLS_lagrangian(graph,dfDMEDsr,ind_i,tol=1e-7,tol2=1e-5,printcond=1,printnormgrad=1,printmat=1)
 
 #SS_WLS_lagrangian(graph,dfDMEDsr,ind_i)
 #Cov=calcCovRes(graph,dfDMEDr,ind_i)
 #dfRe=renorm(graph,dfDMEDr,ind_i,Cov)
 #dfRe.to_csv("Residuos.csv")
 # %%
+
+#simulação de monte carlo
+
 
 # %%
