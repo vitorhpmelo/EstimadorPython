@@ -62,7 +62,10 @@ def NormalEQ_QR(H,W,dz,printcond=0,printmat=0):
 
 def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0):
     """
-    
+    Função que executa o estimador de estado WLS com diferentes sovers.
+    @solver == "QR utiliza a fatoração QR
+    @solver == "Normal utiliza a equação normal
+    @solver == "cg" utiliza gradientes conjugados (fase de testes)
     """
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
 
@@ -125,7 +128,7 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,p
                 conv=1
                 txt="Convergiu em {:d} iteracoes".format(it)
                 print(txt)
-                # prt_state(graph)
+                prt_state(graph)
                 break
         it=it+1
     tf=tm.time()
@@ -135,6 +138,10 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,p
 
 
 def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,printmat=0,printnormgrad=0):
+    """
+    Função que perfoma a estimação com igualdades lagrangianas
+    """
+    
     Vinici(graph,flatStart=1)
     [z,c,var_t,var_v]=create_z_c_x_LGI(graph,dfDMED,ind_i)
     C=np.zeros((len(c),len(var_t)+len(var_v)))
@@ -232,7 +239,7 @@ def get_state(graph):
 
 def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0):
     """
-    Withouth printing options
+    Withouth printing options for computing time
     """
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
 
@@ -294,7 +301,7 @@ def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=
 
 def SS_WLS_lagrangian_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,printmat=0,printnormgrad=0):
     """
-    Withouth printing options
+    Withouth printing options for computing time
     """
 
     conv=0
