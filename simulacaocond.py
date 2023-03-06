@@ -30,19 +30,24 @@ graph=create_graph(bars,ram)
 
 
 
-Ybusmatlab=np.loadtxt("Ybusiee14.txt",delimiter=',',dtype=complex)
+
 #%% fluxo de potência
-conv = load_flow(graph,tol=1e-7)
-#%% salva o DMEDFP com todas as grandezas
-save_DMED_fp(graph,ram,sys)
 
-#%% Estimador com QR
 
-SS_WLS(graph,dfDMED,ind_i,solver="QR")
-#%% Estimador com Normal
-SS_WLS(graph,dfDMED,ind_i,solver="Normal")
-#%% Estimador Lagrangeano
-SS_WLS_lagrangian(graph,dfDMED,ind_i)
+conv = load_flow(graph,tol=1e-7) #possivel erro, inicialização da referência
+state_ref=get_state(graph)
+
+prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
+dfDMEDsr=create_DMED(sys,prec,graph,ram)
+# dfDMEDr=insert_res(dfDMEDsr)#insere ruido se precisar
+
+print("Metodo QR")
+
+SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",printmat=1,printcond=1)
+print("Metodo Normal")
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",printmat=1,printcond=1)
+print("Metodo Lagrangeano")
+SS_WLS_lagrangian(graph,dfDMED,ind_i,printmat=1,printcond=1)
 
 
 # %%

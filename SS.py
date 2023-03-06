@@ -13,7 +13,7 @@ def NormalEQ(H,W,dz,printcond=0,printmat=0):
     grad=np.matmul(np.matmul(H.T,W),dz)
     G=np.matmul(np.matmul(H.T,W),H)
     if(printmat==1):
-        np.savetxt("G.csv",G,delimiter=",",fmt="%.e")
+        np.savetxt("G.csv",G,delimiter=",",fmt="%.15e")
     if(printcond==1):
         print("Ncond G(x) {:e}, Ncond H(x) {:e}".format(np.linalg.cond(G),np.linalg.cond(H)))
         with open("conds.csv","a") as f:
@@ -29,7 +29,7 @@ def NormalEQ_CG(H,W,dz,printmat=0):
     grad=np.matmul(np.matmul(H.T,W),dz)
     G=np.matmul(np.matmul(H.T,W),H)
     if(printmat==0):
-        np.savetxt("G.csv",G,delimiter=",",fmt="%.e")
+        np.savetxt("G.csv",G,delimiter=",",fmt="%.15e")
     A=sparse.csc_matrix(G)
     dx=np.zeros(G.shape[0])
     dx,flag=sliang.bicgstab(A,grad,dx,tol=1e-5,maxiter=20)
@@ -53,7 +53,7 @@ def NormalEQ_QR(H,W,dz,printcond=0,printmat=0):
     b=np.matmul(np.matmul(Q.T,Wmei),dz)
     A=sparse.csr_matrix(R)
     if printmat==1:
-        np.savetxt('Rqr.csv',R,delimiter=",",fmt="%.e")
+        np.savetxt('Rqr.csv',R,delimiter=",",fmt="%.15e")
     dx=sliang.spsolve_triangular(A,b,lower=False)
     return dx
 
@@ -175,7 +175,7 @@ def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,printmat
             with open("conds.csv","a") as file:
                 file.write("{:e}\n".format(np.linalg.cond(M)))
         if printmat==1:
-            np.savetxt("Lagra.csv",M,delimiter=",",fmt="%.e")
+            np.savetxt("Lagra.csv",M,delimiter=",",fmt="%.15e")
         A=sparse.csc_matrix(M)
         dxl=sliang.spsolve(A,b)
         dx=dxl[:len(var_t)+len(var_v)]
