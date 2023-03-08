@@ -23,3 +23,13 @@ r - series resistence (pu)
 x - series reactance (pu)
 bsh - line shunt suceptance (pu)
 tap - tap of transforme (Vfrom/Vto)
+
+
+DTCSC -- File with the information of the system's branches
+
+id - identification of the TCSC
+from - from bus id 
+to - to bus id
+a - alpha of tscc 
+xtscc_ini - initial value of TCSC reactance
+Pfesp - Power flow in the TCSC

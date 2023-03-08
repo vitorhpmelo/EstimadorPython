@@ -29,7 +29,18 @@ def read_files(sys):
     except:
         print("There is no DMED")
         dfDMED=[]
-    return dfDBAR,dfDBRAN,dfDMED
+    try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
+        dfDTCSC=pd.read_csv(sys+"/DTCSC.csv",header=None)
+        dfDTCSC.columns=["id","de","para","a","xtscc_ini","Pfesp"]
+        dfDTCSC["type"]=0
+    except:
+        print("There is no DTCSC")
+        dfDTCSC=[]    
+    try:
+        dfDFACTS=pd.concat([dfDTCSC], axis=0, ignore_index=True)
+    except:
+        dfDFACTS=[]
+    return dfDBAR,dfDBRAN,dfDMED,dfDFACTS
 
 
 def prt_state(graph):

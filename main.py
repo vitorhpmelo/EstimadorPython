@@ -16,20 +16,21 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE14"
+sys="IEEE5TCSC"
 
-dfDBAR,dfDBRAN,dfDMED = read_files(sys)
+dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
 
 
 [bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
 [ram,nbran]=create_bran(dfDBRAN,ind_i)
+[ramfacts,nbfacts]=create_branfacts(dfDFACTS,ind_i)
 
-network=netinfo(nbars,nbran,2*nbars-1,nteta=nbars-1,nv=nbars)
+
 
 graph=create_graph(bars,ram)
+addFACTSingraph(graph,ramfacts)
 
-
-
+#%%
 Ybusmatlab=np.loadtxt("Ybusiee14.txt",delimiter=',',dtype=complex)
 #%% fluxo de potência
 conv = load_flow(graph,tol=1e-7)

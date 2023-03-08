@@ -181,6 +181,18 @@ class branch():
                 return -2*Bmm*Vm + Vk*(-Bmk*np.cos(tk-tm)-Gmk*np.sin(tk-tm))
             else:
                 return 0
+            
+class branfacts():
+    def __init__(self,id,type,de,para,i,a=1,xtscc_ini=-1,Pfesp=0):
+        self.id=id
+        self.i=i
+        self.type=type # type 0 = TCSC
+        self.de=de
+        self.para=para
+        self.a=a
+        self.xtscc_ini=xtscc_ini
+        self.Pfesp=Pfesp
+
 
 
 class node_graph():
@@ -197,9 +209,9 @@ class node_graph():
         self.V=1
         self.teta=0
         self.FlagBS=0
-        self.Bs=0
-        self.adjk=dict()
-        self.adjm=dict()    
+        self.FlagFACTS=0
+        self.bFACTS_adjk=dict()
+        self.bFACTS_adjm=dict()
     def P(self,graph):
         P=0
         for key,item in self.adjk.items():

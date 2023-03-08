@@ -1,5 +1,6 @@
 from csv import DictReader
 from classes import *
+import pandas as pd
 import numpy as np
 
 def creat_bar(dfDBAR):  
@@ -91,6 +92,37 @@ def create_bran(dfDBRAN,ind_i):
         i+=1
     return ram,i
 
+
+
+def create_branfacts(dfFACTS,ind_i):
+    """
+    Function to read the information in the data frame dfDBRAN and put it in the ram dictionary, that is composed by instances of the
+    branch class. This ditc contains all the information about the network branches.
+    @param: dfFACTS - Data Frame with the information about the buses
+    @param: ind_i - dict to translate the name of the bus to it index
+    @return ram - list of instances of branch class with the information about the network branches
+    @return i - number of branches 
+    """
+    ram={}
+    i=0
+    d={}
+##determina linhas paralelas
+    if not isinstance(dfFACTS,pd.DataFrame):
+        ram=[]
+        i=0
+        return ram,i
+
+    for id, row in dfFACTS.iterrows():
+        key=str(ind_i[int(row["de"])])+"-"+str(ind_i[int(row["para"])])
+        item=branfacts(int(row["id"]),int(row["type"]),ind_i[int(row["de"])],ind_i[int(row["para"])],i)
+        if item.type==0:
+            item.a=row["a"]
+            item.xtscc_ini=row["xtscc_ini"]
+            item.Pfesp=row["Pfesp"]
+        ram[key]=item    
+        i+=1
+    return ram,i
+
 def create_graph(bars,ram):
     """
     Creates the network graph usinf the information of the bars list and the ram dic.
@@ -114,3 +146,15 @@ def create_graph(bars,ram):
         graph[m].ladjm.append(k)
     
     return graph
+
+def addFACTSingraph(graph,ramfacts):
+
+    for key,item in ramfacts.items(): #save the adjacent buses in the node and the rams connected to it
+        if item.type==0:
+            k=int(key.split("-")[0])
+            m=int(key.split("-")[1])
+            graph[k].FlagFACTS=1
+            graph[m].FlagFACTS=1
+            graph[k].bFACTS_adjk.update({key:item})
+            graph[m].bFACTS_adjm.update({key:item})
+

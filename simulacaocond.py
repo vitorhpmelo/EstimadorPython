@@ -18,11 +18,13 @@ import scipy.sparse.linalg as sliang
 
 sys="IEEE14"
 
-dfDBAR,dfDBRAN,dfDMED = read_files(sys)
+dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
 
 
 [bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
 [ram,nbran]=create_bran(dfDBRAN,ind_i)
+[ramfacts,nbfacts]=create_branfacts(dfDFACTS,ind_i)
+#%%
 
 network=netinfo(nbars,nbran,2*nbars-1,nteta=nbars-1,nv=nbars)
 
