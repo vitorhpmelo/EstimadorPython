@@ -29,6 +29,9 @@ dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
 
 graph=create_graph(bars,ram)
 addFACTSingraph(graph,ramfacts)
+zPf,var_x = create_z_x_loadflow_TCSC(graph)
+
+# implementação TCSC
 
 #%%
 Ybusmatlab=np.loadtxt("Ybusiee14.txt",delimiter=',',dtype=complex)

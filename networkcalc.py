@@ -57,6 +57,17 @@ def Vinici_lf(graph,useDBAR=1):
             no.V=1
             no.teta=0
 
+def FACTSini(graph,useDFACTS=1):
+    """
+    Function to initialize FACTS devices
+    """
+    if useDFACTS==0:
+        for no in graph:
+            if no.FlagFACTS==1:
+                for  key in no.bFACTS_adjk.keys():
+                    no.bFACTS_adjk[key]=0.01
+                    
+
 
 
 def PowerFlows(ram,graph,print=0):
@@ -111,6 +122,19 @@ def create_z_x_loadflow(graph):
             var_v[item.id]=j
             j=j+1
     return zP+zQ,var_t,var_v
+
+def create_z_x_loadflow_TCSC(graph):
+    zPf=[]
+    var_x={}
+    i=0
+    for no in graph:
+        if no.FlagFACTS==1 and len(no.bFACTS_adjk.keys())>0:
+            for key,item in no.bFACTS_adjk.items():
+                mes=meas(item.id,item.para,2,item.Pfesp,1)
+                zPf.append(mes)
+                var_x[str(item.id)+"-"+str(item.para)]=i
+                i=i+1
+    return zPf,var_x
 
 def calc_H_fp(z,var_t,var_v,graph,H):
     i=0
@@ -361,8 +385,9 @@ def new_X(graph,var_t,var_v,dx):
 
 def load_flow(graph,prt=0,tol=1e-6):
     Vinici_lf(graph)
-    #Vinici(graph,flatStart=0)
+    
     [z,var_t,var_v]=create_z_x_loadflow(graph)
+    
     dx=np.ones(len(var_t))
     dz=np.zeros(len(z))
     it=0
