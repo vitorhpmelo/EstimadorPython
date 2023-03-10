@@ -182,16 +182,20 @@ class branch():
             else:
                 return 0
             
-class branfacts():
-    def __init__(self,id,type,de,para,i,a=1,xtscc_ini=-1,Pfesp=0):
-        self.id=id
-        self.i=i
-        self.type=type # type 0 = TCSC
-        self.de=de
-        self.para=para
+
+class branTCSC(branch):
+    def __init__(self,id,de,para,type,i,a=1,xtcsc_ini=-1,Pfesp=0):
+        super().__init__(id,de,para,type,i)
         self.a=a
-        self.xtscc_ini=xtscc_ini
+        self.xtcsc_ini=xtcsc_ini
+        self.xtcsc=xtcsc_ini
         self.Pfesp=Pfesp
+    def AttY(self):
+        self.Y[0][0]=complex(0,-1/self.xtcsc)
+        self.Y[1][1]=complex(0,-1/self.xtcsc)
+        self.Y[1][0]=complex(0,1/self.xtcsc)
+        self.Y[0][1]=complex(0,1/self.xtcsc)
+            
 
 
 
@@ -209,7 +213,7 @@ class node_graph():
         self.V=1
         self.teta=0
         self.FlagBS=0
-        self.FlagFACTS=0
+        self.FlagTCSC=0
         self.bFACTS_adjk=dict()
         self.bFACTS_adjm=dict()
     def P(self,graph):
@@ -217,6 +221,10 @@ class node_graph():
         for key,item in self.adjk.items():
             P=P+item.Pf(graph,0)
         for key,item in self.adjm.items():
+            P=P+item.Pf(graph,1)
+        for key,item in self.bFACTS_adjk.items():
+            P=P+item.Pf(graph,0)
+        for key,item in self.bFACTS_adjm.items():
             P=P+item.Pf(graph,1)
         if np.abs(P)<1e-12:
             P=0
@@ -321,7 +329,7 @@ class meas():
             if keyk in graph[self.k].adjk.keys():
                 return self.val-graph[self.k].adjk[keyk].Pf(graph,0)
             elif keym in graph[self.k].adjm.keys():
-                return self.val-graph[self.k].adjm[keym].Pf(graph,1)
+                return self.val-graph[self.k].adjm[keym].Pf(graph,1)        
             else:
                 print("medida de fluxo de potencia ativa com ramo não existente")
                 exit(1)

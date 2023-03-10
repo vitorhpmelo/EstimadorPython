@@ -94,7 +94,7 @@ def create_bran(dfDBRAN,ind_i):
 
 
 
-def create_branfacts(dfFACTS,ind_i):
+def create_TCSC(dfFACTS,ind_i):
     """
     Function to read the information in the data frame dfDBRAN and put it in the ram dictionary, that is composed by instances of the
     branch class. This ditc contains all the information about the network branches.
@@ -114,11 +114,7 @@ def create_branfacts(dfFACTS,ind_i):
 
     for id, row in dfFACTS.iterrows():
         key=str(ind_i[int(row["de"])])+"-"+str(ind_i[int(row["para"])])
-        item=branfacts(int(row["id"]),int(row["type"]),ind_i[int(row["de"])],ind_i[int(row["para"])],i)
-        if item.type==0:
-            item.a=row["a"]
-            item.xtscc_ini=row["xtscc_ini"]
-            item.Pfesp=row["Pfesp"]
+        item=branTCSC(int(row["id"]),ind_i[int(row["de"])],ind_i[int(row["para"])],3,i,row["a"],row["xtscc_ini"],row["Pfesp"])
         ram[key]=item    
         i+=1
     return ram,i
@@ -149,12 +145,20 @@ def create_graph(bars,ram):
 
 def addFACTSingraph(graph,ramfacts):
 
+    if not ramfacts:
+        return
+
     for key,item in ramfacts.items(): #save the adjacent buses in the node and the rams connected to it
-        if item.type==0:
+        if item.type==3:
             k=int(key.split("-")[0])
             m=int(key.split("-")[1])
-            graph[k].FlagFACTS=1
-            graph[m].FlagFACTS=1
+            item.AttY()
+            graph[k].FlagTCSC=1
+            graph[m].FlagTCSC=1
             graph[k].bFACTS_adjk.update({key:item})
             graph[m].bFACTS_adjm.update({key:item})
+            graph[k].adjk.update({key:item})
+            graph[k].ladjk.append(m)
+            graph[m].adjm.update({key:item})
+            graph[m].ladjm.append(k)
 

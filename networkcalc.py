@@ -128,11 +128,11 @@ def create_z_x_loadflow_TCSC(graph):
     var_x={}
     i=0
     for no in graph:
-        if no.FlagFACTS==1 and len(no.bFACTS_adjk.keys())>0:
+        if no.FlagTCSC==1 and len(no.bFACTS_adjk.keys())>0:
             for key,item in no.bFACTS_adjk.items():
-                mes=meas(item.id,item.para,2,item.Pfesp,1)
+                mes=meas(item.de,item.para,2,item.Pfesp,1)
                 zPf.append(mes)
-                var_x[str(item.id)+"-"+str(item.para)]=i
+                var_x[str(item.de)+"-"+str(item.para)]=i
                 i=i+1
     return zPf,var_x
 
