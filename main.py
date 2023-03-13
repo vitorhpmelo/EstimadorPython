@@ -39,9 +39,8 @@ dz=[0]
 calc_dz(zPf,graph,dz)
 
 #%%
-Ybusmatlab=np.loadtxt("Ybusiee14.txt",delimiter=',',dtype=complex)
 #%% fluxo de potência
-conv = load_flow(graph,tol=1e-7)
+conv = load_flow(graph,tol=1e-7)#parei aqui, pensar se a Jacobiana do fluxo vai calcular as derivadas em relação a fluxo de potência e concatenar as matrizes, depois testar
 #%% salva o DMEDFP com todas as grandezas
 save_DMED_fp(graph,ram,sys)
 

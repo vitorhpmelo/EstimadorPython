@@ -247,6 +247,47 @@ def calc_H_fp(z,var_t,var_v,graph,H):
                 H[i][var_v[k]+n_teta]=1
         i=i+1
 
+
+def calc_H_fp_TCSC(z,var_x,graph,H):
+    i=0
+
+    for item in z:
+        if item.type==0:
+            for key in set(graph[k].adjk.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjk[key].dPfdx(graph,0)
+            for key in set(graph[k].adjm.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjm[key].dPfdx(graph,1)     
+        elif item.type==1:
+            for key in set(graph[k].adjk.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjk[key].dQfdx(graph,0)
+            for key in set(graph[k].adjm.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjm[key].dQfdx(graph,1)    
+        elif item.type==2:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            mk=str(m)+"-"+str(k)
+            if km in graph[k].adjk.keys():
+                H[i][var_x[km]]= graph[k].adjk[km].dPfdx(graph,0)
+            elif mk in graph[k].adjm.keys():
+                H[i][var_x[mk]]= graph[k].adjm[mk].dPfdx(graph,1)
+        elif item.type==3:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            mk=str(m)+"-"+str(k)
+            if km in graph[k].adjk.keys():
+                H[i][var_x[km]]= graph[k].adjk[km].dQfdx(graph,0)
+            elif mk in graph[k].adjm.keys():
+                H[i][var_x[mk]]= graph[k].adjm[mk].dQfdx(graph,1)
+            else:
+                print("erro ao calcular fluxo na Jacobiana, medida Fluxo deQ {:d}-{:d}".format(graph[k].id,graph[m].id))
+                exit(1)
+        elif item.type==4:
+                for key in var_x.keys():
+                    H[i][var_x[key]]=0 
+        i=i+1
+
 def calc_H_EE(z,var_t,var_v,graph,H):
     #refazer
     i=0
