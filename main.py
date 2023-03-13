@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE14"
+sys="IEEE118"
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
@@ -30,7 +30,7 @@ graph=create_graph(bars,ram)
 
 
 
-Ybusmatlab=np.loadtxt("Ybusiee14.txt",delimiter=',',dtype=complex)
+# Ybusmatlab=np.loadtxt("Ybusiee14.txt",delimiter=',',dtype=complex)
 #%% fluxo de potência
 conv = load_flow(graph,tol=1e-7)
 #%% salva o DMEDFP com todas as grandezas
