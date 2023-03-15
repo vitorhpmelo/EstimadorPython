@@ -203,14 +203,14 @@ class branTCSC(branch):
             k=self.para
             m=self.de
         return -grafo[k].V*grafo[m].V*((1/self.xtcsc)**2)*np.sin(grafo[k].teta-grafo[m].teta)
-    def QPfdx(self,grafo,flagT):
+    def dQfdx(self,grafo,flagT):
         if flagT==0:
             k=self.de
             m=self.para
         elif flagT==1:
             k=self.para
             m=self.de
-        return -(1/self.xtcsc**2)*((grafo[k].V**2)+grafo[k].V*grafo[m].V*np.cos(grafo[k].teta-grafo[m].teta))
+        return -(1/self.xtcsc**2)*((grafo[k].V**2)-grafo[k].V*grafo[m].V*np.cos(grafo[k].teta-grafo[m].teta))
 
 
 class node_graph():
@@ -235,10 +235,6 @@ class node_graph():
         for key,item in self.adjk.items():
             P=P+item.Pf(graph,0)
         for key,item in self.adjm.items():
-            P=P+item.Pf(graph,1)
-        for key,item in self.bFACTS_adjk.items():
-            P=P+item.Pf(graph,0)
-        for key,item in self.bFACTS_adjm.items():
             P=P+item.Pf(graph,1)
         if np.abs(P)<1e-12:
             P=0

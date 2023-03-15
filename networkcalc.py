@@ -57,6 +57,19 @@ def Vinici_lf(graph,useDBAR=1):
             no.V=1
             no.teta=0
 
+
+def Vinici_DBAR(graph):
+    '''
+    Function to initate the voltages (state variables) for the load flow, 
+    PQ buses recive 1 for the voltage module and 0 for the angle,
+    PV recive the V from the DBAR for the module
+    slack initate with the voltage from the DB 
+    @param: graph list of instances of the node class with all the information about the network
+    '''
+    for no in graph:
+        no.V=no.bar.V
+        no.teta=no.bar.teta
+
 def FACTSini(graph,useDFACTS=1):
     """
     Function to initialize FACTS devices
@@ -206,10 +219,12 @@ def calc_H_fp(z,var_t,var_v,graph,H):
             if km in graph[k].adjk.keys():
                 if k in var_t.keys():
                     H[i][var_t[k]]= graph[k].adjk[km].dPfdt(graph,0,k)
-                H[i][var_v[k]+n_teta]= graph[k].adjk[km].dPfdV(graph,0,k)
+                if k in var_v.keys():
+                    H[i][var_v[k]+n_teta]= graph[k].adjk[km].dPfdV(graph,0,k)
                 if m in var_t.keys():
                     H[i][var_t[m]]= graph[k].adjk[km].dPfdt(graph,0,m)
-                H[i][var_v[m]+n_teta]= graph[k].adjk[km].dPfdV(graph,0,m)
+                if m in var_v.keys():
+                    H[i][var_v[m]+n_teta]= graph[k].adjk[km].dPfdV(graph,0,m)
             elif mk in graph[k].adjm.keys():
                 if k in var_t.keys():
                     H[i][var_t[k]]= graph[k].adjm[mk].dPfdt(graph,1,k)
@@ -253,11 +268,13 @@ def calc_H_fp_TCSC(z,var_x,graph,H):
 
     for item in z:
         if item.type==0:
+            k=item.k
             for key in set(graph[k].adjk.keys()).intersection(set(var_x.keys())):
                 H[i][var_x[key]]=graph[k].adjk[key].dPfdx(graph,0)
             for key in set(graph[k].adjm.keys()).intersection(set(var_x.keys())):
                 H[i][var_x[key]]=graph[k].adjm[key].dPfdx(graph,1)     
         elif item.type==1:
+            k=item.k
             for key in set(graph[k].adjk.keys()).intersection(set(var_x.keys())):
                 H[i][var_x[key]]=graph[k].adjk[key].dQfdx(graph,0)
             for key in set(graph[k].adjm.keys()).intersection(set(var_x.keys())):
@@ -422,6 +439,12 @@ def new_X(graph,var_t,var_v,dx):
         graph[key].teta=graph[key].teta+dx[item]
     for key,item in var_v.items():
         graph[key].V=graph[key].V+dx[item+n_teta]
+
+def new_X_TCSCC(graph,nvars,var_x,dx):
+    for key,item in var_x.items():
+        k=int(key.split("-")[0])
+        graph[k].adjk[key].xtcsc=graph[k].adjk[key].xtcsc+dx[item+nvars]
+        graph[k].adjk[key].AttY()
 
 
 def load_flow(graph,prt=0,tol=1e-6):

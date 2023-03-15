@@ -16,27 +16,60 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE5TCSC"
+sys="IEEE4busTCSC"
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
 
 
 [bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
 [ram,nbran]=create_bran(dfDBRAN,ind_i)
+#%%
 [ramTCSC,nbranTCSC]=create_TCSC(dfDFACTS,ind_i)
-
+#%%
 
 
 graph=create_graph(bars,ram)
+#%%
 addFACTSingraph(graph,ramTCSC)
 
 #%%
+Vinici_lf(graph)
 zPf,var_x = create_z_x_loadflow_TCSC(graph)
+[z,var_t,var_v]=create_z_x_loadflow(graph)
+z=z+zPf
 
 # implementação TCSC
+
 #%%
-dz=[0]
-calc_dz(zPf,graph,dz)
+Vinici_lf(graph)
+dz=np.zeros(len(z))
+H=np.zeros((len(z),len(var_t)+len(var_v)))
+Hx=np.zeros((len(z),len(var_x)))
+it=0
+while it<1:
+    calc_dz(z,graph,dz)
+    calc_H_fp(z,var_t,var_v,graph,H)
+    calc_H_fp_TCSC(z,var_x,graph,Hx)
+    HTCSC=np.concatenate((H,Hx),axis=1)
+    A=sparse.csc_matrix(HTCSC, dtype=float)
+    dx=sliang.spsolve(A,dz)
+    new_X(graph,var_t,var_v,dx)
+    new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
+    print(np.max(np.abs(dx)))
+    it=it+1
+#%%
+ram.update(ramTCSC)
+
+save_DMED_fp(graph,ram,sys)
+
+#%%
+
+
+
+
+
+
+
 
 #%%
 #%% fluxo de potência
