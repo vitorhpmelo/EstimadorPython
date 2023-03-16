@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 #%%
 
-sys=["30","118"]
+sys=["14","30","118"]
 conds={}
 
 for system in sys:
@@ -33,4 +33,3 @@ for system in sys:
 fig.tight_layout()
 fig.savefig("cond.pdf")
 plt.close()
-# %%
