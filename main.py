@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE4busTCSC"
+sys="IEEE14_tcsc"
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
 
@@ -46,7 +46,7 @@ dz=np.zeros(len(z))
 H=np.zeros((len(z),len(var_t)+len(var_v)))
 Hx=np.zeros((len(z),len(var_x)))
 it=0
-while it<1:
+while it<100:
     calc_dz(z,graph,dz)
     calc_H_fp(z,var_t,var_v,graph,H)
     calc_H_fp_TCSC(z,var_x,graph,Hx)
@@ -55,7 +55,9 @@ while it<1:
     dx=sliang.spsolve(A,dz)
     new_X(graph,var_t,var_v,dx)
     new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
-    print(np.max(np.abs(dx)))
+    if np.max(np.abs(dx))< 1e-8 and np.max(np.abs(dz)) <1e-8:
+        print(it)
+        break
     it=it+1
 #%%
 ram.update(ramTCSC)
@@ -67,7 +69,19 @@ save_DMED_fp(graph,ram,sys)
 
 
 
+sys="IEEE14"
 
+dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
+
+
+[bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
+
+[ram,nbran]=create_bran(dfDBRAN,ind_i)
+
+graph=create_graph(bars,ram)
+conv = load_flow(graph,tol=1e-7) 
+
+save_DMED_fp(graph,ram,sys)
 
 
 
