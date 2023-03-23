@@ -18,7 +18,7 @@ import scipy.sparse.linalg as sliang
 
 sys="IEEE14_tcsc"
 
-dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
+dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
 
 
 [bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
@@ -57,6 +57,7 @@ while it<100:
     new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
     if np.max(np.abs(dx))< 1e-8 and np.max(np.abs(dz)) <1e-8:
         print(it)
+        prt_state(graph)
         break
     it=it+1
 #%%
