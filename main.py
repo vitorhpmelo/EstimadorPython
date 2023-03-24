@@ -38,11 +38,11 @@ save_DMED_fp(graph,ram,sys)
 
 #%% Estimador com QR
 
-SS_WLS(graph,dfDMED,ind_i,solver="QR")
+SS_WLS(graph,dfDMED,ind_i,solver="QR",printcond=1)
 #%% Estimador com Normal
-SS_WLS(graph,dfDMED,ind_i,solver="Normal")
+SS_WLS(graph,dfDMED,ind_i,solver="Normal",printcond=1)
 #%% Estimador Lagrangeano
-SS_WLS_lagrangian(graph,dfDMED,ind_i)
+SS_WLS_lagrangian(graph,dfDMED,ind_i,printcond=1)
 
 
 # %%
