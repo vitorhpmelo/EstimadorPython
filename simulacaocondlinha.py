@@ -19,6 +19,7 @@ import scipy.sparse.linalg as sliang
 sys="IEEE14"
 
 #% 5% 10% 15% 20%
+
 branches=[1]
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
@@ -30,7 +31,7 @@ dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 fat=0.05
 for bra in branches:
     dfDBRAN.loc[dfDBRAN["id"]==bra,"r"]= (1-fat)*dfDBRAN.loc[dfDBRAN["id"]==bra,"r"]
-
+    dfDBRAN.loc[dfDBRAN["id"]==bra,"x"]= (1-fat)*dfDBRAN.loc[dfDBRAN["id"]==bra,"x"]
 
 
 
