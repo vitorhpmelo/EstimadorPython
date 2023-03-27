@@ -46,7 +46,7 @@ dz=np.zeros(len(z))
 H=np.zeros((len(z),len(var_t)+len(var_v)))
 Hx=np.zeros((len(z),len(var_x)))
 it=0
-while it<100:
+while it<20:
     calc_dz(z,graph,dz)
     calc_H_fp(z,var_t,var_v,graph,H)
     calc_H_fp_TCSC(z,var_x,graph,Hx)
@@ -55,7 +55,7 @@ while it<100:
     dx=sliang.spsolve(A,dz)
     new_X(graph,var_t,var_v,dx)
     new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
-    if np.max(np.abs(dx))< 1e-8 and np.max(np.abs(dz)) <1e-8:
+    if np.max(np.abs(dx))< 1e-8 and np.max(np.abs(dz)) <1e-10:
         print(it)
         prt_state(graph)
         break
@@ -70,7 +70,7 @@ save_DMED_fp(graph,ram,sys)
 
 
 
-sys="IEEE14"
+sys="IEEE14_alt"
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
 
