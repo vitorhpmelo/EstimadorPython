@@ -25,10 +25,18 @@ def Vinici(graph,flatStart=0):
         for no in graph:
             no.V=no.bar.V
             no.teta=no.bar.teta
-    if flatStart==1:
+    elif flatStart==1:
         for no in graph:
             no.V=1
             no.teta=graph[idxref].bar.teta
+    elif flatStart==2:
+        for no in graph:
+            no.V=no.bar.V
+            no.teta=0
+    elif flatStart==3:
+        for no in graph:
+            no.V=1+np.random.uniform(low=0,high=0.1)
+            no.teta=0
     else:
         for no in graph:
             no.V=1
@@ -68,7 +76,7 @@ def Vinici_DBAR(graph):
     '''
     for no in graph:
         no.V=no.bar.V
-        no.teta=no.bar.teta
+        no.teta=round(no.bar.teta,1)
 
 def FACTSini(graph,useDFACTS=1):
     """
@@ -148,6 +156,16 @@ def create_z_x_loadflow_TCSC(graph):
                 var_x[str(item.de)+"-"+str(item.para)]=i
                 i=i+1
     return zPf,var_x
+
+def create_x_TCSC(graph):
+    var_x={}
+    i=0
+    for no in graph:
+        if no.FlagTCSC==1 and len(no.bFACTS_adjk.keys())>0:
+            for key,item in no.bFACTS_adjk.items():
+                var_x[str(item.de)+"-"+str(item.para)]=i
+                i=i+1
+    return var_x
 
 def calc_H_fp(z,var_t,var_v,graph,H):
     i=0
@@ -305,6 +323,53 @@ def calc_H_fp_TCSC(z,var_x,graph,H):
                     H[i][var_x[key]]=0 
         i=i+1
 
+
+def calc_H_EE_TCSC(z,var_x,graph,H):
+    i=0
+
+    for item in z:
+        if item.type==0:
+            k=item.k
+            for key in set(graph[k].adjk.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjk[key].dPfdx(graph,0)
+            for key in set(graph[k].adjm.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjm[key].dPfdx(graph,1)     
+        elif item.type==1:
+            k=item.k
+            for key in set(graph[k].adjk.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjk[key].dQfdx(graph,0)
+            for key in set(graph[k].adjm.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjm[key].dQfdx(graph,1)    
+        elif item.type==2:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            mk=str(m)+"-"+str(k)
+            if km in graph[k].adjk.keys():
+                if  graph[k].adjk[km].type==3:
+                    H[i][var_x[km]]= graph[k].adjk[km].dPfdx(graph,0)
+            elif mk in graph[k].adjm.keys():
+                if graph[k].adjm[mk].type==3:
+                    H[i][var_x[mk]]= graph[k].adjm[mk].dPfdx(graph,1)
+        elif item.type==3:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            mk=str(m)+"-"+str(k)
+            if km in graph[k].adjk.keys():
+                if  graph[k].adjk[km].type==3:
+                    H[i][var_x[km]]= graph[k].adjk[km].dQfdx(graph,0)
+            elif mk in graph[k].adjm.keys():
+                if graph[k].adjm[mk].type==3:
+                    H[i][var_x[mk]]= graph[k].adjm[mk].dQfdx(graph,1)    
+            else:
+                print("erro ao calcular fluxo na Jacobiana, medida Fluxo deQ {:d}-{:d}".format(graph[k].id,graph[m].id))
+                exit(1)
+        elif item.type==4:
+                for key in var_x.keys():
+                    H[i][var_x[key]]=0 
+        i=i+1
+
 def calc_H_EE(z,var_t,var_v,graph,H):
     #refazer
     i=0
@@ -445,6 +510,37 @@ def new_X_TCSCC(graph,nvars,var_x,dx):
         k=int(key.split("-")[0])
         graph[k].adjk[key].xtcsc=graph[k].adjk[key].xtcsc+dx[item+nvars]
         graph[k].adjk[key].AttY()
+
+
+
+
+def load_flow_FACTS(graph,prt=0,tol=1e-6):
+    
+    zPf,var_x = create_z_x_loadflow_TCSC(graph)
+    [z,var_t,var_v]=create_z_x_loadflow(graph)
+    z=z+zPf
+    Vinici_lf(graph)
+    dz=np.zeros(len(z))
+    H=np.zeros((len(z),len(var_t)+len(var_v)))
+    Hx=np.zeros((len(z),len(var_x)))
+    it=0
+    conv=0
+    while it<20:
+        calc_dz(z,graph,dz)
+        calc_H_fp(z,var_t,var_v,graph,H)
+        calc_H_fp_TCSC(z,var_x,graph,Hx)
+        HTCSC=np.concatenate((H,Hx),axis=1)
+        A=sparse.csc_matrix(HTCSC, dtype=float)
+        dx=sliang.spsolve(A,dz)
+        new_X(graph,var_t,var_v,dx)
+        new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
+        if np.max(np.abs(dx))< tol and np.max(np.abs(dz)) < tol:
+            print("convergiu em {} itereacoes".format(it))
+            prt_state(graph)
+            conv=1
+            break
+        it=it+1
+    return conv
 
 
 def load_flow(graph,prt=0,tol=1e-6):

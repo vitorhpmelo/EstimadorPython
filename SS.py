@@ -242,6 +242,7 @@ def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=
     Withouth printing options for computing time
     """
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
+    
 
     Vinici(graph,flatStart=1)
     H=np.zeros((len(z),len(var_t)+len(var_v)))
@@ -359,3 +360,57 @@ def SS_WLS_lagrangian_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,pr
     tf=tm.time()
     print("convergência {:d}".format(conv))
     return tf-ts,tit,conv,it
+
+
+
+
+def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-4,tol2=1e-4,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0,flatstart=-1):
+    c1=1e-4
+    Vinici(graph,flatStart=flatstart)
+    [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
+    var_x=create_x_TCSC(graph)
+    if flatstart==-1:
+        for key in var_x.keys():
+            key=key.split("-")
+            m=int(key[1])
+            graph[m].V=graph[m].V+0.1
+    Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
+    HTCSC=np.zeros((len(z),len(var_x)))
+    dz=np.zeros(len(z))
+    W=create_W(z,flag_ones=0,prec_virtual=prec_virtual)
+    it=0
+    it2=0
+    itmax=5
+    while(it <40):
+        a=1
+        calc_dz(z,graph,dz)
+        calc_H_EE(z,var_t,var_v,graph,Htrad)
+        calc_H_EE_TCSC(z,var_x,graph,HTCSC)
+        H=np.concatenate((Htrad,HTCSC),axis=1)
+        grad=np.matmul(np.matmul(H.T,W),dz)
+        dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)
+        Jxk=np.matmul(np.matmul(dz,W),dz)
+        if it==0:
+            norminicial=liang.norm(grad)
+        print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(dx)))    
+        it2=0
+        while it2<itmax:
+            new_X(graph,var_t,var_v,a*dx)
+            new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,a*dx)
+            calc_dz(z,graph,dz)
+            Jxn=np.matmul(np.matmul(dz,W),dz)
+            if Jxn < Jxk + c1*a*np.dot(grad,dx):
+                break
+            else:
+                new_X(graph,var_t,var_v,-a*dx)
+                new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,-a*dx)
+                a=a/2
+        if liang.norm(grad)/norminicial<tol2 and liang.norm(a*dx)<tol:
+            txt="Convergiu em {:d} iteracoes".format(it)
+            print(liang.norm(grad)/norminicial)
+            print(txt)
+            prt_state(graph)
+            break
+
+
+        it=it+1

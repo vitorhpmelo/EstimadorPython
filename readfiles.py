@@ -95,3 +95,35 @@ def save_DMED_fp(graph,ram,sys):
     medidas=Pinj+Qinj+Pkm+Qkm+Pmk+Qmk+Vmod
     dfDMED=pd.DataFrame(medidas,columns=["type","de","para","zmed","pre"])
     dfDMED.to_csv(sys+"/DMED_fp.csv",index=False,float_format="%.7f",header=False)
+
+
+
+def save_DBAR(graph):
+
+    id=[]
+    tipo=[]
+    V=[]
+    teta=[]
+    Pg=[]
+    Qg=[]
+    Pd=[]
+    Qd=[]
+    Bs=[]
+    for no in graph:
+        id.append(no.bar.id)
+        tipo.append(no.bar.type)
+        V.append(no.V)
+        teta.append(no.teta*180/np.pi)
+        Pg.append(no.bar.Pg*100)
+        Qg.append(no.bar.Qg*100)
+        Pd.append(no.bar.Pd*100)
+        Qd.append(no.bar.Qd*100)
+        Bs.append(no.bar.Bs*100)
+
+
+    d={"id":id,"tipo":tipo,"V":V,"teta":teta,"Pg":Pg,"Qg":Qg,"Pd":Pd,"Qd":Qd,"Bs":Bs}
+    dfDBAR=pd.DataFrame(d)
+
+    dfDBAR.to_csv("DBAR.csv",header=None,index=None,float_format="%.7f")
+
+
