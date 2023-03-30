@@ -211,6 +211,22 @@ class branTCSC(branch):
             k=self.para
             m=self.de
         return -(1/self.xtcsc**2)*((grafo[k].V**2)-grafo[k].V*grafo[m].V*np.cos(grafo[k].teta-grafo[m].teta))
+    def dPfdB(self,grafo,flagT):
+        if flagT==0:
+            k=self.de
+            m=self.para
+        elif flagT==1:
+            k=self.para
+            m=self.de
+        return grafo[k].V*grafo[m].V*np.sin(grafo[k].teta-grafo[m].teta)
+    def dQfdB(self,grafo,flagT):
+        if flagT==0:
+            k=self.de
+            m=self.para
+        elif flagT==1:
+            k=self.para
+            m=self.de
+        return (grafo[k].V**2)-grafo[k].V*grafo[m].V*np.cos(grafo[k].teta-grafo[m].teta)
 
 
 class node_graph():

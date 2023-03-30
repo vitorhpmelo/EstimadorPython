@@ -66,6 +66,7 @@ def Vinici_lf(graph,useDBAR=1):
             no.teta=0
 
 
+
 def Vinici_DBAR(graph):
     '''
     Function to initate the voltages (state variables) for the load flow, 
@@ -84,10 +85,17 @@ def FACTSini(graph,useDFACTS=1):
     """
     if useDFACTS==0:
         for no in graph:
-            if no.FlagFACTS==1:
+            if no.FlagTCSC==1:
                 for  key in no.bFACTS_adjk.keys():
-                    no.bFACTS_adjk[key]=0.01
+                    no.bFACTS_adjk[key].xtcsc=0.0001
+                    no.bFACTS_adjk[key].AttY()
                     
+    if useDFACTS==1:
+        for no in graph:
+            if no.FlagTCSC==1:
+                for  key in no.bFACTS_adjk.keys():
+                    no.bFACTS_adjk[key].xtcsc=no.bFACTS_adjk[key].xtcsc_ini
+                    no.bFACTS_adjk[key].AttY()
 
 
 
@@ -324,6 +332,49 @@ def calc_H_fp_TCSC(z,var_x,graph,H):
         i=i+1
 
 
+def calc_H_fp_TCSC_B(z,var_x,graph,H):
+    i=0
+
+    for item in z:
+        if item.type==0:
+            k=item.k
+            for key in set(graph[k].adjk.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjk[key].dPfdB(graph,0)
+            for key in set(graph[k].adjm.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjm[key].dPfdB(graph,1)     
+        elif item.type==1:
+            k=item.k
+            for key in set(graph[k].adjk.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjk[key].dQfdB(graph,0)
+            for key in set(graph[k].adjm.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjm[key].dQfdB(graph,1)    
+        elif item.type==2:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            mk=str(m)+"-"+str(k)
+            if km in graph[k].adjk.keys():
+                H[i][var_x[km]]= graph[k].adjk[km].dPfdB(graph,0)
+            elif mk in graph[k].adjm.keys():
+                H[i][var_x[mk]]= graph[k].adjm[mk].dPfdB(graph,1)
+        elif item.type==3:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            mk=str(m)+"-"+str(k)
+            if km in graph[k].adjk.keys():
+                H[i][var_x[km]]= graph[k].adjk[km].dQfdB(graph,0)
+            elif mk in graph[k].adjm.keys():
+                H[i][var_x[mk]]= graph[k].adjm[mk].dQfdB(graph,1)
+            else:
+                print("erro ao calcular fluxo na Jacobiana, medida Fluxo deQ {:d}-{:d}".format(graph[k].id,graph[m].id))
+                exit(1)
+        elif item.type==4:
+                for key in var_x.keys():
+                    H[i][var_x[key]]=0 
+        i=i+1
+
+
 def calc_H_EE_TCSC(z,var_x,graph,H):
     i=0
 
@@ -362,6 +413,54 @@ def calc_H_EE_TCSC(z,var_x,graph,H):
             elif mk in graph[k].adjm.keys():
                 if graph[k].adjm[mk].type==3:
                     H[i][var_x[mk]]= graph[k].adjm[mk].dQfdx(graph,1)    
+            else:
+                print("erro ao calcular fluxo na Jacobiana, medida Fluxo deQ {:d}-{:d}".format(graph[k].id,graph[m].id))
+                exit(1)
+        elif item.type==4:
+                for key in var_x.keys():
+                    H[i][var_x[key]]=0 
+        i=i+1
+
+
+
+def calc_H_EE_TCSC_B(z,var_x,graph,H):
+    i=0
+
+    for item in z:
+        if item.type==0:
+            k=item.k
+            for key in set(graph[k].adjk.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjk[key].dPfdB(graph,0)
+            for key in set(graph[k].adjm.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjm[key].dPfdB(graph,1)     
+        elif item.type==1:
+            k=item.k
+            for key in set(graph[k].adjk.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjk[key].dQfdB(graph,0)
+            for key in set(graph[k].adjm.keys()).intersection(set(var_x.keys())):
+                H[i][var_x[key]]=graph[k].adjm[key].dQfdB(graph,1)    
+        elif item.type==2:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            mk=str(m)+"-"+str(k)
+            if km in graph[k].adjk.keys():
+                if  graph[k].adjk[km].type==3:
+                    H[i][var_x[km]]= graph[k].adjk[km].dPfdB(graph,0)
+            elif mk in graph[k].adjm.keys():
+                if graph[k].adjm[mk].type==3:
+                    H[i][var_x[mk]]= graph[k].adjm[mk].dPfdB(graph,1)
+        elif item.type==3:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            mk=str(m)+"-"+str(k)
+            if km in graph[k].adjk.keys():
+                if  graph[k].adjk[km].type==3:
+                    H[i][var_x[km]]= graph[k].adjk[km].dQfdB(graph,0)
+            elif mk in graph[k].adjm.keys():
+                if graph[k].adjm[mk].type==3:
+                    H[i][var_x[mk]]= graph[k].adjm[mk].dQfdB(graph,1)    
             else:
                 print("erro ao calcular fluxo na Jacobiana, medida Fluxo deQ {:d}-{:d}".format(graph[k].id,graph[m].id))
                 exit(1)
@@ -512,6 +611,14 @@ def new_X_TCSCC(graph,nvars,var_x,dx):
         graph[k].adjk[key].AttY()
 
 
+def new_X_TCSCC_B(graph,nvars,var_x,dx):
+    for key,item in var_x.items():
+        k=int(key.split("-")[0])
+        graph[k].adjk[key].xtcsc=1/(1/(graph[k].adjk[key].xtcsc)+dx[item+nvars])
+        graph[k].adjk[key].AttY()
+
+
+
 
 
 def load_flow_FACTS(graph,prt=0,tol=1e-6):
@@ -520,6 +627,7 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6):
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     z=z+zPf
     Vinici_lf(graph)
+    FACTSini(graph,useDFACTS=1)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     Hx=np.zeros((len(z),len(var_x)))
@@ -534,6 +642,37 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6):
         dx=sliang.spsolve(A,dz)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
+        if np.max(np.abs(dx))< tol and np.max(np.abs(dz)) < tol:
+            print("convergiu em {} itereacoes".format(it))
+            prt_state(graph)
+            conv=1
+            break
+        it=it+1
+    return conv
+
+
+def load_flow_FACTS_2(graph,prt=0,tol=1e-6):
+    '''
+    Uses the B as the state variable
+    '''
+    zPf,var_x = create_z_x_loadflow_TCSC(graph)
+    [z,var_t,var_v]=create_z_x_loadflow(graph)
+    z=z+zPf
+    Vinici_lf(graph)
+    dz=np.zeros(len(z))
+    H=np.zeros((len(z),len(var_t)+len(var_v)))
+    Hx=np.zeros((len(z),len(var_x)))
+    it=0
+    conv=0
+    while it<20:
+        calc_dz(z,graph,dz)
+        calc_H_fp(z,var_t,var_v,graph,H)
+        calc_H_fp_TCSC_B(z,var_x,graph,Hx)
+        HTCSC=np.concatenate((H,Hx),axis=1)
+        A=sparse.csc_matrix(HTCSC, dtype=float)
+        dx=sliang.spsolve(A,dz)
+        new_X(graph,var_t,var_v,dx)
+        new_X_TCSCC_B(graph,len(var_t)+len(var_v),var_x,dx)
         if np.max(np.abs(dx))< tol and np.max(np.abs(dz)) < tol:
             print("convergiu em {} itereacoes".format(it))
             prt_state(graph)
