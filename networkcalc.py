@@ -1,11 +1,103 @@
 from classes import *
+from SS import *
 import numpy as np
 import pandas as pd
 from readfiles import *
 import scipy.sparse.linalg as sliang 
 import scipy.sparse as sparse 
 
-def Vinici(graph,flatStart=0):
+
+
+
+def SS_WLS_linear(graph,dfDMED,ind_i):
+
+    [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
+    var_x=create_x_TCSC(graph)
+    ref=list(set(list(range(len(graph))))-set(var_t.keys()))[0]
+    zcc_conv=[]
+    zcc_facts=[]
+    for item in z:
+        if item.type==0 or item.type==2:
+            if item.type==2:
+                k=item.k
+                m=item.m
+                if (str(k)+"-"+str(m)) in graph[k].bFACTS_adjk.keys() or (str(m)+"-"+str(k)) in graph[k].bFACTS_adjm.keys():
+                    zcc_facts.append(item)
+                else:
+                    zcc_conv.append(item)
+            else:
+                zcc_conv.append(item)
+
+    Hcc=np.zeros((len(zcc_conv)+len(zcc_facts),len(graph)))
+
+    i=0
+    d_injzcc={}
+    for item in zcc_conv:
+        if item.type==0:
+            soma=0
+            k=item.k
+            d_injzcc[k]=i
+            for key,ram in graph[k].adjk.items():
+                if ram.type!=3:
+                    Hcc[i][ram.para]=-1/(ram.x)
+                    soma=soma+1/(ram.x)
+            for key,ram in graph[k].adjm.items():
+                if ram.type!=3:
+                    Hcc[i][ram.de]=-1/(ram.x)
+                    soma=soma+1/(ram.x)
+            Hcc[i][k]=soma
+        elif item.type==2:
+            k=item.k
+            m=item.m
+            if str(k)+"-"+str(m) in graph[k].adjk.keys():
+                ram=graph[k].adjk[str(k)+"-"+str(m)]
+                Hcc[i][k]=1/(ram.x)
+                Hcc[i][m]=-1/(ram.x)
+            elif str(m)+"-"+str(k) in graph[k].adjm.keys():
+                ram=graph[k].adjm[str(m)+"-"+str(k)]
+                Hcc[i][k]=1/(ram.x)
+                Hcc[i][m]=-1/(ram.x)
+        i=i+1
+
+
+    Hccx=np.zeros((len(zcc_conv)+len(zcc_facts),len(var_x)))
+
+    for item in zcc_facts:
+        k=item.k
+        m=item.m
+        Hcc[i][k]=1/item.val
+        Hcc[i][m]=-1/item.val
+        if str(k)+"-"+str(m) in var_x.keys():
+            Hccx[i][var_x[str(k)+"-"+str(m)]]=-1
+        elif str(m)+"-"+str(k) in var_x.keys():
+            Hccx[i][var_x[str(m)+"-"+str(k)]]=-1
+        i=i+1
+
+
+    b=np.zeros(len(zcc_conv)+len(zcc_facts))
+    i=0
+    for item in zcc_conv:
+        b[i]=item.val
+        i=i+1        
+    for item in zcc_facts:
+        k=item.k
+        m=item.m    
+        if k in d_injzcc.keys():
+            b[d_injzcc[k]]=b[d_injzcc[k]]-item.val
+        if m in d_injzcc.keys():
+            b[d_injzcc[m]]=b[d_injzcc[m]]+item.val
+    
+    W=create_W_cc(b,zcc_conv+zcc_facts,flag_ones=1)
+    Hcc=np.concatenate((Hcc,Hccx),axis=1)
+
+    H=np.delete(Hcc,ref,1)
+    Gcc=np.matmul(H.T,np.matmul(W,H))
+    b=np.matmul(np.matmul(H.T,W),b)
+    x=np.linalg.solve(Gcc,b)
+    return x,Hcc,var_t,var_v,var_x
+
+
+def Vinici(graph,flatStart=0,dfDMED=[],ind_i=[]):
     '''
     Function to initate the voltages (state variables)
     If flagStart != 0 and != 1  with flat start (i.e. all the voltage modules equal to one and angles equal to 0)
@@ -37,12 +129,25 @@ def Vinici(graph,flatStart=0):
         for no in graph:
             no.V=1+np.random.uniform(low=0,high=0.1)
             no.teta=0
+    elif flatStart==5:
+        [x,H,var_t,var_v,var_x]=SS_WLS_linear(graph,dfDMED,ind_i)
+        for no in graph:
+            k=no.id
+            if no.bar.type!=0:
+                i=var_t[k]
+                no.teta=x[i]
+            no.V=1
+        for key,i in var_x.items():
+            k=int(key.split("-")[0])
+            if key in graph[k].adjk.keys():
+                graph[k].adjk[key].xtcsc=x[i+len(var_t)]
+                graph[k].adjk[key].AttY()
     else:
         for no in graph:
             no.V=1
             no.teta=0
 
-def Vinici_lf(graph,useDBAR=1):
+def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
     '''
     Function to initate the voltages (state variables) for the load flow, 
     PQ buses recive 1 for the voltage module and 0 for the angle,
@@ -50,20 +155,38 @@ def Vinici_lf(graph,useDBAR=1):
     slack initate with the voltage from the DB 
     @param: graph list of instances of the node class with all the information about the network
     '''
-    for no in graph:
-        if no.bar.type == 1 or no.bar.type == 0:
-            if useDBAR==0:
+    if useDBAR!=-1:
+        for no in graph:
+            if no.bar.type == 1 or no.bar.type == 0:
+                if useDBAR==0:
+                    no.V=1
+                    no.teta=0
+                elif useDBAR==1:
+                    no.V=no.bar.V
+                    if no.bar.type == 0:
+                        no.teta=no.bar.teta
+                    else:
+                        no.teta=0  
+            else:
                 no.V=1
                 no.teta=0
-            elif useDBAR==1:
+    else:
+        [x,H]=load_flow_FACTS_cc(z,graph,var_x,var_t)
+        for no in graph:
+            k=no.id
+            if no.bar.type!=0:
+                i=var_t[k]
+                no.teta=x[i]
+            if no.bar.type == 1 or no.bar.type == 0:
                 no.V=no.bar.V
-                if no.bar.type == 0:
-                    no.teta=no.bar.teta
-                else:
-                    no.teta=0  
-        else:
-            no.V=1
-            no.teta=0
+            else:
+                no.V=1
+        for key,i in var_x.items():
+            k=int(key.split("-")[0])
+            if key in graph[k].adjk.keys():
+                graph[k].adjk[key].xtcsc=x[i+len(var_t)]
+                graph[k].adjk[key].AttY()
+
 
 
 
@@ -626,8 +749,8 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6):
     zPf,var_x = create_z_x_loadflow_TCSC(graph)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     z=z+zPf
-    Vinici_lf(graph)
     FACTSini(graph,useDFACTS=1)
+    Vinici_lf(graph,useDBAR=-1,var_t=var_t,var_x=var_x,z=z)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     Hx=np.zeros((len(z),len(var_x)))
@@ -658,7 +781,8 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6):
     zPf,var_x = create_z_x_loadflow_TCSC(graph)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     z=z+zPf
-    Vinici_lf(graph)
+    FACTSini(graph,useDFACTS=1)
+    Vinici_lf(graph,useDBAR=-1,var_t=var_t,var_x=var_x,z=z)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     Hx=np.zeros((len(z),len(var_x)))
@@ -778,6 +902,23 @@ def create_W(z,prec_virtual=1e-4,flag_ones=0):
     return W
 
 
+def create_W_cc(b,z,prec_virtual=1e-4,flag_ones=0):
+
+    if flag_ones==0:
+        W=np.zeros((len(z),len(z)))
+        i=0
+        for item in b:
+            if np.abs(item)<1e-6:
+                W[i][i]=1/(prec_virtual**2)
+            else:
+                sigma=np.abs(item)*z[i].prec/3
+                W[i][i]=1/(sigma**2)
+            i=i+1
+    else:
+        W=np.eye(len(z))
+    return W
+
+
 def calcYbus(graph,ram):
     YBus=np.zeros([len(graph),len(graph)],dtype=complex)
 
@@ -795,3 +936,76 @@ def calcYbus(graph,ram):
             YBus[i][i]=YBus[i][i]+complex(0,no.Bs)
 
     np.savetxt("Ybus.csv",YBus)
+
+
+def load_flow_FACTS_cc(z,graph,var_x,var_t):
+    ref=list(set(list(range(len(graph))))-set(var_t.keys()))[0]
+    zcc_conv=[]
+    zcc_facts=[]
+    for item in z:
+        if item.type==0 or item.type==2:
+            if item.type==2:
+                k=item.k
+                m=item.m
+                if (str(k)+"-"+str(m)) in graph[k].bFACTS_adjk.keys() or (str(m)+"-"+str(k)) in graph[k].bFACTS_adjm.keys():
+                    zcc_facts.append(item)
+                else:
+                    zcc_conv.append(item)
+            else:
+                zcc_conv.append(item)
+
+    Hcc=np.zeros((len(zcc_conv)+len(zcc_facts),len(graph)))
+
+    i=0
+    d_injzcc={}
+    for item in zcc_conv:
+        if item.type==0:
+            soma=0
+            k=item.k
+            d_injzcc[k]=i
+            for key,ram in graph[k].adjk.items():
+                if ram.type!=3:
+                    Hcc[i][ram.para]=-1/(ram.x)
+                    soma=soma+1/(ram.x)
+            for key,ram in graph[k].adjm.items():
+                if ram.type!=3:
+                    Hcc[i][ram.de]=-1/(ram.x)
+                    soma=soma+1/(ram.x)
+            Hcc[i][k]=soma
+        elif item.type==2:
+            k=item.k
+            m=item.m
+            Hcc[i][k]=1/(ram.x)
+            Hcc[i][m]=-1/(ram.x)
+        i=i+1
+
+    Hccx=np.zeros((len(zcc_conv)+len(zcc_facts),len(var_x)))
+    for item in zcc_facts:
+        k=item.k
+        m=item.m
+        Hcc[i][k]=1/item.val
+        Hcc[i][m]=-1/item.val
+        if str(k)+"-"+str(m) in var_x.keys():
+            Hccx[i][var_x[str(k)+"-"+str(m)]]=-1
+        elif str(m)+"-"+str(k) in var_x.keys():
+            Hccx[i][var_x[str(k)+"-"+str(m)]]=-1
+        i=i+1
+
+    b=np.zeros(len(zcc_conv)+len(zcc_facts))
+    i=0
+    for item in zcc_conv:
+        b[i]=item.val
+        i=i+1
+    for item in zcc_facts:
+        k=item.k
+        m=item.m    
+        if k in d_injzcc.keys():
+            b[d_injzcc[k]]=b[d_injzcc[k]]-item.val
+        if m in d_injzcc.keys():
+            b[d_injzcc[m]]=b[d_injzcc[m]]+item.val
+    A=np.concatenate((Hcc,Hccx),axis=1)
+
+    A_red=np.delete(A,ref,1)
+
+    x=np.linalg.solve(A_red,b)
+    return x,A

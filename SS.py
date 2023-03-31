@@ -364,10 +364,12 @@ def SS_WLS_lagrangian_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,pr
 
 
 
-def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-4,tol2=1e-4,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0,flatstart=-1):
+def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0,flatstart=-1):
     c1=1e-4
-    Vinici(graph,flatStart=flatstart)
     FACTSini(graph)
+
+    Vinici(graph,flatStart=flatstart,dfDMED=dfDMED,ind_i=ind_i)
+
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
     var_x=create_x_TCSC(graph)
     if flatstart==-1:
@@ -418,10 +420,13 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-4,tol2=1e-4,solver="QR",prec_virtual=
 
 
 
-def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-4,tol2=1e-4,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0,flatstart=-1):
+def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0,flatstart=-1):
     c1=1e-4
-    Vinici(graph,flatStart=flatstart)
+
     FACTSini(graph)
+
+    Vinici(graph,flatStart=flatstart,dfDMED=dfDMED,ind_i=ind_i)
+
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
     var_x=create_x_TCSC(graph)
     if flatstart==-1:
@@ -470,3 +475,10 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-4,tol2=1e-4,solver="QR",prec_virtua
 
 
         it=it+1
+
+
+
+
+
+
+
