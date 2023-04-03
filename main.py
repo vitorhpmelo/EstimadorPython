@@ -38,8 +38,19 @@ save_DMED_fp(graph,ram,sys)
 
 #%% Estimador com QR
 #Rodar o EE
-SS_WLS(graph,dfDMED,ind_i,solver="QR")
+prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
+dfDMEDsr=create_DMED(sys,prec,graph,ram)
+dfDMEDr=insert_res(dfDMEDsr)
 
+mask=(((dfDMEDsr["type"]==0) | (dfDMEDsr["type"]==1))&(dfDMEDsr["de"]==9)&(dfDMEDsr["para"]==-1))
+#%%
+dfDMEDsr.loc[mask,"zmed"]=dfDMEDsr.loc[mask].zmed + 20*dfDMEDsr.loc[mask].zmed*dfDMEDsr.loc[mask].prec/3
+dfDMEDsr.to_csv("Prova2DMED.csv",index=None,header=None,float_format="%.9f")
+#%%
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",tol=1e-5,prec_virtual=1e-5)
+Cov=calcCovRes(graph,dfDMEDsr,ind_i)
+dfRe=renorm(graph,dfDMEDsr,ind_i,Cov)
+dfRe.to_csv("Residuos.csv")
 
 #%% Estimador gradientes conjugados
 
@@ -49,19 +60,17 @@ SS_WLS(graph,dfDMED,ind_i,solver="cg")
 
 SS_WLS_lagrangian(graph,dfDMED,ind_i)
 # %% Residuos normalizados
-Cov=calcCovRes(graph,dfDMED,ind_i)
-dfRe=renorm(graph,dfDMED,ind_i,Cov)
-dfRe.to_csv("Residuos.csv")
+
 
 #%%
 
 prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
 dfDMEDsr=create_DMED(sys,prec,graph,ram)
 dfDMEDr=insert_res(dfDMEDsr)
-dfDMEDr.to_csv(sys+"/DMED.csv",header=None,index=None,float_format="%.9f")
+dfDMEDsr.to_csv(sys+"/DMED.csv",header=None,index=None,float_format="%.9f")
 #%%
 print("teste 5-----------------")
-SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",prec_virtual=1e-5,printcond=1,prinnormgrad=1)
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-4,printcond=1,prinnormgrad=1)
 #%%
 print("teste 1------------------")
 SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",prec_virtual=1e-5,printcond=1,prinnormgrad=1)

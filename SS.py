@@ -60,7 +60,7 @@ def NormalEQ_QR(H,W,dz,printcond=0,printmat=0):
 
 
 
-def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0):
+def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-4,printcond=0,printmat=0,prinnormgrad=0):
     """
     
     """
@@ -77,13 +77,14 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,p
     ts=tm.time()
 
     f=open('convIEEE'+str(len(graph))+solver+str(int(-np.log10(prec_virtual)))+".csv","w")
-
+    Wdiag=np.diag(W)
+    np.savetxt("Wdiag.csv",np.sqrt(1/Wdiag),fmt="%.7f")
     while(it <9):
         t1=tm.time()
         calc_dz(z,graph,dz)
         calc_H_EE(z,var_t,var_v,graph,H)
         grad=np.matmul(np.matmul(H.T,W),dz)
-        print("Norma do gradiente {:e}".format(liang.norm(grad)))
+        # print("Norma do gradiente {:e}".format(liang.norm(grad)))
         if it==0 and prinnormgrad==1:
             norminicial=liang.norm(grad)
         if(it==0 or it == 4):
@@ -125,7 +126,7 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,p
                 conv=1
                 txt="Convergiu em {:d} iteracoes".format(it)
                 print(txt)
-                # prt_state(graph)
+                prt_state(graph)
                 break
         it=it+1
     tf=tm.time()
