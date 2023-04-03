@@ -14,9 +14,9 @@ import numpy.linalg as liang
 import scipy.sparse.linalg as sliang 
 
 
-#%% Constroi lê a estrutura da rede
+#%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE14"
+sys="IEEE118"
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
@@ -30,13 +30,14 @@ graph=create_graph(bars,ram)
 
 
 
-
+# Ybusmatlab=np.loadtxt("Ybusiee14.txt",delimiter=',',dtype=complex)
 #%% fluxo de potência
 conv = load_flow(graph,tol=1e-7)
-#%% salva o DMEDFP
+#%% salva o DMEDFP com todas as grandezas
 save_DMED_fp(graph,ram,sys)
 
 #%% Estimador com QR
+<<<<<<< HEAD
 #Rodar o EE
 prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
 dfDMEDsr=create_DMED(sys,prec,graph,ram)
@@ -201,7 +202,14 @@ dQR={"Solver":"QR","EMA_V":EMA_QR_V,"EMA_T":EMA_QR_T,"EMA_total":EMA_QR_total,"M
 dLagran={"Solver":"Lagran","EMA_V":EMA_Lagran_V,"EMA_T":EMA_Lagran_T,"EMA_total":EMA_Lagran_total,"Media Tempo total":np.mean(TemposiTLagrange),"Media Tempo iteçoes":np.mean(TemposiTLagrange),"Númeoro Médio de Iterações":np.mean(NumeroItslagran)}
 #%%
 dfResults=pd.DataFrame([dNormal,dQR,dLagran])
+=======
+>>>>>>> refs/remotes/origin/main
 
+SS_WLS(graph,dfDMED,ind_i,solver="QR",printcond=1)
+#%% Estimador com Normal
+SS_WLS(graph,dfDMED,ind_i,solver="Normal",printcond=1)
+#%% Estimador Lagrangeano
+SS_WLS_lagrangian(graph,dfDMED,ind_i,printcond=1)
 
 
 # %%

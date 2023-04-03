@@ -452,3 +452,22 @@ def create_W(z,prec_virtual=1e-4,flag_ones=0):
     else:
         W=np.eye(len(z))
     return W
+
+
+def calcYbus(graph,ram):
+    YBus=np.zeros([len(graph),len(graph)],dtype=complex)
+
+    for key,item in ram.items():
+        i=item.de
+        j=item.para
+        YBus[i][j]=YBus[i][j]+item.Y[0][1]
+        YBus[j][i]=YBus[j][i]+item.Y[1][0]
+        YBus[i][i]=YBus[i][i]+item.Y[0][0]
+        YBus[j][j]=YBus[j][j]+item.Y[1][1]
+
+    for no in graph:
+        if no.FlagBS==1:
+            i=no.id
+            YBus[i][i]=YBus[i][i]+complex(0,no.Bs)
+
+    np.savetxt("Ybus.csv",YBus)

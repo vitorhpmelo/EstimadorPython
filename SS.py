@@ -13,7 +13,7 @@ def NormalEQ(H,W,dz,printcond=0,printmat=0):
     grad=np.matmul(np.matmul(H.T,W),dz)
     G=np.matmul(np.matmul(H.T,W),H)
     if(printmat==1):
-        np.savetxt("G.csv",G,delimiter=",",fmt="%.e")
+        np.savetxt("G.csv",G,delimiter=",",fmt="%.15e")
     if(printcond==1):
         print("Ncond G(x) {:e}, Ncond H(x) {:e}".format(np.linalg.cond(G),np.linalg.cond(H)))
         with open("conds.csv","a") as f:
@@ -29,7 +29,7 @@ def NormalEQ_CG(H,W,dz,printmat=0):
     grad=np.matmul(np.matmul(H.T,W),dz)
     G=np.matmul(np.matmul(H.T,W),H)
     if(printmat==0):
-        np.savetxt("G.csv",G,delimiter=",",fmt="%.e")
+        np.savetxt("G.csv",G,delimiter=",",fmt="%.15e")
     A=sparse.csc_matrix(G)
     dx=np.zeros(G.shape[0])
     dx,flag=sliang.bicgstab(A,grad,dx,tol=1e-5,maxiter=20)
@@ -53,7 +53,7 @@ def NormalEQ_QR(H,W,dz,printcond=0,printmat=0):
     b=np.matmul(np.matmul(Q.T,Wmei),dz)
     A=sparse.csr_matrix(R)
     if printmat==1:
-        np.savetxt('Rqr.csv',R,delimiter=",",fmt="%.e")
+        np.savetxt('Rqr.csv',R,delimiter=",",fmt="%.15e")
     dx=sliang.spsolve_triangular(A,b,lower=False)
     return dx
 
@@ -62,7 +62,10 @@ def NormalEQ_QR(H,W,dz,printcond=0,printmat=0):
 
 def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-4,printcond=0,printmat=0,prinnormgrad=0):
     """
-    
+    Função que executa o estimador de estado WLS com diferentes sovers.
+    @solver == "QR utiliza a fatoração QR
+    @solver == "Normal utiliza a equação normal
+    @solver == "cg" utiliza gradientes conjugados (fase de testes)
     """
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
 
@@ -136,6 +139,10 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-4,p
 
 
 def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,printmat=0,printnormgrad=0):
+    """
+    Função que perfoma a estimação com igualdades lagrangianas
+    """
+    
     Vinici(graph,flatStart=1)
     [z,c,var_t,var_v]=create_z_c_x_LGI(graph,dfDMED,ind_i)
     C=np.zeros((len(c),len(var_t)+len(var_v)))
@@ -169,7 +176,7 @@ def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,printmat
             with open("conds.csv","a") as file:
                 file.write("{:e}\n".format(np.linalg.cond(M)))
         if printmat==1:
-            np.savetxt("Lagra.csv",M,delimiter=",",fmt="%.e")
+            np.savetxt("Lagra.csv",M,delimiter=",",fmt="%.15e")
         A=sparse.csc_matrix(M)
         dxl=sliang.spsolve(A,b)
         dx=dxl[:len(var_t)+len(var_v)]
@@ -223,8 +230,8 @@ def get_state(graph):
     v=[]
     teta=[]
     for no in graph:
-        v.append(no.V)
-        teta.append(no.teta)
+        v.append(float(no.V))
+        teta.append(float(no.teta))
     v=np.array(v)
     teta=np.array(teta)
     state(v,teta)
@@ -233,7 +240,7 @@ def get_state(graph):
 
 def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0):
     """
-    Withouth printing options
+    Withouth printing options for computing time
     """
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
 
@@ -246,8 +253,8 @@ def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=
     it=0
     tit=[]
     ts=tm.time()
-
-    while(it <9):
+    conv=0
+    while(it <20):
         t1=tm.time()
         calc_dz(z,graph,dz)
         calc_H_EE(z,var_t,var_v,graph,H)
@@ -295,8 +302,10 @@ def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=
 
 def SS_WLS_lagrangian_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,printmat=0,printnormgrad=0):
     """
-    Withouth printing options
+    Withouth printing options for computing time
     """
+
+    conv=0
     Vinici(graph,flatStart=1)
     [z,c,var_t,var_v]=create_z_c_x_LGI(graph,dfDMED,ind_i)
     C=np.zeros((len(c),len(var_t)+len(var_v)))
@@ -309,7 +318,7 @@ def SS_WLS_lagrangian_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,pr
     tit=[]
     ts=tm.time()
 
-    while(it <10):
+    while(it <20):
         t1=tm.time()
         calc_dz(z,graph,dz)
         calc_cx(c,graph,cx)
