@@ -9,6 +9,7 @@ def read_files(sys):
     @return dfDBAR - Data Frame with the information about the system's buses
     @return dfDBRAN - Data Frame with the information about the system's branches
     @return dfDMED - Data Frame with the information about the system measurements
+    @return dfDFACTS - Data Frame with the FACTS devices
     """
     try: # if the DBAR exists the program reads it, if not it stops. This file is mandatory 
         dfDBAR=pd.read_csv(sys+"/DBAR.csv",header=None,dtype={0:np.int64,1:np.int64})
