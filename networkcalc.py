@@ -750,7 +750,7 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6):
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     z=z+zPf
     FACTSini(graph,useDFACTS=1)
-    Vinici_lf(graph,useDBAR=-1,var_t=var_t,var_x=var_x,z=z)
+    Vinici_lf(graph,useDBAR=1,var_t=var_t,var_x=var_x,z=z)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     Hx=np.zeros((len(z),len(var_x)))
