@@ -760,7 +760,7 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     [z,var_t,var_v]=create_z_x_loadflow(graph)#create z and var_v and var_t for the traditional load flow
     z=z+zPf
     FACTSini(graph,useDFACTS=1)
-    Vinici_lf(graph,useDBAR=1,var_t=var_t,var_x=var_x,z=z)
+    Vinici_lf(graph,useDBAR=inici,var_t=var_t,var_x=var_x,z=z)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     Hx=np.zeros((len(z),len(var_x)))
@@ -785,15 +785,16 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
         if maxdx< tol and maxdz < tol:
             print("convergiu em {} itereacoes".format(it))
             prt_state(graph)
-            if prt==1:
-                iterdict={"dx":lstdx,"dz":lstdz}
-                with open("conv.csv","w") as f:
-                    w = csv.DictWriter(f, iterdict.keys())
-                    w.writeheader()
-                    w.writerow(iterdict)
             conv=1
             break
         it=it+1
+
+    if prt==1:
+        iterdict={"dx":lstdx,"dz":lstdz}
+        df = pd.DataFrame(iterdict)
+
+        # Save the DataFrame to a CSV file
+        df.to_csv('conv.csv', index=False)
     return conv
 
 
@@ -813,7 +814,7 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     z=z+zPf
     FACTSini(graph,useDFACTS=1)
-    Vinici_lf(graph,useDBAR=-1,var_t=var_t,var_x=var_x,z=z)
+    Vinici_lf(graph,useDBAR=inici,var_t=var_t,var_x=var_x,z=z)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     Hx=np.zeros((len(z),len(var_x)))
@@ -837,15 +838,16 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
         if np.max(np.abs(dx))< tol and np.max(np.abs(dz)) < tol:
             print("convergiu em {} itereacoes".format(it))
             prt_state(graph)
-            if prt==1:
-                iterdict={"dx":lstdx,"dz":lstdz}
-                with open("conv.csv","w") as f:
-                    w = csv.DictWriter(f, iterdict.keys())
-                    w.writeheader()
-                    w.writerow(iterdict)
             conv=1
             break
         it=it+1
+
+    if prt==1:
+        iterdict={"dx":lstdx,"dz":lstdz}
+        df = pd.DataFrame(iterdict)
+        # Save the DataFrame to a CSV file
+        df.to_csv('conv.csv', index=False)
+
     return conv
 
 

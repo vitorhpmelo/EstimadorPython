@@ -44,10 +44,10 @@ addFACTSingraph(graph,ramTCSC)
 # z=z+zPf
 
 #%%
-# conv=load_flow_FACTS_2(graph)
+conv=load_flow_FACTS_2(graph,prt=1)
 
 #%%
-conv=load_flow_FACTS(graph)
+conv=load_flow_FACTS(graph,prt=1)
 
 #%%
 ram.update(ramTCSC)
