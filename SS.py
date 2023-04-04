@@ -364,8 +364,24 @@ def SS_WLS_lagrangian_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,pr
 
 
 
-def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0,flatstart=-1):
-    c1=1e-4
+def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
+    
+    '''
+    WLS state estimator with FACTS devices (only TCSC implemented yet)
+
+    @param graph with the informations of the network
+    @param prt param indicating if it is printing everyting or not
+    @param tol tolerance for the dx atualization of the variables
+    @param tol2 tolerance for the gradiente reduction
+    @param solver only gain matrix implemented yet
+    @param prec_virtual standard deviation of virtual measurements
+    @param printcond flag for calculating and printing condition number
+    @param printmat flag for calculating and printing the matrix for calculationg the descend direction
+    @param flat start, initialization of the state variables, if -1 uses the DC state estimator to intialize the angles and the X, 0 it ujses
+    the flat start, 1 it uses the DBAR
+    '''
+
+    c1=1e-4 #constant for backintracking
     FACTSini(graph)
 
     Vinici(graph,flatStart=flatstart,dfDMED=dfDMED,ind_i=ind_i)
@@ -384,6 +400,8 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     it=0
     it2=0
     itmax=5
+    lstdx=[]
+    lstdz=[]
     while(it <40):
         a=1
         calc_dz(z,graph,dz)
@@ -408,7 +426,11 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
                 new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,-a*dx)
                 a=a/2
         print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
-        if liang.norm(grad)/norminicial<tol2 and liang.norm(a*dx)<tol:
+        gradredux=liang.norm(grad)/norminicial
+        maxdx= liang.norm(a*dx)
+        lstdx.append(maxdx)
+        lstdz.append(gradredux)
+        if gradredux <tol2 and maxdx<tol:
             txt="Convergiu em {:d} iteracoes".format(it)
             print(liang.norm(grad)/norminicial)
             print(txt)
@@ -418,9 +440,34 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
 
         it=it+1
 
+    if pirntits==1:
+        iterdict={"dx":lstdx,"dz":lstdz}
+        with open("conv.csv","w") as f:
+            w = csv.DictWriter(f, iterdict.keys())
+            w.writeheader()
+            w.writerow(iterdict)
 
 
-def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0,flatstart=-1):
+
+def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,pirntits=0,printmat=0,prinnormgrad=0,flatstart=-1):
+   
+    '''
+
+        WLS state estimator with FACTS devices (only TCSC implemented yet), but now using B as the derivative
+
+        @param graph with the informations of the network
+        @param prt param indicating if it is printing everyting or not
+        @param tol tolerance for the dx atualization of the variables
+        @param tol2 tolerance for the gradiente reduction
+        @param solver only gain matrix implemented yet
+        @param prec_virtual standard deviation of virtual measurements
+        @param printcond flag for calculating and printing condition number
+        @param printmat flag for calculating and printing the matrix for calculationg the descend direction
+        @param flat start, initialization of the state variables, if -1 uses the DC state estimator to intialize the angles and the X, 0 it ujses
+        the flat start, 1 it uses the DBAR
+
+    '''
+    
     c1=1e-4
 
     FACTSini(graph)
@@ -441,6 +488,9 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtua
     it=0
     it2=0
     itmax=5
+
+    lstdx=[]
+    lstdz=[]
     while(it <40):
         a=1
         calc_dz(z,graph,dz)
@@ -466,6 +516,10 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtua
                 a=a/2
             it2=it2+1
         print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))    
+        gradredux=liang.norm(grad)/norminicial
+        maxdx= liang.norm(a*dx)
+        lstdx.append(maxdx)
+        lstdz.append(gradredux)
         if liang.norm(grad)/norminicial<tol2 and liang.norm(a*dx)<tol:
             txt="Convergiu em {:d} iteracoes".format(it)
             print(liang.norm(grad)/norminicial)
@@ -476,7 +530,12 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtua
 
         it=it+1
 
-
+    if pirntits==1:
+        iterdict={"dx":lstdx,"dz":lstdz}
+        with open("conv.csv","w") as f:
+            w = csv.DictWriter(f, iterdict.keys())
+            w.writeheader()
+            w.writerow(iterdict)
 
 
 

@@ -5,6 +5,7 @@ import pandas as pd
 from readfiles import *
 import scipy.sparse.linalg as sliang 
 import scipy.sparse as sparse 
+import csv
 
 
 
@@ -744,10 +745,19 @@ def new_X_TCSCC_B(graph,nvars,var_x,dx):
 
 
 
-def load_flow_FACTS(graph,prt=0,tol=1e-6):
+def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
+    """
+    Function to run load flow with FACTS devices (only TCSC implemented yet)
+    @param graph with the informations of the network
+    @param prt param indicating if it is printing everyting or not
+    @param tol tolerance of the load flow calculation
+    @param inici intialization method of the variables if -1 it uses the DC power flow to intialize the angles and the X of the TCSC, 
+    if it is 1 other value it uses DBAR for the PV voltage magnitudes and if it is 0, it initalizes with flat start
+    """
+
     
-    zPf,var_x = create_z_x_loadflow_TCSC(graph)
-    [z,var_t,var_v]=create_z_x_loadflow(graph)
+    zPf,var_x = create_z_x_loadflow_TCSC(graph)#create z and dinctionary with the variables for the FACTS devices
+    [z,var_t,var_v]=create_z_x_loadflow(graph)#create z and var_v and var_t for the traditional load flow
     z=z+zPf
     FACTSini(graph,useDFACTS=1)
     Vinici_lf(graph,useDBAR=1,var_t=var_t,var_x=var_x,z=z)
@@ -756,7 +766,10 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6):
     Hx=np.zeros((len(z),len(var_x)))
     it=0
     conv=0
-    while it<20:
+    lstdx=[]
+    lstdz=[]
+
+    while it<itmax:
         calc_dz(z,graph,dz)
         calc_H_fp(z,var_t,var_v,graph,H)
         calc_H_fp_TCSC(z,var_x,graph,Hx)
@@ -765,19 +778,37 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6):
         dx=sliang.spsolve(A,dz)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
-        if np.max(np.abs(dx))< tol and np.max(np.abs(dz)) < tol:
+        maxdx=np.max(np.abs(dx))
+        maxdz=np.max(np.abs(dz))
+        lstdx.append(maxdx)
+        lstdz.append(maxdz)
+        if maxdx< tol and maxdz < tol:
             print("convergiu em {} itereacoes".format(it))
             prt_state(graph)
+            if prt==1:
+                iterdict={"dx":lstdx,"dz":lstdz}
+                with open("conv.csv","w") as f:
+                    w = csv.DictWriter(f, iterdict.keys())
+                    w.writeheader()
+                    w.writerow(iterdict)
             conv=1
             break
         it=it+1
     return conv
 
 
-def load_flow_FACTS_2(graph,prt=0,tol=1e-6):
+def load_flow_FACTS_2(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     '''
-    Uses the B as the state variable
+    Function to run load flow with FACTS devices (only TCSC implemented yet)
+    run the load flow but it uses uses the B as the state variable
+    @param graph with the informations of the network
+    @param prt param indicating if it is printing everyting or not
+    @param tol tolerance of the load flow calculation
+    @param inici intialization method of the variables if -1 it uses the DC power flow to intialize the angles and the X of the TCSC, 
+    if it is 1 other value it uses DBAR for the PV voltage magnitudes and if it is 0, it initalizes with flat start
+    
     '''
+
     zPf,var_x = create_z_x_loadflow_TCSC(graph)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
     z=z+zPf
@@ -788,6 +819,8 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6):
     Hx=np.zeros((len(z),len(var_x)))
     it=0
     conv=0
+    lstdx=[]
+    lstdz=[]
     while it<20:
         calc_dz(z,graph,dz)
         calc_H_fp(z,var_t,var_v,graph,H)
@@ -797,9 +830,19 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6):
         dx=sliang.spsolve(A,dz)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC_B(graph,len(var_t)+len(var_v),var_x,dx)
+        maxdx=np.max(np.abs(dx))
+        maxdz=np.max(np.abs(dz))
+        lstdx.append(maxdx)
+        lstdz.append(maxdz)
         if np.max(np.abs(dx))< tol and np.max(np.abs(dz)) < tol:
             print("convergiu em {} itereacoes".format(it))
             prt_state(graph)
+            if prt==1:
+                iterdict={"dx":lstdx,"dz":lstdz}
+                with open("conv.csv","w") as f:
+                    w = csv.DictWriter(f, iterdict.keys())
+                    w.writeheader()
+                    w.writerow(iterdict)
             conv=1
             break
         it=it+1

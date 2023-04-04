@@ -113,6 +113,7 @@ def create_TCSC(dfFACTS,ind_i):
         return ram,i
 
     for id, row in dfFACTS.iterrows():
+        #ram type 3 == TCSC
         key=str(ind_i[int(row["de"])])+"-"+str(ind_i[int(row["para"])])
         item=branTCSC(int(row["id"]),ind_i[int(row["de"])],ind_i[int(row["para"])],3,i,row["a"],row["xtscc_ini"],row["Pfesp"])
         ram[key]=item    
@@ -149,16 +150,16 @@ def addFACTSingraph(graph,ramfacts):
         return
 
     for key,item in ramfacts.items(): #save the adjacent buses in the node and the rams connected to it
-        if item.type==3:
-            k=int(key.split("-")[0])
-            m=int(key.split("-")[1])
-            item.AttY()
-            graph[k].FlagTCSC=1
-            graph[m].FlagTCSC=1
-            graph[k].bFACTS_adjk.update({key:item})
-            graph[m].bFACTS_adjm.update({key:item})
-            graph[k].adjk.update({key:item})
-            graph[k].ladjk.append(m)
-            graph[m].adjm.update({key:item})
-            graph[m].ladjm.append(k)
+        if item.type==3:#Type 3 == TCSC
+            k=int(key.split("-")[0]) #bus from
+            m=int(key.split("-")[1]) #bus to
+            item.AttY() # creates adimitance matrix
+            graph[k].FlagTCSC=1 # indicates that there is TCSC in the bus from
+            graph[m].FlagTCSC=1# indicates that there is TCSC connected in the bus to
+            graph[k].bFACTS_adjk.update({key:item}) #inserts the ram key in the bus adj of the bus from dic only of FACTS
+            graph[m].bFACTS_adjm.update({key:item}) #inserts the ram key in the bus adj of the bus to dic only of FACTS
+            graph[k].adjk.update({key:item}) #inserts the ram key in the bus from adjk dict
+            graph[k].ladjk.append(m) #inserts the ram key in the bus from adjk list
+            graph[m].adjm.update({key:item}) #inserts the ram key in the bus to adjm dict
+            graph[m].ladjm.append(k) #inserts the ram key in the bus to adjm list
 
