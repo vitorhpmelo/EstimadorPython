@@ -44,7 +44,7 @@ addFACTSingraph(graph,ramTCSC)
 # z=z+zPf
 
 #%%
-conv=load_flow_FACTS_2(graph,prt=1)
+# conv=load_flow_FACTS_2(graph,prt=1)
 
 #%%
 conv=load_flow_FACTS(graph,prt=1)
@@ -55,10 +55,10 @@ save_DMED_fp(graph,ram,sys)
 
 
 #%%
-SS_WLS_FACTS(graph,dfDMED,ind_i,flatstart=5)
+SS_WLS_FACTS(graph,dfDMED,ind_i,flatstart=5,pirntits=1)
 
 #%%
-SS_WLS_FACTS_2(graph,dfDMED,ind_i,flatstart=5)
+SS_WLS_FACTS_2(graph,dfDMED,ind_i,flatstart=5,pirntits=1)
 
 #%%
 #%%

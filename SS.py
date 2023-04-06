@@ -388,7 +388,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
 
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
     var_x=create_x_TCSC(graph)
-    if flatstart==-1:
+    if flatstart==2:
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[1])
@@ -442,10 +442,10 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
 
     if pirntits==1:
         iterdict={"dx":lstdx,"dz":lstdz}
-        with open("conv.csv","w") as f:
-            w = csv.DictWriter(f, iterdict.keys())
-            w.writeheader()
-            w.writerow(iterdict)
+        df = pd.DataFrame(iterdict)
+
+        # Save the DataFrame to a CSV file
+        df.to_csv('conv.csv', index=False)
 
 
 
@@ -476,7 +476,7 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtua
 
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
     var_x=create_x_TCSC(graph)
-    if flatstart==-1:
+    if flatstart==2:
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[1])
@@ -532,10 +532,9 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtua
 
     if pirntits==1:
         iterdict={"dx":lstdx,"dz":lstdz}
-        with open("conv.csv","w") as f:
-            w = csv.DictWriter(f, iterdict.keys())
-            w.writeheader()
-            w.writerow(iterdict)
+        df = pd.DataFrame(iterdict)
+        # Save the DataFrame to a CSV file
+        df.to_csv('conv.csv', index=False)
 
 
 
