@@ -37,7 +37,6 @@ conv = load_flow(graph,tol=1e-7)
 save_DMED_fp(graph,ram,sys)
 
 #%% Estimador com QR
-<<<<<<< HEAD
 #Rodar o EE
 prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
 dfDMEDsr=create_DMED(sys,prec,graph,ram)
@@ -202,8 +201,6 @@ dQR={"Solver":"QR","EMA_V":EMA_QR_V,"EMA_T":EMA_QR_T,"EMA_total":EMA_QR_total,"M
 dLagran={"Solver":"Lagran","EMA_V":EMA_Lagran_V,"EMA_T":EMA_Lagran_T,"EMA_total":EMA_Lagran_total,"Media Tempo total":np.mean(TemposiTLagrange),"Media Tempo iteçoes":np.mean(TemposiTLagrange),"Númeoro Médio de Iterações":np.mean(NumeroItslagran)}
 #%%
 dfResults=pd.DataFrame([dNormal,dQR,dLagran])
-=======
->>>>>>> refs/remotes/origin/main
 
 SS_WLS(graph,dfDMED,ind_i,solver="QR",printcond=1)
 #%% Estimador com Normal
