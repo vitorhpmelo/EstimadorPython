@@ -88,7 +88,7 @@ def SS_WLS_linear(graph,dfDMED,ind_i):
         if m in d_injzcc.keys():
             b[d_injzcc[m]]=b[d_injzcc[m]]+item.val
     
-    W=create_W_cc(b,zcc_conv+zcc_facts,flag_ones=1)
+    W=create_W_cc(b,zcc_conv+zcc_facts,flag_ones=0)
     Hcc=np.concatenate((Hcc,Hccx),axis=1)
 
     H=np.delete(Hcc,ref,1)
@@ -130,6 +130,13 @@ def Vinici(graph,flatStart=0,dfDMED=[],ind_i=[]):
         for no in graph:
             no.V=1+np.random.uniform(low=0,high=0.1)
             no.teta=0
+    elif flatStart==4:
+        for no in graph:
+            if len(no.bFACTS_adjk)>0:
+                no.V=1.1    
+            else:
+                no.V=1.0   
+            no.teta=0
     elif flatStart==5:
         [x,H,var_t,var_v,var_x]=SS_WLS_linear(graph,dfDMED,ind_i)
         for no in graph:
@@ -156,6 +163,12 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
     slack initate with the voltage from the DB 
     @param: graph list of instances of the node class with all the information about the network
     '''
+    tetaini=0
+    for no in graph:
+        if no.bar.type == 0:
+            tetaini=no.bar.teta
+            break
+
     if useDBAR!=-1:
         for no in graph:
             if no.bar.type == 1 or no.bar.type == 0:
@@ -167,17 +180,19 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
                     if no.bar.type == 0:
                         no.teta=no.bar.teta
                     else:
-                        no.teta=0  
+                        no.teta=0+tetaini  
             else:
                 no.V=1
-                no.teta=0
+                no.teta=0+tetaini 
     else:
         [x,H]=load_flow_FACTS_cc(z,graph,var_x,var_t)
         for no in graph:
             k=no.id
             if no.bar.type!=0:
                 i=var_t[k]
-                no.teta=x[i]
+                no.teta=x[i]+tetaini
+            else:
+                no.teta=tetaini
             if no.bar.type == 1 or no.bar.type == 0:
                 no.V=no.bar.V
             else:

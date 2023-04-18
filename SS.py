@@ -402,6 +402,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     itmax=5
     lstdx=[]
     lstdz=[]
+    condlst=[]
     while(it <40):
         a=1
         calc_dz(z,graph,dz)
