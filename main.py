@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE14_tcsc"
+sys="IEEE118_tcsc_2"
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
 
@@ -34,20 +34,11 @@ addFACTSingraph(graph,ramTCSC)
 
 
 
-
-
+#%%
+# conv=load_flow_FACTS_2(graph,prt=1)
 
 #%%
-# Vinici_lf(graph)
-# zPf,var_x = create_z_x_loadflow_TCSC(graph)
-# [z,var_t,var_v]=create_z_x_loadflow(graph)
-# z=z+zPf
-
-#%%
-conv=load_flow_FACTS_2(graph,prt=1)
-
-#%%
-conv=load_flow_FACTS(graph,inici=1,prt=1)
+conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
 
 #%%
 for key,r in ramTCSC.items():
@@ -64,10 +55,16 @@ dfDMEDsr=create_DMED(sys,prec,graph,ram)
 
 
 #%%
-SS_WLS_FACTS(graph,dfDMED,ind_i,flatstart=4,pirntits=1)
 
+
+with open("conds.csv","w") as f:
+    f.write("Estimador 1 \n")
+SS_WLS_FACTS(graph,dfDMED,ind_i,flatstart=5,pirntits=1,printcond=1)
 #%%
-SS_WLS_FACTS_2(graph,dfDMED,ind_i,flatstart=4,pirntits=1)
+with open("conds.csv","a") as f:
+    f.write("Estimador 2 \n")
+#%%
+SS_WLS_FACTS_2(graph,dfDMED,ind_i,flatstart=4,pirntits=1,printcond=1)
 
 #%%
 #%%

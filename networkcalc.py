@@ -837,7 +837,7 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     conv=0
     lstdx=[]
     lstdz=[]
-    while it<20:
+    while it<40:
         calc_dz(z,graph,dz)
         calc_H_fp(z,var_t,var_v,graph,H)
         calc_H_fp_TCSC_B(z,var_x,graph,Hx)
