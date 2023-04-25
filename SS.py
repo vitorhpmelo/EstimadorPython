@@ -17,7 +17,7 @@ def NormalEQ(H,W,dz,printcond=0,printmat=0):
     if(printcond==1):
         print("Ncond G(x) {:e}, Ncond H(x) {:e}".format(np.linalg.cond(G),np.linalg.cond(H)))
         with open("conds.csv","a") as f:
-            f.write("{:e}\n".format(np.linalg.cond(G)))
+            f.write("{:e},{:e}\n".format(np.linalg.cond(G),np.linalg.cond(H)))
     A=sparse.csc_matrix(G)
     try:
         dx=sliang.spsolve(A,grad)
@@ -399,9 +399,10 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     W=create_W(z,flag_ones=0,prec_virtual=prec_virtual)
     it=0
     it2=0
-    itmax=5
+    itmax=10
     lstdx=[]
     lstdz=[]
+    condlst=[]
     while(it <40):
         a=1
         calc_dz(z,graph,dz)

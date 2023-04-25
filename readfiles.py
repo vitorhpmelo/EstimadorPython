@@ -31,7 +31,7 @@ def read_files(sys):
         print("There is no DMED")
         dfDMED=[]
     try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
-        dfDTCSC=pd.read_csv(sys+"/DTCSC.csv",header=None)
+        dfDTCSC=pd.read_csv(sys+"/DTCSC.csv",header=None,dtype={0:np.int64,1:np.int64,2:np.int64,3:np.float64,4:np.float64,5:np.float64})
         dfDTCSC.columns=["id","de","para","a","xtscc_ini","Pfesp"]
         dfDTCSC["type"]=0
     except:
