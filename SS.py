@@ -403,7 +403,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     lstdx=[]
     lstdz=[]
     condlst=[]
-    while(it <30):
+    while(it <15):
         a=1
         calc_dz(z,graph,dz)
         calc_H_EE(z,var_t,var_v,graph,Htrad)
@@ -492,7 +492,7 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtua
 
     lstdx=[]
     lstdz=[]
-    while(it <30):
+    while(it <15):
         a=1
         calc_dz(z,graph,dz)
         calc_H_EE(z,var_t,var_v,graph,Htrad)
