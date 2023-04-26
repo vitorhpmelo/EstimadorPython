@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE118_tcsc_2"
+sys="IEEE14_tcsc"
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
 
@@ -56,47 +56,48 @@ dfDMEDsr=create_DMED(sys,prec,graph,ram)
 
 #%%
 
+print("FACTS1")
 
 with open("conds.csv","w") as f:
     f.write("Estimador 1 \n")
-SS_WLS_FACTS(graph,dfDMEDsr,ind_i,flatstart=4,pirntits=1,printcond=1)
+SS_WLS_FACTS(graph,dfDMEDsr,ind_i,flatstart=5,pirntits=1,printcond=1)
 #%%
+print("FACTS2")
 with open("conds.csv","a") as f:
     f.write("Estimador 2 \n")
-#%%
-SS_WLS_FACTS_2(graph,dfDMED,ind_i,flatstart=4,pirntits=1,printcond=1)
+SS_WLS_FACTS_2(graph,dfDMEDsr,ind_i,flatstart=5,pirntits=1,printcond=1)
 
 #%%
 #%%
-sys="IEEE14_alt"
+# sys="IEEE14_alt"
 
-dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
-
-
-[bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
-
-[ram,nbran]=create_bran(dfDBRAN,ind_i)
-
-graph=create_graph(bars,ram)
-conv = load_flow(graph,tol=1e-7) 
-
-save_DMED_fp(graph,ram,sys)
+# dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
 
 
+# [bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
 
-#%%
-#%% fluxo de potência
-conv = load_flow(graph,tol=1e-7)#parei aqui, pensar se a Jacobiana do fluxo vai calcular as derivadas em relação a fluxo de potência e concatenar as matrizes, depois testar
-#%% salva o DMEDFP com todas as grandezas
-save_DMED_fp(graph,ram,sys)
+# [ram,nbran]=create_bran(dfDBRAN,ind_i)
 
-#%% Estimador com QR
+# graph=create_graph(bars,ram)
+# conv = load_flow(graph,tol=1e-7) 
 
-SS_WLS(graph,dfDMED,ind_i,solver="QR")
-#%% Estimador com Normal
-SS_WLS(graph,dfDMED,ind_i,solver="Normal")
-#%% Estimador Lagrangeano
-SS_WLS_lagrangian(graph,dfDMED,ind_i)
+# save_DMED_fp(graph,ram,sys)
 
 
-# %%
+
+# #%%
+# #%% fluxo de potência
+# conv = load_flow(graph,tol=1e-7)#parei aqui, pensar se a Jacobiana do fluxo vai calcular as derivadas em relação a fluxo de potência e concatenar as matrizes, depois testar
+# #%% salva o DMEDFP com todas as grandezas
+# save_DMED_fp(graph,ram,sys)
+
+# #%% Estimador com QR
+
+# SS_WLS(graph,dfDMED,ind_i,solver="QR")
+# #%% Estimador com Normal
+# SS_WLS(graph,dfDMED,ind_i,solver="Normal")
+# #%% Estimador Lagrangeano
+# SS_WLS_lagrangian(graph,dfDMED,ind_i)
+
+
+# # %%
