@@ -65,7 +65,7 @@ SS_WLS_FACTS(graph,dfDMEDsr,ind_i,flatstart=4,pirntits=1,printcond=1)
 print("FACTS2")
 with open("conds.csv","a") as f:
     f.write("Estimador 2 \n")
-SS_WLS_FACTS_2(graph,dfDMEDsr,ind_i,flatstart=4,pirntits=1,printcond=1)
+SS_WLS_FACTS_2(graph,dfDMEDsr,ind_i,flatstart=5,pirntits=1,printcond=1)
 
 #%%
 #%%

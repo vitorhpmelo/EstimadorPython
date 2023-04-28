@@ -5,7 +5,7 @@ lvls1=["1e0","1e1","1e2","1e3","1e4","m1e0","m1e1","m1e2","m1e3","m1e4"]
 lvls2=["5","10","15","20","m5","m10","m15","m20"]
 
 
-path="Teste1/"+sys+"/"
+path="Teste3/"+sys+"/"
 
 
 for lvl in lvls2:

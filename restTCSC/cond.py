@@ -13,8 +13,6 @@ pink="#e8ffb7"
 
 clrs=[blue,red,green,orange,pink]
 
-teste="Teste3"
-sys="IEEE14"
 
 
 lvls=["20","15","10","5","m5","m10","m15","m20"]
@@ -24,6 +22,10 @@ dlvls={"5":"+5%","10":"+10%","15":"+15%","20":"+20%","m5":"-5%","m10":"-10%","m1
 
 
 #%%
+
+teste="Teste3"
+sys="IEEE14"
+
 dfcondsAT3_14={}
 dfcondsBT3_14={}
 
@@ -96,8 +98,8 @@ wd=0.2
 
 
 #%%
-
-fig,ax = plt.subplots(nrows=1,ncols=2)
+k=0.65
+fig,ax = plt.subplots(nrows=1,ncols=2,figsize=(12*k, 4.5*k))
 
 ax[0].set_title("IEEE 14 bus")
 ax[0].set_yscale('log')
@@ -123,9 +125,8 @@ ax[1].bar(x118+wd*3/2,Yt3B_118.values(),width=wd,align="center",label="DC start 
 ax[1].legend()
 ax[1].grid()
 
+plt.tight_layout()
 
+fig.savefig("cond_teste1.pdf")
 
-
-
-plt.show()
 # %%

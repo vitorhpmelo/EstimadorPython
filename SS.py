@@ -403,7 +403,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     lstdx=[]
     lstdz=[]
     condlst=[]
-    while(it <15):
+    while(it <20):
         a=1
         calc_dz(z,graph,dz)
         calc_H_EE(z,var_t,var_v,graph,Htrad)
@@ -411,6 +411,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
         H=np.concatenate((Htrad,HTCSC),axis=1)
         grad=np.matmul(np.matmul(H.T,W),dz)
         dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)
+        # dx=NormalEQ_QR(H,W,dz,printcond=printcond,printmat=printmat)
         Jxk=np.matmul(np.matmul(dz,W),dz)
         if it==0:
             norminicial=liang.norm(grad)
@@ -446,7 +447,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
         df = pd.DataFrame(iterdict)
 
         # Save the DataFrame to a CSV file
-        df.to_csv('conv_B.csv', index=False)
+        df.to_csv('conv_A.csv', index=False)
 
 
 
@@ -492,7 +493,7 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtua
 
     lstdx=[]
     lstdz=[]
-    while(it <15):
+    while(it <20):
         a=1
         calc_dz(z,graph,dz)
         calc_H_EE(z,var_t,var_v,graph,Htrad)
@@ -535,7 +536,7 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtua
         iterdict={"dx":lstdx,"dz":lstdz}
         df = pd.DataFrame(iterdict)
         # Save the DataFrame to a CSV file
-        df.to_csv('conv_A.csv', index=False)
+        df.to_csv('conv_B.csv', index=False)
 
 
 
