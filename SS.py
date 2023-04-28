@@ -237,6 +237,13 @@ def get_state(graph):
     return state(v,teta)
 
 
+def get_state_TCSC(ramTCSC):
+    x={}
+    for key,ram in ramTCSC.items():
+        x[key]=float(ram.xtcsc)
+    return x
+
+
 def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0):
     """
     Withouth printing options for computing time
@@ -380,7 +387,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     @param flat start, initialization of the state variables, if -1 uses the DC state estimator to intialize the angles and the X, 0 it ujses
     the flat start, 1 it uses the DBAR
     '''
-
+    conv=0
     c1=1e-4 #constant for backintracking
     FACTSini(graph)
 
@@ -437,6 +444,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
             print(liang.norm(grad)/norminicial)
             print(txt)
             prt_state(graph)
+            conv=1
             break
 
 
@@ -448,6 +456,88 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
 
         # Save the DataFrame to a CSV file
         df.to_csv('conv_A.csv', index=False)
+
+    return conv
+
+def SS_WLS_FACTS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
+    
+    '''
+    WLS state estimator with FACTS devices (only TCSC implemented yet)
+
+    @param graph with the informations of the network
+    @param prt param indicating if it is printing everyting or not
+    @param tol tolerance for the dx atualization of the variables
+    @param tol2 tolerance for the gradiente reduction
+    @param solver only gain matrix implemented yet
+    @param prec_virtual standard deviation of virtual measurements
+    @param printcond flag for calculating and printing condition number
+    @param printmat flag for calculating and printing the matrix for calculationg the descend direction
+    @param flat start, initialization of the state variables, if -1 uses the DC state estimator to intialize the angles and the X, 0 it ujses
+    the flat start, 1 it uses the DBAR
+    '''
+
+    tin=tm.time()
+    tits=[]
+    conv=0
+    c1=1e-4 #constant for backintracking
+    FACTSini(graph)
+
+    Vinici(graph,flatStart=flatstart,dfDMED=dfDMED,ind_i=ind_i)
+
+    [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
+    var_x=create_x_TCSC(graph)
+    if flatstart==2:
+        for key in var_x.keys():
+            key=key.split("-")
+            m=int(key[1])
+            graph[m].V=graph[m].V+0.1
+    Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
+    HTCSC=np.zeros((len(z),len(var_x)))
+    dz=np.zeros(len(z))
+    W=create_W(z,flag_ones=0,prec_virtual=prec_virtual)
+    it=0
+    it2=0
+    itmax=10
+    condlst=[]
+    while(it <20):
+        t0=tm.time()
+        a=1
+        calc_dz(z,graph,dz)
+        calc_H_EE(z,var_t,var_v,graph,Htrad)
+        calc_H_EE_TCSC(z,var_x,graph,HTCSC)
+        H=np.concatenate((Htrad,HTCSC),axis=1)
+        grad=np.matmul(np.matmul(H.T,W),dz)
+        dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)
+        Jxk=np.matmul(np.matmul(dz,W),dz)
+        if it==0:
+            norminicial=liang.norm(grad)
+        it2=0
+        while it2<itmax:
+            new_X(graph,var_t,var_v,a*dx)
+            new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,a*dx)
+            calc_dz(z,graph,dz)
+            Jxn=np.matmul(np.matmul(dz,W),dz)
+            if Jxn < Jxk + c1*a*np.dot(grad,dx):
+                break
+            else:
+                new_X(graph,var_t,var_v,-a*dx)
+                new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,-a*dx)
+                a=a/2
+        gradredux=liang.norm(grad)/norminicial
+        maxdx= liang.norm(a*dx)
+
+        if gradredux <tol2 and maxdx<tol:
+            conv=1
+            t1=tm.time()
+            tits.append(t1-t0)
+            break
+
+        it=it+1
+        t1=tm.time()
+        tits.append(t1-t0)
+
+    tf=tm.time()
+    return conv,it,tits,tf-tin
 
 
 
@@ -537,6 +627,93 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtua
         df = pd.DataFrame(iterdict)
         # Save the DataFrame to a CSV file
         df.to_csv('conv_B.csv', index=False)
+
+def SS_WLS_FACTS_2_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,pirntits=0,printmat=0,prinnormgrad=0,flatstart=-1):
+   
+    '''
+
+        WLS state estimator with FACTS devices (only TCSC implemented yet), but now using B as the derivative
+
+        @param graph with the informations of the network
+        @param prt param indicating if it is printing everyting or not
+        @param tol tolerance for the dx atualization of the variables
+        @param tol2 tolerance for the gradiente reduction
+        @param solver only gain matrix implemented yet
+        @param prec_virtual standard deviation of virtual measurements
+        @param printcond flag for calculating and printing condition number
+        @param printmat flag for calculating and printing the matrix for calculationg the descend direction
+        @param flat start, initialization of the state variables, if -1 uses the DC state estimator to intialize the angles and the X, 0 it ujses
+        the flat start, 1 it uses the DBAR
+
+    '''
+    
+    tin=tm.time()
+    tits=[]
+    conv=0
+    c1=1e-4
+
+    FACTSini(graph)
+
+    Vinici(graph,flatStart=flatstart,dfDMED=dfDMED,ind_i=ind_i)
+
+    [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
+    var_x=create_x_TCSC(graph)
+    if flatstart==2:
+        for key in var_x.keys():
+            key=key.split("-")
+            m=int(key[1])
+            graph[m].V=graph[m].V+0.1
+    Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
+    HTCSC=np.zeros((len(z),len(var_x)))
+    dz=np.zeros(len(z))
+    W=create_W(z,flag_ones=0,prec_virtual=prec_virtual)
+    it=0
+    it2=0
+    itmax=5
+
+
+    while(it <20):
+        t0=tm.time()
+        a=1
+        calc_dz(z,graph,dz)
+        calc_H_EE(z,var_t,var_v,graph,Htrad)
+        calc_H_EE_TCSC_B(z,var_x,graph,HTCSC)
+        H=np.concatenate((Htrad,HTCSC),axis=1)
+        grad=np.matmul(np.matmul(H.T,W),dz)
+        dx=NormalEQ(H,W,dz,printcond=0,printmat=0)
+        Jxk=np.matmul(np.matmul(dz,W),dz)
+        if it==0:
+            norminicial=liang.norm(grad)
+        it2=0
+        while it2<itmax:
+            new_X(graph,var_t,var_v,a*dx)
+            new_X_TCSCC_B(graph,len(var_t)+len(var_v),var_x,a*dx)
+            calc_dz(z,graph,dz)
+            Jxn=np.matmul(np.matmul(dz,W),dz)
+            if Jxn < Jxk + c1*a*np.dot(grad,dx):
+                break
+            else:
+                new_X(graph,var_t,var_v,-a*dx)
+                new_X_TCSCC_B(graph,len(var_t)+len(var_v),var_x,-a*dx)
+                a=a/2
+            it2=it2+1
+        gradredux=liang.norm(grad)/norminicial
+        maxdx= liang.norm(a*dx)
+
+        if gradredux<tol2 and maxdx<tol:
+            conv=1
+            t1=tm.time()
+            tits.append(t1-t0)
+            break
+
+
+        it=it+1
+        it=it+1
+        t1=tm.time()
+        tits.append(t1-t0)
+
+    tf=tm.time()
+    return conv,it,tits,tf-tin
 
 
 

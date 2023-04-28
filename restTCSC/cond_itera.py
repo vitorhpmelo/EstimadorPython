@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 
 
 red="#da2c38"
@@ -84,72 +85,89 @@ for lvl in lvls:
 
 
 
-k=0.7
-fig,ax = plt.subplots(nrows=2,ncols=2,figsize=(11*k, 7*k))
+k=0.60
+y=10
+x=4
+fig,ax = plt.subplots(nrows=1,ncols=2,figsize=(y*k, x*k))
 
 
-#%%
+#%% 14 
 
-ax[0][1].set_title("Condition number")
-ax[0][1].semilogy(range(len(dfcondsAT1_14["5"])),dfcondsAT1_14["5"][0],marker="d",label="FS +5%",color=red)
-ax[0][1].semilogy(range(len(dfcondsAT3_14["5"])),dfcondsAT3_14["5"][0],marker="d",label="DC+5%",color=blue)
-ax[0][1].semilogy(range(len(dfcondsAT1_14["15"])),dfcondsAT1_14["15"][0],marker="*",label="FS +15%",color=green)
-ax[0][1].semilogy(range(len(dfcondsAT3_14["15"])),dfcondsAT3_14["15"][0],marker="*",label="DC+15%",color=orange)
-ax[0][1].set_xticklabels(list(range(1,1+len(range(len(dfcondsAT1_14["5"]))))))
-ax[0][1].set_xlim(xmin=1,xmax=7)
-ax[0][1].set_xlabel("iteration")
-ax[0][1].set_ylabel("k")
-ax[0][1].legend(fontsize="small")
-ax[0][1].grid()
+ax[1].set_title("Condition number")
+
+ax[1].semilogy(range(len(dfcondsAT1_14["5"])),dfcondsAT1_14["5"][0],marker="d",label="FS +5%",color=red)
+ax[1].semilogy(range(len(dfcondsAT3_14["5"])),dfcondsAT3_14["5"][0],marker="d",label="DC+5%",color=blue)
+ax[1].semilogy(range(len(dfcondsAT1_14["15"])),dfcondsAT1_14["15"][0],marker="*",label="FS +15%",color=green)
+ax[1].semilogy(range(len(dfcondsAT3_14["15"])),dfcondsAT3_14["15"][0],marker="*",label="DC+15%",color=orange)
+ax[1].set_xticklabels(list(range(1,1+len(range(len(dfcondsAT1_14["5"]))))))
+# ax[1].yaxis.set_major_formatter(ScalarFormatter())
+# ax[1].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+ax[1].set_xlim(xmin=1,xmax=7)
+ax[1].set_xlabel("Iteration",fontsize=13)
+ax[1].set_ylabel("k",fontsize=10)
+ax[1].legend(fontsize="small")
+ax[1].grid()
 
 
 
-ax[0][0].set_title("Convergence criteria")
-ax[0][0].semilogy(range(len(dfconvAT1_14["5"])),dfconvAT1_14["5"]["dz"],marker="d",label="FS+5%",color=red)
-ax[0][0].semilogy(range(len(dfconvAT3_14["5"])),dfconvAT3_14["5"]["dz"],marker="d",label="DC+5%",color=blue)
-ax[0][0].semilogy(range(len(dfconvAT1_14["15"])),dfconvAT1_14["15"]["dz"],marker="*",label="DC+15%",color=green)
-ax[0][0].semilogy(range(len(dfconvAT3_14["15"])),dfconvAT3_14["15"]["dz"],marker="*",label="FS+15%",color=orange)
-ax[0][0].set_xticklabels(list(range(1,1+len(range(len(dfconvAT1_14["5"]))))))
-ax[0][0].set_xlim(xmin=1,xmax=7)
-ax[0][0].set_xlabel("iteration")
+ax[0].set_title("Convergence criteria")
+ax[0].semilogy(range(len(dfconvAT1_14["5"])),dfconvAT1_14["5"]["dz"],marker="d",label="FS+5%",color=red)
+ax[0].semilogy(range(len(dfconvAT3_14["5"])),dfconvAT3_14["5"]["dz"],marker="d",label="DC+5%",color=blue)
+ax[0].semilogy(range(len(dfconvAT1_14["15"])),dfconvAT1_14["15"]["dz"],marker="*",label="DC+15%",color=green)
+ax[0].semilogy(range(len(dfconvAT3_14["15"])),dfconvAT3_14["15"]["dz"],marker="*",label="FS+15%",color=orange)
+ax[0].set_xticklabels(list(range(1,1+len(range(len(dfconvAT1_14["5"]))))))
+ax[0].set_xlim(xmin=1,xmax=7)
+ax[0].set_xlabel("Iteration",fontsize=13)
+# ax[0].yaxis.set_major_formatter(ScalarFormatter())
+# ax[0].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 s=r"$\frac{\vert \vert \nabla J(x_i) \vert \vert }{\vert\vert \nabla J(x_0) \vert \vert }$"
-ax[0][0].set_ylabel(s,fontsize=10)
-ax[0][0].legend(fontsize="small")
-ax[0][0].grid()
+ax[0].set_ylabel(s,fontsize=10)
+ax[0].legend(fontsize="small")
+ax[0].grid()
+fig.tight_layout(pad=0.2)
+plt.savefig("cond_it14_.pdf")
+plt.close()
+
+fig,ax = plt.subplots(nrows=1,ncols=2,figsize=(y*k, x*k))
+
+
+ax[1].set_title("Condition number")
+ax[1].semilogy(range(len(dfcondsAT1_118["5"])),dfcondsAT1_118["5"][0],ls="--",marker="d",label="FS +5%",color=red)
+ax[1].semilogy(range(len(dfcondsAT3_118["5"])),dfcondsAT3_118["5"][0],ls="--",marker="d",label="DC +5%",color=blue)
+ax[1].semilogy(range(len(dfcondsAT1_118["15"])),dfcondsAT1_118["15"][0],marker="*",label="FS+15%",color=green)
+ax[1].semilogy(range(len(dfcondsAT3_118["15"])),dfcondsAT3_118["15"][0],marker="*",label="DC +15%",color=orange)
+
+ax[1].set_xticks(range(1,1+len(dfcondsAT1_118["5"]),2))
+# ax[1].set_xticklabels(range(1,1+len(range(len(dfcondsAT1_118["5"]))),2))
+# ax[1].yaxis.set_major_formatter(ScalarFormatter())
+# ax[1].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+ax[1].set_xlim(xmin=1,xmax=14)
+ax[1].set_xlabel("Iteration",fontsize=13)
+ax[1].set_ylabel("k",fontsize=10)
+ax[1].legend(fontsize="small")
+ax[1].grid()
+
+#%% 118
 
 
 
-ax[1][1].set_title("Condition number")
-ax[1][1].semilogy(range(len(dfcondsAT1_118["5"])),dfcondsAT1_118["5"][0],marker="d",label="FS +5%",color=red)
-ax[1][1].semilogy(range(len(dfcondsAT3_118["5"])),dfcondsAT3_118["5"][0],marker="d",label="DC +5%",color=blue)
-ax[1][1].semilogy(range(len(dfcondsAT1_118["15"])),dfcondsAT1_118["15"][0],marker="*",label="FS+15%",color=green)
-ax[1][1].semilogy(range(len(dfcondsAT3_118["15"])),dfcondsAT3_118["15"][0],marker="*",label="DC +15%",color=orange)
-ax[1][1].set_xticklabels(list(range(1,1+len(range(len(dfcondsAT1_118["5"]))))))
-ax[1][1].set_xticks(list(range(1,1+len(range(len(dfcondsAT1_118["5"]))))))
-ax[1][1].set_xlim(xmin=1,xmax=14)
-ax[1][1].set_xlabel("iteration")
-ax[1][1].set_ylabel("k")
-ax[1][1].legend(fontsize="small")
-
-ax[1][1].grid()
-
-
-
-ax[1][0].set_title("Convergence criteria")
-ax[1][0].semilogy(range(len(dfconvAT1_118["5"])),dfconvAT1_118["5"]["dz"],marker="d",label="FS +5%",color=red)
-ax[1][0].semilogy(range(len(dfconvAT3_118["5"])),dfconvAT3_118["5"]["dz"],marker="d",label="DC +5%",color=blue)
-ax[1][0].semilogy(range(len(dfconvAT1_118["15"])),dfconvAT1_118["15"]["dz"],marker="*",label="FS +15%",color=green)
-ax[1][0].semilogy(range(len(dfconvAT3_118["15"])),dfconvAT3_118["15"]["dz"],marker="*",label="DC +15%",color=orange)
-ax[1][0].set_xticks(list(range(1,1+len(range(len(dfconvAT1_118["5"]))))))
-ax[1][0].set_xticklabels(list(range(1,1+len(range(len(dfconvAT1_118["5"]))))))
-ax[1][0].set_xlim(xmin=1,xmax=14)
-ax[1][0].set_xlabel("iteration")
-ax[1][0].set_ylabel(s,fontsize=10)
-ax[1][0].legend(fontsize="small")
-ax[1][0].grid()
+ax[0].set_title("Convergence criteria")
+ax[0].semilogy(range(len(dfconvAT1_118["5"])),dfconvAT1_118["5"]["dz"],marker="d",ls="--",label="FS +5%",color=red)
+ax[0].semilogy(range(len(dfconvAT3_118["5"])),dfconvAT3_118["5"]["dz"],marker="d",ls="--",label="DC +5%",color=blue)
+ax[0].semilogy(range(len(dfconvAT1_118["15"])),dfconvAT1_118["15"]["dz"],marker="*",label="FS +15%",color=green)
+ax[0].semilogy(range(len(dfconvAT3_118["15"])),dfconvAT3_118["15"]["dz"],marker="*",label="DC +15%",color=orange)
+ax[0].set_xticks(range(1,1+len(dfconvAT1_118["5"]),2))
+# ax[0].set_xticklabels(list(range(1,1+len(range(len(dfconvAT1_118["5"]))))))
+ax[0].set_xlim(xmin=1,xmax=14)
+# ax[0].yaxis.set_major_formatter(ScalarFormatter())
+# ax[0].ticklabel_format(axis='y', style='sci', scilimits=(0,2))
+ax[0].set_xlabel("Iteration",fontsize=13)
+ax[0].set_ylabel(s,fontsize=10)
+ax[0].legend(fontsize="small")
+ax[0].grid()
 
 # %%
 # plt.show()
-fig.tight_layout()
-plt.savefig("cond_it.pdf")
+fig.tight_layout(pad=0.9)
+plt.savefig("cond_it_118.pdf")
 # %%
