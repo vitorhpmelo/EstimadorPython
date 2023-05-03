@@ -16,12 +16,14 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE14"
+sys="IEEE118"
 
 #% 5% 10% 15% 20%
 
-branches=[1]
-
+sample = [128,  26,  69, 167,  16,  65,  78,  91, 147,  32,  39, 170, 177,       103, 163,  19,  81,  21, 111, 123,  41,  63,  13,  35,  99,  46,161, 125, 132, 184]
+#%%
+branches=sample
+#%%
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
@@ -29,10 +31,10 @@ dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
 
 
-fat=0.05
-for bra in branches:
-    dfDBRAN.loc[dfDBRAN["id"]==bra,"r"]= (1-fat)*dfDBRAN.loc[dfDBRAN["id"]==bra,"r"]
-    dfDBRAN.loc[dfDBRAN["id"]==bra,"x"]= (1-fat)*dfDBRAN.loc[dfDBRAN["id"]==bra,"x"]
+# fat=0.30
+# for bra in branches:
+#     dfDBRAN.loc[dfDBRAN["id"]==bra,"r"]= (1-fat)*dfDBRAN.loc[dfDBRAN["id"]==bra,"r"]
+#     dfDBRAN.loc[dfDBRAN["id"]==bra,"x"]= (1-fat)*dfDBRAN.loc[dfDBRAN["id"]==bra,"x"]
 
 
 
@@ -55,16 +57,18 @@ if conv ==0:
     quit()
 state_ref=get_state(graph)
 
+save_DMED_fp(graph,ram,sys)
+
 prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
 dfDMEDsr=create_DMED(sys,prec,graph,ram)
 
-
+#%%
 
 print("Metodo QR")
-SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",printmat=1,printcond=1)
+SS_WLS(graph,dfDMEDsr,ind_i,solver="QR",printmat=1,printcond=1,prinnormgrad=1)
 print("Metodo Normal")
-SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",printmat=1,printcond=1)
+SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",printmat=1,printcond=1,prinnormgrad=1)
 print("Metodo Lagrangeano")
-SS_WLS_lagrangian(graph,dfDMED,ind_i,printmat=1,printcond=1)
+SS_WLS_lagrangian(graph,dfDMED,ind_i,printmat=1,printcond=1,printnormgrad=1)
 
 # %%

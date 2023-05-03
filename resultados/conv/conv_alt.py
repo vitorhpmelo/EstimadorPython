@@ -1,0 +1,113 @@
+#%%
+import pandas as pd
+import matplotlib.pyplot as plt
+
+sistemas=["14","118"]
+
+
+
+dNormal_5={}
+dQR_5={}
+dNormal_6={}
+dQR_6={}
+dNormal_7={}
+dQR_7={}
+dNormal_8={}
+dQR_8={}
+dNormal_9={}
+dQR_9={}
+dLagran={}
+for sys in sistemas:
+    dNormal_5[sys]=pd.read_csv("convIEEE"+sys+"Normal5.csv",header=None)
+    dNormal_5[sys].columns=["it","normgrad","maxdx"]
+    dNormal_6[sys]=pd.read_csv("convIEEE"+sys+"Normal6.csv",header=None)
+    dNormal_6[sys].columns=["it","normgrad","maxdx"]
+    dNormal_7[sys]=pd.read_csv("convIEEE"+sys+"Normal7.csv",header=None)
+    dNormal_7[sys].columns=["it","normgrad","maxdx"]
+    dNormal_8[sys]=pd.read_csv("convIEEE"+sys+"Normal8.csv",header=None)
+    dNormal_8[sys].columns=["it","normgrad","maxdx"]
+    dNormal_9[sys]=pd.read_csv("convIEEE"+sys+"Normal9.csv",header=None)
+    dNormal_9[sys].columns=["it","normgrad","maxdx"]
+    dQR_5[sys]=pd.read_csv("convIEEE"+sys+"QR5.csv",header=None)
+    dQR_5[sys].columns=["it","normgrad","maxdx"]
+    dQR_6[sys]=pd.read_csv("convIEEE"+sys+"QR6.csv",header=None)
+    dQR_6[sys].columns=["it","normgrad","maxdx"]
+    dQR_7[sys]=pd.read_csv("convIEEE"+sys+"QR7.csv",header=None)
+    dQR_7[sys].columns=["it","normgrad","maxdx"]
+    dQR_8[sys]=pd.read_csv("convIEEE"+sys+"QR8.csv",header=None)
+    dQR_8[sys].columns=["it","normgrad","maxdx"]
+    dQR_9[sys]=pd.read_csv("convIEEE"+sys+"QR9.csv",header=None)
+    dQR_9[sys].columns=["it","normgrad","maxdx"]
+    dLagran[sys]=pd.read_csv("convIEEE"+sys+"lagran.csv",header=None)
+    dLagran[sys].columns=["it","normgrad","maxdx"]
+
+
+
+#%%
+fig, ax= plt.subplots(nrows=2,ncols=2,figsize=(8,5))
+i=0
+for sys in sistemas:
+    ax[0][i].set_title("WLS-T IEEE "+sys,fontsize="x-large")
+    # normaliz=dNormal_5[sys].normgrad[0]
+    # ax[0][i].semilogy(dNormal_5[sys].it,dNormal_5[sys].normgrad/normaliz,label=r"$\sigma_{vir} = 10^{-5}$",ls="--",marker="d",color="k") 
+    # normaliz=dNormal_6[sys].normgrad[0]
+    # ax[0][i].semilogy(dNormal_6[sys].it,dNormal_6[sys].normgrad/normaliz,label=r"$\sigma_{vir} = 10^{-6}$",ls="--",marker="o",color="g") 
+    normaliz=dNormal_7[sys].normgrad[0]
+    ax[0][i].semilogy(dNormal_7[sys].it,dNormal_7[sys].maxdx,label=r"$\sigma_{vir} = 10^{-7}$",ls="--",marker="x",color="m")    
+    normaliz=dNormal_8[sys].normgrad[0]
+    ax[0][i].semilogy(dNormal_8[sys].it,dNormal_8[sys].maxdx,label=r"$\sigma_{vir} = 10^{-8}$",ls="--",marker="*",color="b") 
+    normaliz=dNormal_9[sys].normgrad[0]
+    ax[0][i].semilogy(dNormal_9[sys].it,dNormal_9[sys].maxdx,label=r"$\sigma_{vir} = 10^{-9}$",ls="--",marker="*",color="c") 
+    
+    # ax[0][i].hlines(y=1e-5,xmin=0,xmax=8,colors="r",label="crit de conv")   
+    ax[1][i].set_title("EnQR IEEE "+sys,fontsize="x-large")
+    # normaliz=dQR_5[sys].normgrad[0]
+    # ax[1][i].semilogy(dQR_5[sys].it,dQR_5[sys].normgrad/normaliz,label=r"$\sigma_{vir} = 10^{-5}$",ls="--",marker="d",color="k") 
+    # normaliz=dQR_6[sys].normgrad[0]
+    # ax[1][i].semilogy(dQR_6[sys].it,dQR_6[sys].normgrad/normaliz,label=r"$\sigma_{vir} = 10^{-6}$",ls="--",marker="o",color="g") 
+    normaliz=dQR_7[sys].normgrad[0]
+    ax[1][i].semilogy(dQR_7[sys].it,dQR_7[sys].maxdx,label=r"$\sigma_{vir} = 10^{-7}$",ls="-.",marker="x",color="m")    
+    normaliz=dQR_8[sys].normgrad[0]
+    ax[1][i].semilogy(dQR_8[sys].it,dQR_8[sys].maxdx,label=r"$\sigma_{vir} = 10^{-8}$",ls=":",marker="*",color="b")    
+    normaliz=dQR_9[sys].normgrad[0]
+    ax[1][i].semilogy(dQR_9[sys].it,dQR_9[sys].maxdx,label=r"$\sigma_{vir} = 10^{-9}$",ls=":",marker="v",color="c")   
+    
+    # ax[1][i].hlines(y=1e-5,xmin=0,xmax=max(dQR_9[sys].it),colors="r",label="crit de conv")   
+    # ax[2][i].set_title("Lagrangeano IEEE "+sys,fontsize="x-large")
+    # normaliz=dLagran[sys].normgrad[0]
+    # ax[2][i].semilogy(dLagran[sys].it,dLagran[sys].normgrad/normaliz,marker="d",color="k") 
+    # ax[2][i].hlines(y=1e-6,xmin=0,xmax=max(dLagran[sys].it),colors="r",label="crit de conv")   
+
+    
+   
+   
+    ax[0][i].set_xticks(dNormal_9[sys].it)
+    ax[1][i].set_xticks(dQR_9[sys].it)
+    # ax[2][i].set_xticks(dLagran[sys].it)
+    
+    ax[0][i].set_xlim([0,4])
+    ax[0][i].set_ylim(top=1e3)
+
+    ax[0][i].legend(loc="lower left")
+    ax[1][i].legend(loc="lower left")
+    # ax[2][i].legend(loc="lower left")
+
+    ax[0][i].set_xlabel("Iteração",fontsize="x-large")
+    ax[1][i].set_xlabel("Iteração",fontsize="x-large")
+    # ax[2][i].set_xlabel("Iteração",fontsize="x-large")
+    # s=r"$ \frac{\vert \vert\nabla f(x_k) \vert \vert}{\vert \vert\nabla f(x_0)\vert \vert} $"
+    s=r"$ \vert \vert dx \vert \vert $"
+    ax[0][i].set_ylabel(s,rotation=90,labelpad=18,fontsize="large")
+    ax[1][i].set_ylabel(s,rotation=90,labelpad=18,fontsize="large")
+    # ax[2][i].set_ylabel(s,rotation=0,labelpad=18,fontsize="x-large")
+
+    ax[0][i].grid()
+    ax[1][i].grid()
+    # ax[2][i].grid()
+    i=i+1
+# %%
+fig.tight_layout()
+fig.savefig("conv_alt.pdf")
+fig.savefig("conv_alt.png")
+# plt.show()
+# %%

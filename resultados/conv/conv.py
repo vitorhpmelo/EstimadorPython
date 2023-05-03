@@ -2,7 +2,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sistemas=["14","30","118"]
+sistemas=["14","118"]
 
 
 

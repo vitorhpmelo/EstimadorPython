@@ -60,7 +60,7 @@ def NormalEQ_QR(H,W,dz,printcond=0,printmat=0):
 
 
 
-def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-4,printcond=0,printmat=0,prinnormgrad=0):
+def SS_WLS(graph,dfDMED,ind_i,tol=1e-5,tol2=1e-9,solver="QR",prec_virtual=1e-4,printcond=0,printmat=0,prinnormgrad=0):
     """
     Função que executa o estimador de estado WLS com diferentes sovers.
     @solver == "QR utiliza a fatoração QR
@@ -119,7 +119,7 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-4,p
             calc_H_EE(z,var_t,var_v,graph,H)
             grad=np.matmul(np.matmul(H.T,W),dz)
             f.write("{:d},{:.3e},{:.3}\n".format(it,liang.norm(grad),np.amax(np.abs(dx))))
-            if liang.norm(grad)/norminicial < tol2:
+            if  np.amax(np.abs(dx))<tol:
                 txt="Convergiu em {:d} iteracoes".format(it)
                 print(txt)
                 prt_state(graph)
@@ -138,7 +138,7 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-4,p
 
 
 
-def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,printmat=0,printnormgrad=0):
+def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-5,tol2=1e-9,printcond=0,printmat=0,printnormgrad=0):
     """
     Função que perfoma a estimação com igualdades lagrangianas
     """
@@ -157,7 +157,7 @@ def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,printmat
     ts=tm.time()
     f=open('convIEEE'+str(len(graph))+"lagran.csv","w")
 
-    while(it <10):
+    while(it <20):
         t1=tm.time()
         calc_dz(z,graph,dz)
         calc_cx(c,graph,cx)
@@ -188,8 +188,8 @@ def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,printcond=0,printmat
             calc_dz(z,graph,dz)
             calc_H_EE(z,var_t,var_v,graph,H)
             grad=np.matmul(np.matmul(H.T,W),dz)
-            f.write("{:d},{:.3e},{:.3e}\n".format(it,liang.norm(grad),np.amax(np.abs(dx))))
-            if liang.norm(grad)/norminicial < tol2:
+            f.write("{:d},{:.3e},{:.3e}\n".format(it,liang.norm(grad)/norminicial,np.amax(np.abs(dx))))
+            if np.amax(np.abs(dx))<tol:
                 txt="Convergiu em {:d} iteracoes".format(it)
                 print(liang.norm(grad)/norminicial)
                 print(txt)
