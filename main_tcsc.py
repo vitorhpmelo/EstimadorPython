@@ -18,6 +18,7 @@ import scipy.sparse.linalg as sliang
 
 sys="IEEE118_tcsc_2"
 
+
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
 
 
@@ -35,10 +36,10 @@ addFACTSingraph(graph,ramTCSC)
 
 
 #%%
-# conv=load_flow_FACTS_2(graph,prt=1)
-
+conv=load_flow_FACTS_2(graph,prt=1)
+# 
 #%%
-conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
+# conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
 
 #%%
 for key,r in ramTCSC.items():
@@ -60,12 +61,12 @@ print("FACTS1")
 
 with open("conds.csv","w") as f:
     f.write("Estimador 1 \n")
-SS_WLS_FACTS(graph,dfDMEDsr,ind_i,flatstart=4,pirntits=1,printcond=1)
+SS_WLS_FACTS(graph,dfDMEDsr,ind_i,flatstart=4,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 #%%
 print("FACTS2")
 with open("conds.csv","a") as f:
     f.write("Estimador 2 \n")
-SS_WLS_FACTS_2(graph,dfDMEDsr,ind_i,flatstart=5,pirntits=1,printcond=1)
+SS_WLS_FACTS_2(graph,dfDMEDsr,ind_i,flatstart=4,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 
 #%%
 #%%

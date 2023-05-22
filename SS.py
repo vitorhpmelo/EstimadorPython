@@ -15,7 +15,7 @@ def NormalEQ(H,W,dz,printcond=0,printmat=0):
     if(printmat==1):
         np.savetxt("G.csv",G,delimiter=",",fmt="%.15e")
     if(printcond==1):
-        print("Ncond G(x) {:e}, Ncond H(x) {:e}".format(np.linalg.cond(G),np.linalg.cond(H)))
+        # print("Ncond G(x) {:e}, Ncond H(x) {:e}".format(np.linalg.cond(G),np.linalg.cond(H)))
         with open("conds.csv","a") as f:
             f.write("{:e},{:e}\n".format(np.linalg.cond(G),np.linalg.cond(H)))
     A=sparse.csc_matrix(G)
@@ -406,7 +406,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     W=create_W(z,flag_ones=0,prec_virtual=prec_virtual)
     it=0
     it2=0
-    itmax=10
+    itmax=15
     lstdx=[]
     lstdz=[]
     condlst=[]
@@ -434,6 +434,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
                 new_X(graph,var_t,var_v,-a*dx)
                 new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,-a*dx)
                 a=a/2
+                it2=it2+1
         print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)
@@ -508,6 +509,7 @@ def SS_WLS_FACTS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
         H=np.concatenate((Htrad,HTCSC),axis=1)
         grad=np.matmul(np.matmul(H.T,W),dz)
         dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)
+        # dx=NormalEQ_QR(H,W,dz)
         Jxk=np.matmul(np.matmul(dz,W),dz)
         if it==0:
             norminicial=liang.norm(grad)
@@ -523,6 +525,7 @@ def SS_WLS_FACTS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
                 new_X(graph,var_t,var_v,-a*dx)
                 new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,-a*dx)
                 a=a/2
+                it2=it2+1
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)
 
@@ -579,7 +582,7 @@ def SS_WLS_FACTS_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtua
     W=create_W(z,flag_ones=0,prec_virtual=prec_virtual)
     it=0
     it2=0
-    itmax=5
+    itmax=10
 
     lstdx=[]
     lstdz=[]
@@ -705,9 +708,6 @@ def SS_WLS_FACTS_2_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_
             t1=tm.time()
             tits.append(t1-t0)
             break
-
-
-        it=it+1
         it=it+1
         t1=tm.time()
         tits.append(t1-t0)

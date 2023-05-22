@@ -28,8 +28,8 @@ dfcondsBT3_14={}
 dfconvAT3_14={}
 dfconvBT3_14={}
 for lvl in lvls:
-    dfcondsAT3_14[lvl]=pd.read_csv(teste+"/"+sys+"/cond"+lvl+"A.csv",header=None,skiprows=1)
-    dfcondsBT3_14[lvl]=pd.read_csv(teste+"/"+sys+"/cond"+lvl+"B.csv",header=None,skiprows=1)
+    dfcondsAT3_14[lvl]=pd.read_csv(teste+"/"+sys+"/conds_"+lvl+"A.csv",header=None,skiprows=1)
+    dfcondsBT3_14[lvl]=pd.read_csv(teste+"/"+sys+"/conds_"+lvl+"B.csv",header=None,skiprows=1)
     dfconvAT3_14[lvl]=pd.read_csv(teste+"/"+sys+"/conv_A_"+lvl+".csv")
     dfconvBT3_14[lvl]=pd.read_csv(teste+"/"+sys+"/conv_B_"+lvl+".csv")
 
@@ -44,10 +44,10 @@ dfconvAT1_14={}
 dfconvBT1_14={}
 
 for lvl in lvls:
-    dfcondsAT1_14[lvl]=pd.read_csv(teste+"/"+sys+"/cond"+lvl+"A.csv",header=None,skiprows=1)
-    dfcondsBT1_14[lvl]=pd.read_csv(teste+"/"+sys+"/cond"+lvl+"B.csv",header=None,skiprows=1)
-    dfconvAT1_14[lvl]=pd.read_csv(teste+"/"+sys+"/conv_a_"+lvl+".csv")
-    dfconvBT1_14[lvl]=pd.read_csv(teste+"/"+sys+"/conv_b_"+lvl+".csv")
+    dfcondsAT1_14[lvl]=pd.read_csv(teste+"/"+sys+"/conds_"+lvl+"A.csv",header=None,skiprows=1)
+    dfcondsBT1_14[lvl]=pd.read_csv(teste+"/"+sys+"/conds_"+lvl+"B.csv",header=None,skiprows=1)
+    dfconvAT1_14[lvl]=pd.read_csv(teste+"/"+sys+"/conv_A_"+lvl+".csv")
+    dfconvBT1_14[lvl]=pd.read_csv(teste+"/"+sys+"/conv_B_"+lvl+".csv")
 
 #%%
 
@@ -61,10 +61,10 @@ dfconvAT3_118={}
 dfconvBT3_118={}
 
 for lvl in lvls:
-    dfcondsAT3_118[lvl]=pd.read_csv(teste+"/"+sys+"/cond"+lvl+"A.csv",header=None,skiprows=1)
-    dfcondsBT3_118[lvl]=pd.read_csv(teste+"/"+sys+"/cond"+lvl+"B.csv",header=None,skiprows=1)
-    dfconvAT3_118[lvl]=pd.read_csv(teste+"/"+sys+"/conv_a_"+lvl+".csv")
-    dfconvBT3_118[lvl]=pd.read_csv(teste+"/"+sys+"/conv_b_"+lvl+".csv")
+    dfcondsAT3_118[lvl]=pd.read_csv(teste+"/"+sys+"/conds_"+lvl+"A.csv",header=None,skiprows=1)
+    dfcondsBT3_118[lvl]=pd.read_csv(teste+"/"+sys+"/conds_"+lvl+"B.csv",header=None,skiprows=1)
+    dfconvAT3_118[lvl]=pd.read_csv(teste+"/"+sys+"/conv_A_"+lvl+".csv")
+    dfconvBT3_118[lvl]=pd.read_csv(teste+"/"+sys+"/conv_B_"+lvl+".csv")
 #%%
 
 
@@ -75,10 +75,10 @@ dfcondsBT1_118={}
 dfconvAT1_118={}
 dfconvBT1_118={}
 for lvl in lvls:
-    dfcondsAT1_118[lvl]=pd.read_csv(teste+"/"+sys+"/cond"+lvl+"A.csv",header=None,skiprows=1)
-    dfcondsBT1_118[lvl]=pd.read_csv(teste+"/"+sys+"/cond"+lvl+"B.csv",header=None,skiprows=1)
-    dfconvAT1_118[lvl]=pd.read_csv(teste+"/"+sys+"/conv_a_"+lvl+".csv")
-    dfconvBT1_118[lvl]=pd.read_csv(teste+"/"+sys+"/conv_b_"+lvl+".csv")
+    dfcondsAT1_118[lvl]=pd.read_csv(teste+"/"+sys+"/conds_"+lvl+"A.csv",header=None,skiprows=1)
+    dfcondsBT1_118[lvl]=pd.read_csv(teste+"/"+sys+"/conds_"+lvl+"B.csv",header=None,skiprows=1)
+    dfconvAT1_118[lvl]=pd.read_csv(teste+"/"+sys+"/conv_A_"+lvl+".csv")
+    dfconvBT1_118[lvl]=pd.read_csv(teste+"/"+sys+"/conv_B_"+lvl+".csv")
 
 #%%
 
@@ -95,11 +95,11 @@ fig,ax = plt.subplots(nrows=1,ncols=2,figsize=(y*k, x*k))
 
 ax[1].set_title("Condition number")
 
-ax[1].semilogy(range(len(dfcondsAT1_14["5"])),dfcondsAT1_14["5"][0],marker="d",label="FS +5%",color=red)
-ax[1].semilogy(range(len(dfcondsAT3_14["5"])),dfcondsAT3_14["5"][0],marker="d",label="DC+5%",color=blue)
-ax[1].semilogy(range(len(dfcondsAT1_14["15"])),dfcondsAT1_14["15"][0],marker="*",label="FS +15%",color=green)
-ax[1].semilogy(range(len(dfcondsAT3_14["15"])),dfcondsAT3_14["15"][0],marker="*",label="DC+15%",color=orange)
-ax[1].set_xticklabels(list(range(1,1+len(range(len(dfcondsAT1_14["5"]))))))
+ax[1].semilogy(range(len(dfcondsAT1_14["m5"])),dfcondsAT1_14["m5"][1],marker="d",label="FS-5%",color=red)
+ax[1].semilogy(range(len(dfcondsAT3_14["m5"])),dfcondsAT3_14["m5"][1],marker="d",label="DC-5%",color=blue)
+ax[1].semilogy(range(len(dfcondsAT1_14["15"])),dfcondsAT1_14["15"][1],marker="*",label="FS +15%",color=green)
+ax[1].semilogy(range(len(dfcondsAT3_14["15"])),dfcondsAT3_14["15"][1],marker="*",label="DC+15%",color=orange)
+ax[1].set_xticklabels(list(range(1,1+len(range(len(dfcondsAT1_14["m5"]))))))
 # ax[1].yaxis.set_major_formatter(ScalarFormatter())
 # ax[1].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 ax[1].set_xlim(xmin=1,xmax=7)
@@ -111,8 +111,8 @@ ax[1].grid()
 
 
 ax[0].set_title("Convergence criteria")
-ax[0].semilogy(range(len(dfconvAT1_14["5"])),dfconvAT1_14["5"]["dz"],marker="d",label="FS+5%",color=red)
-ax[0].semilogy(range(len(dfconvAT3_14["5"])),dfconvAT3_14["5"]["dz"],marker="d",label="DC+5%",color=blue)
+ax[0].semilogy(range(len(dfconvAT1_14["m5"])),dfconvAT1_14["m5"]["dz"],marker="d",label="FS-5%",color=red)
+ax[0].semilogy(range(len(dfconvAT3_14["m5"])),dfconvAT3_14["m5"]["dz"],marker="d",label="DC-5%",color=blue)
 ax[0].semilogy(range(len(dfconvAT1_14["15"])),dfconvAT1_14["15"]["dz"],marker="*",label="DC+15%",color=green)
 ax[0].semilogy(range(len(dfconvAT3_14["15"])),dfconvAT3_14["15"]["dz"],marker="*",label="FS+15%",color=orange)
 ax[0].set_xticklabels(list(range(1,1+len(range(len(dfconvAT1_14["5"]))))))
@@ -132,12 +132,12 @@ fig,ax = plt.subplots(nrows=1,ncols=2,figsize=(y*k, x*k))
 
 
 ax[1].set_title("Condition number")
-ax[1].semilogy(range(len(dfcondsAT1_118["5"])),dfcondsAT1_118["5"][0],ls="--",marker="d",label="FS +5%",color=red)
-ax[1].semilogy(range(len(dfcondsAT3_118["5"])),dfcondsAT3_118["5"][0],ls="--",marker="d",label="DC +5%",color=blue)
-ax[1].semilogy(range(len(dfcondsAT1_118["15"])),dfcondsAT1_118["15"][0],marker="*",label="FS+15%",color=green)
-ax[1].semilogy(range(len(dfcondsAT3_118["15"])),dfcondsAT3_118["15"][0],marker="*",label="DC +15%",color=orange)
+ax[1].semilogy(range(len(dfcondsAT1_118["m5"])),dfcondsAT1_118["m5"][1],ls="--",marker="d",label="FS -5%",color=red)
+ax[1].semilogy(range(len(dfcondsAT3_118["m5"])),dfcondsAT3_118["m5"][1],ls="--",marker="d",label="DC -5%",color=blue)
+ax[1].semilogy(range(len(dfcondsAT1_118["m20"])),dfcondsAT1_118["m20"][1],marker="*",label="FS -20%",color=green)
+ax[1].semilogy(range(len(dfcondsAT3_118["m20"])),dfcondsAT3_118["m20"][1],marker="*",label="DC -20%",color=orange)
 
-ax[1].set_xticks(range(1,1+len(dfcondsAT1_118["5"]),2))
+ax[1].set_xticks(range(1,1+len(dfcondsAT1_118["m15"]),2))
 # ax[1].set_xticklabels(range(1,1+len(range(len(dfcondsAT1_118["5"]))),2))
 # ax[1].yaxis.set_major_formatter(ScalarFormatter())
 # ax[1].ticklabel_format(axis='y', style='sci', scilimits=(0,0))
@@ -152,11 +152,11 @@ ax[1].grid()
 
 
 ax[0].set_title("Convergence criteria")
-ax[0].semilogy(range(len(dfconvAT1_118["5"])),dfconvAT1_118["5"]["dz"],marker="d",ls="--",label="FS +5%",color=red)
-ax[0].semilogy(range(len(dfconvAT3_118["5"])),dfconvAT3_118["5"]["dz"],marker="d",ls="--",label="DC +5%",color=blue)
-ax[0].semilogy(range(len(dfconvAT1_118["15"])),dfconvAT1_118["15"]["dz"],marker="*",label="FS +15%",color=green)
-ax[0].semilogy(range(len(dfconvAT3_118["15"])),dfconvAT3_118["15"]["dz"],marker="*",label="DC +15%",color=orange)
-ax[0].set_xticks(range(1,1+len(dfconvAT1_118["5"]),2))
+ax[0].semilogy(range(len(dfconvAT1_118["m5"])),dfconvAT1_118["m5"]["dz"],marker="d",ls="--",label="FS -5%",color=red)
+ax[0].semilogy(range(len(dfconvAT3_118["m5"])),dfconvAT3_118["m5"]["dz"],marker="d",ls="--",label="DC -5%",color=blue)
+ax[0].semilogy(range(len(dfconvAT1_118["m20"])),dfconvAT1_118["m20"]["dz"],marker="*",label="FS -20%",color=green)
+ax[0].semilogy(range(len(dfconvAT3_118["m20"])),dfconvAT3_118["m20"]["dz"],marker="*",label="DC -20%",color=orange)
+ax[0].set_xticks(range(1,1+len(dfconvAT1_118["m5"]),2))
 # ax[0].set_xticklabels(list(range(1,1+len(range(len(dfconvAT1_118["5"]))))))
 ax[0].set_xlim(xmin=1,xmax=14)
 # ax[0].yaxis.set_major_formatter(ScalarFormatter())

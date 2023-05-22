@@ -955,7 +955,10 @@ def create_W(z,prec_virtual=1e-4,flag_ones=0):
             if np.abs(item.val)<1e-6:
                 W[i][i]=1/(prec_virtual**2)
             else:
-                W[i][i]=1/(item.sigma**2)
+                if np.abs((item.sigma))>prec_virtual:
+                    W[i][i]=1/(item.sigma**2)
+                else:
+                    W[i][i]=1/(prec_virtual**2)
             i=i+1
     else:
         W=np.eye(len(z))

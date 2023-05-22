@@ -18,7 +18,7 @@ import scipy.sparse.linalg as sliang
 
 sys="IEEE118_tcsc_2"
 increase=5
-flatstart=5
+flatstart=4
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -40,6 +40,7 @@ conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
 # conv=load_flow_FACTS_2(graph,prt=1)
 
 ram.update(ramTCSC)
+save_DMED_fp(graph,ram,sys)
 
 #%% Montagem do plano de medições
 
@@ -74,30 +75,40 @@ NumeroItsB=[]
 
 pre1=1e-5
 prec2=1e-8
-for i in range(N):
+i=0
+itmax=200
+amostrasA=0
+amostrasB=0
+while((len(NumeroItsA)<101)or(len(NumeroItsB)<101)):
     dfDMEDr=insert_res(dfDMEDsr,i)
     print("{:d}/{:d}".format(i+1,N))
-    [conv,nIT,tits,tf]=SS_WLS_FACTS_clean(graph,dfDMEDr,ind_i,flatstart=5)
-    nconvsA.append(conv)
-    print(conv)
-    if conv == 1:
-        stateA.append(get_state(graph))
-        stateA_X.append(get_state_TCSC(ramTCSC))
-        TemposTotaisA.append(tf)
-        TemposiTA.append(np.mean(tits))
-        NumeroItsA.append(nIT)
-    del nIT,tits,tf
-    
-    [conv,nIT,tits,tf]=SS_WLS_FACTS_2_clean(graph,dfDMEDr,ind_i,flatstart=5)
-    nconvsA.append(conv)
-    print(conv)
-    if conv == 1:
-        stateB.append(get_state(graph))
-        stateB_X.append(get_state_TCSC(ramTCSC))
-        TemposTotaisB.append(tf)
-        TemposiTB.append(np.mean(tits))
-        NumeroItsB.append(nIT)
-    del nIT,tits,tf
+    if (len(NumeroItsA)<101):
+        [conv,nIT,tits,tf]=SS_WLS_FACTS_clean(graph,dfDMEDr,ind_i,flatstart=flatstart,tol=1e-5,tol2=1e-4)
+        nconvsA.append(conv)
+        print(conv)
+        amostrasA=amostrasA+1
+        if conv == 1:
+            stateA.append(get_state(graph))
+            stateA_X.append(get_state_TCSC(ramTCSC))
+            TemposTotaisA.append(tf)
+            TemposiTA.append(np.mean(tits))
+            NumeroItsA.append(nIT)
+        del nIT,tits,tf
+    if (len(NumeroItsB)<101):
+        [conv,nIT,tits,tf]=SS_WLS_FACTS_2_clean(graph,dfDMEDr,ind_i,flatstart=flatstart,tol=1e-5,tol2=1e-4)
+        nconvsB.append(conv)
+        print(conv)
+        amostrasB=amostrasB+1
+        if conv == 1:
+            stateB.append(get_state(graph))
+            stateB_X.append(get_state_TCSC(ramTCSC))
+            TemposTotaisB.append(tf)
+            TemposiTB.append(np.mean(tits))
+            NumeroItsB.append(nIT)
+        del nIT,tits,tf
+    i=i+1
+    if i>itmax:
+        break
 
     
 # %% calculo erros
@@ -158,8 +169,8 @@ except:
 
 
 #%% salva os resultados
-dA={"Solver":"A","prec":increase,"EMA_V":EMA_A_V,"EMA_T":EMA_A_T,"EMA_X":EMA_A_X,"EMA_total":EMA_A_total,"Media Tempo total":np.mean(TemposTotaisA),"Media Tempo iteçoes":np.mean(TemposiTA),"Númeoro Médio de Iterações":np.mean(NumeroItsA),"Max itera":maxiteA,"Numero Convs":np.sum(nconvsA)}
-dB={"Solver":"B","prec":increase,"EMA_V":np.float64(EMA_B_V),"EMA_T":np.float64(EMA_B_T),"EMA_X":EMA_B_X,"EMA_total":EMA_B_total,"Media Tempo total":np.mean(TemposTotaisB),"Media Tempo iteçoes":np.mean(TemposiTB),"Númeoro Médio de Iterações":np.mean(NumeroItsB),"Max itera":maxiteB,"Numero Convs":np.sum(nconvsB)}
+dA={"Solver":"A","prec":increase,"EMA_V":EMA_A_V,"EMA_T":EMA_A_T,"EMA_X":EMA_A_X,"EMA_total":EMA_A_total,"Media Tempo total":np.mean(TemposTotaisA),"Media Tempo iteçoes":np.mean(TemposiTA),"Númeoro Médio de Iterações":np.mean(NumeroItsA),"Max itera":maxiteA,"Numero Convs":np.sum(nconvsA),"Namos":amostrasA}
+dB={"Solver":"B","prec":increase,"EMA_V":np.float64(EMA_B_V),"EMA_T":np.float64(EMA_B_T),"EMA_X":EMA_B_X,"EMA_total":EMA_B_total,"Media Tempo total":np.mean(TemposTotaisB),"Media Tempo iteçoes":np.mean(TemposiTB),"Númeoro Médio de Iterações":np.mean(NumeroItsB),"Max itera":maxiteB,"Numero Convs":np.sum(nconvsB),"Namos":amostrasB}
 
 
 
