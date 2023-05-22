@@ -44,7 +44,7 @@ for sys in sistemas:
 
 
 #%%
-fig, ax= plt.subplots(nrows=2,ncols=2,figsize=(8,5))
+fig, ax= plt.subplots(nrows=3,ncols=2,figsize=(8,7))
 i=0
 for sys in sistemas:
     ax[0][i].set_title("WLS-T IEEE "+sys,fontsize="x-large")
@@ -73,9 +73,9 @@ for sys in sistemas:
     ax[1][i].semilogy(dQR_9[sys].it,dQR_9[sys].maxdx,label=r"$\sigma_{vir} = 10^{-9}$",ls=":",marker="v",color="c")   
     
     # ax[1][i].hlines(y=1e-5,xmin=0,xmax=max(dQR_9[sys].it),colors="r",label="crit de conv")   
-    # ax[2][i].set_title("Lagrangeano IEEE "+sys,fontsize="x-large")
+    ax[2][i].set_title("IgL IEEE "+sys,fontsize="x-large")
     # normaliz=dLagran[sys].normgrad[0]
-    # ax[2][i].semilogy(dLagran[sys].it,dLagran[sys].normgrad/normaliz,marker="d",color="k") 
+    ax[2][i].semilogy(dLagran[sys].it,dLagran[sys].maxdx,marker="d",color="k") 
     # ax[2][i].hlines(y=1e-6,xmin=0,xmax=max(dLagran[sys].it),colors="r",label="crit de conv")   
 
     
@@ -83,27 +83,27 @@ for sys in sistemas:
    
     ax[0][i].set_xticks(dNormal_9[sys].it)
     ax[1][i].set_xticks(dQR_9[sys].it)
-    # ax[2][i].set_xticks(dLagran[sys].it)
+    ax[2][i].set_xticks(dLagran[sys].it)
     
     ax[0][i].set_xlim([0,4])
     ax[0][i].set_ylim(top=1e3)
 
     ax[0][i].legend(loc="lower left")
     ax[1][i].legend(loc="lower left")
-    # ax[2][i].legend(loc="lower left")
+    ax[2][i].legend(loc="lower left")
 
     ax[0][i].set_xlabel("Iteração",fontsize="x-large")
     ax[1][i].set_xlabel("Iteração",fontsize="x-large")
-    # ax[2][i].set_xlabel("Iteração",fontsize="x-large")
+    ax[2][i].set_xlabel("Iteração",fontsize="x-large")
     # s=r"$ \frac{\vert \vert\nabla f(x_k) \vert \vert}{\vert \vert\nabla f(x_0)\vert \vert} $"
-    s=r"$ \vert \vert dx \vert \vert $"
+    s=r"$ \vert \vert \Delta x \vert \vert $"
     ax[0][i].set_ylabel(s,rotation=90,labelpad=18,fontsize="large")
     ax[1][i].set_ylabel(s,rotation=90,labelpad=18,fontsize="large")
-    # ax[2][i].set_ylabel(s,rotation=0,labelpad=18,fontsize="x-large")
+    ax[2][i].set_ylabel(s,rotation=90,labelpad=18,fontsize="large")
 
     ax[0][i].grid()
     ax[1][i].grid()
-    # ax[2][i].grid()
+    ax[2][i].grid()
     i=i+1
 # %%
 fig.tight_layout()

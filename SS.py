@@ -17,7 +17,7 @@ def NormalEQ(H,W,dz,printcond=0,printmat=0):
     if(printcond==1):
         print("Ncond G(x) {:e}, Ncond H(x) {:e}".format(np.linalg.cond(G),np.linalg.cond(H)))
         with open("conds.csv","a") as f:
-            f.write("{:e}\n".format(np.linalg.cond(G)))
+            f.write("{:e},".format(np.linalg.cond(G)))
     A=sparse.csc_matrix(G)
     try:
         dx=sliang.spsolve(A,grad)
@@ -48,7 +48,7 @@ def NormalEQ_QR(H,W,dz,printcond=0,printmat=0):
     if(printcond==1):
         print("Ncond WH(x) {:e}, Ncond H(x) {:e}".format(np.linalg.cond(H2),np.linalg.cond(H)))
         with open("conds.csv","a") as f:
-            f.write("{:e}\n".format(np.linalg.cond(H2)))
+            f.write("{:e},".format(np.linalg.cond(H2)))
     [Q,R]=liang.qr(H2)
     b=np.matmul(np.matmul(Q.T,Wmei),dz)
     A=sparse.csr_matrix(R)
@@ -79,7 +79,7 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-5,tol2=1e-9,solver="QR",prec_virtual=1e-4,p
     tit=[]
     ts=tm.time()
 
-    f=open('convIEEE'+str(len(graph))+solver+str(int(-np.log10(prec_virtual)))+".csv","w")
+    f=open('convIEEE'+str(len(graph))+solver+".csv","w")
     Wdiag=np.diag(W)
     np.savetxt("Wdiag.csv",np.sqrt(1/Wdiag),fmt="%.7f")
     while(it <9):
@@ -96,14 +96,14 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-5,tol2=1e-9,solver="QR",prec_virtual=1e-4,p
             if it==0:
                 dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)
             else:
-                dx=NormalEQ(H,W,dz,printcond=printcond,printmat=0)
+                dx=NormalEQ(H,W,dz,printcond=0,printmat=0)
                 if len(dx)==1:
                     break ##matrix singular
         elif solver =="QR":
             if it==0:
                 dx=NormalEQ_QR(H,W,dz,printcond=printcond,printmat=printmat)
             else:
-                dx=NormalEQ_QR(H,W,dz,printcond=printcond,printmat=0)
+                dx=NormalEQ_QR(H,W,dz,printcond=0,printmat=0)
         elif solver == "cg":
             dx=NormalEQ_CG(H,W,dz,printmat=printmat)
         #dx=np.linalg.solve(G,grad)
@@ -122,7 +122,9 @@ def SS_WLS(graph,dfDMED,ind_i,tol=1e-5,tol2=1e-9,solver="QR",prec_virtual=1e-4,p
             if  np.amax(np.abs(dx))<tol:
                 txt="Convergiu em {:d} iteracoes".format(it)
                 print(txt)
-                prt_state(graph)
+                with open("iter.csv","a") as file:
+                    file.write("{:d},".format(it))
+                # prt_state(graph)
                 break
         if prinnormgrad!=1:
             if (np.amax(np.abs(dx))<tol):
@@ -172,9 +174,10 @@ def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-5,tol2=1e-9,printcond=0,printmat
         b=np.concatenate((grad,-cx))
         M=np.concatenate((np.concatenate((G,C)),np.concatenate((C.T,Zermat))),axis=1)
         if printcond==1:
-            print("Ncond HLa(x) {:e}, Ncond H(x) {:e}".format(np.linalg.cond(M),np.linalg.cond(H)))
-            with open("conds.csv","a") as file:
-                file.write("{:e}\n".format(np.linalg.cond(M)))
+            if it==0:
+                print("Ncond HLa(x) {:e}, Ncond H(x) {:e}".format(np.linalg.cond(M),np.linalg.cond(H)))
+                with open("conds.csv","a") as file:
+                    file.write("{:e}\n".format(np.linalg.cond(M)))
         if printmat==1:
             np.savetxt("Lagra.csv",M,delimiter=",",fmt="%.15e")
         A=sparse.csc_matrix(M)
@@ -193,7 +196,9 @@ def SS_WLS_lagrangian(graph,dfDMED,ind_i,tol=1e-5,tol2=1e-9,printcond=0,printmat
                 txt="Convergiu em {:d} iteracoes".format(it)
                 print(liang.norm(grad)/norminicial)
                 print(txt)
-                prt_state(graph)
+                with open("iter.csv","a") as file:
+                    file.write("{:d},".format(it))
+                # prt_state(graph)
                 break
         else:    
             if (np.amax(np.abs(dx))<tol):

@@ -29,11 +29,17 @@ network=netinfo(nbars,nbran,2*nbars-1,nteta=nbars-1,nv=nbars)
 graph=create_graph(bars,ram)
 
 
-sample = [128,  26,  69, 167,  16,  65,  78,  91, 147,  32,  39, 170, 177, 103, 163,  19,  81,  21, 111, 123,  41,  63,  13,  35,  99,  46,161, 125, 132, 184]
+# sample = [128,  26,  69, 167,  16,  65,  78,  91, 147,  32,  39, 170, 177, 103, 163,  19,  81,  21, 111, 123,  41,  63,  13,  35,  99,  46,161, 125, 132, 184]
+sample = [124, 89, 37, 22, 175, 101, 31, 184, 187, 136, 17, 195, 10, 183, 100, 50, 154, 63, 60, 8, 130, 170, 119, 1, 152, 85, 139, 46, 189, 23, 177, 4, 190, 72, 193, 53, 105, 160]
+
 #%%
+
+
+lstIEEE118=[27,18,9,0]
 branches=sample
-fat=0.25
-for bra in branches:
+fat=0.80
+qnt=0
+for bra in branches[qnt:]:
     dfDBRAN.loc[dfDBRAN["id"]==bra,"r"]= (1-fat)*dfDBRAN.loc[dfDBRAN["id"]==bra,"r"]
     dfDBRAN.loc[dfDBRAN["id"]==bra,"x"]= (1-fat)*dfDBRAN.loc[dfDBRAN["id"]==bra,"x"]
 
@@ -149,7 +155,7 @@ dQR5={"Solver":"QR","prec":fat,"EMA_V":EMA_QR_5_V,"EMA_T":EMA_QR_5_T,"EMA_total"
 dLagran={"Solver":"Lagran","prec":fat,"EMA_V":EMA_Lagran_V,"EMA_T":EMA_Lagran_T,"EMA_total":EMA_Lagran_total,"Media Tempo total":np.mean(TemposTotaisLagrange),"Media Tempo iteçoes":np.mean(TemposiTLagrange),"Númeoro Médio de Iterações":np.mean(NumeroItslagran),"Max itera":max(NumeroItslagran),"Numero Convs":np.sum(nconvsLagran)}
 #%% 
 dfResults=pd.DataFrame([dNormal5,dQR5,dLagran])
-dfResults.to_csv("resultados/"+sys+"_"+str(fat*100)+".csv")
+dfResults.to_csv("resultados/"+sys+"_"+str(fat*100)+"_"+str(qnt)+".csv")
 
 
 
