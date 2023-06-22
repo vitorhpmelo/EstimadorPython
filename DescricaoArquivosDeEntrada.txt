@@ -24,8 +24,9 @@ x - series reactance (pu)
 bsh - line shunt suceptance (pu)
 tap - tap of transforme (Vfrom/Vto)
 
+------------------------------------------------------------------------------------------
 
-DTCSC -- File with the information of the system's branches
+DTCSC -- File with the information of the system's TCSC
 
 id - identification of the TCSC
 from - from bus id 
@@ -33,3 +34,18 @@ to - to bus id
 a - alpha of tscc 
 xtscc_ini - initial value of TCSC reactance
 Pfesp - Power flow in the TCSC
+
+------------------------------------------------------------------------------------------
+
+DSVC -- File with the information of the system's SVC
+
+id - identification of the SVC
+bus - Bus where it is connected
+Rt - Resistence of the coupling transformer
+Xt - Reactance of the coupling transformer
+Bini- sucptance initialization value of the SVC
+BMAX - sucptance max value of the SVC
+BMIN -  sucptance min value of the SVC
+aini - alpha initialization value of the SVC
+amax - alpha initialization value of the SVC
+amin - alpha initialization value of the SVC

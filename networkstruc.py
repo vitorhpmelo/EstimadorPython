@@ -96,7 +96,7 @@ def create_bran(dfDBRAN,ind_i):
 
 def create_TCSC(dfFACTS,ind_i):
     """
-    Function to read the information in the data frame dfDBRAN and put it in the ram dictionary, that is composed by instances of the
+    Function to read the information in the data frame dfTCSCS and put it in the ram dictionary, that is composed by instances of the
     branch class. This ditc contains all the information about the network branches.
     @param: dfFACTS - Data Frame with the information about the buses
     @param: ind_i - dict to translate the name of the bus to it index
@@ -111,14 +111,36 @@ def create_TCSC(dfFACTS,ind_i):
         ram=[]
         i=0
         return ram,i
-
-    for id, row in dfFACTS.iterrows():
+    dfTCSC=dfFACTS[dfFACTS["type"]==0].copy()
+    for id, row in dfTCSC.iterrows():
         #ram type 3 == TCSC
         key=str(ind_i[int(row["de"])])+"-"+str(ind_i[int(row["para"])])
         item=branTCSC(int(row["id"]),ind_i[int(row["de"])],ind_i[int(row["para"])],3,i,row["a"],row["xtscc_ini"],row["Pfesp"])
         ram[key]=item    
         i+=1
     return ram,i
+
+
+def create_SVC(dfFACTS,ind_i):
+    """
+    Function to read the information in the data frame dfSVC and put it in the SVC dictionary, that is composed by instances of the
+    SVC class. This ditc contains all the information about the network SVCs.
+    @param: dfFACTS - Data Frame with the information about the buses
+    @param: ind_i - dict to translate the name of the bus to it index
+    @return ram - list of instances of branch class with the information about the network branches
+    @return i - number of branches 
+    """
+    svc={}
+    i=0
+    d={}
+    dfSVC=dfFACTS[dfFACTS["type"]==1].copy()
+    for id, row in dfSVC.iterrows():
+        #ram type 3 == TCSC
+        key=ind_i[int(row["de"])]
+        item=SVC(int(row["id"]),ind_i[int(row["de"])],row["Rt"],row["Xt"],row["Bini"],row["Bmax"],row["Bmin"],row["aini"],row["amax"],row["amin"])
+        svc[key]=item    
+        i+=1
+    return svc,i
 
 def create_graph(bars,ram):
     """
@@ -144,7 +166,7 @@ def create_graph(bars,ram):
     
     return graph
 
-def addFACTSingraph(graph,ramfacts):
+def addTCSCingraph(graph,ramfacts):
 
     if not ramfacts:
         return

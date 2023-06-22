@@ -238,6 +238,7 @@ class node_graph():
         self.adjm=dict()
         self.ladjk=[]
         self.ladjm=[]
+        self.SVC=None
         self.id=id
         self.bar=bar
         self.V=1
@@ -327,6 +328,21 @@ class node_graph():
             return  self.adjk[str(self.i)+"-"+str(bar)].dQdV(graph,1,bar)
         else:
             return  0  
+
+class SVC():
+    def __init__(self,id,bus,Rt,Xt,Bini,BMAX,BMIN,aini,amax,amin):
+        self.id=id
+        self.bus=bus
+        self.Rt=Rt
+        self.Xt=Xt
+        self.Bini=Bini
+        self.B=Bini
+        self.BMAX=BMAX
+        self.BMIN=BMIN
+        self.aini=aini
+        self.amax=amax
+        self.amin=amin
+
 
 class netinfo():
     def __init__(self,nbar,nram,nvar,nteta,nv) -> None:

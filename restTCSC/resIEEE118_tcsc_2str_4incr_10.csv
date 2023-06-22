@@ -1,3 +1,3 @@
 ,Solver,prec,EMA_V,EMA_T,EMA_X,EMA_total,Media Tempo total,Media Tempo iteçoes,Númeoro Médio de Iterações,Max itera,Numero Convs,Namos
-0,A,5,,,,,,,,,0,201
-1,B,5,,,,,,,,,0,201
+0,A,10,,,,,,,,,0,201
+1,B,10,,,,,,,,,0,201
