@@ -107,7 +107,11 @@ def create_TCSC(dfFACTS,ind_i):
     i=0
     d={}
 ##determina linhas paralelas
-    if not isinstance(dfFACTS,pd.DataFrame):
+    if dfFACTS.empty:
+        ram=[]
+        i=0
+        return ram,i    
+    if dfFACTS[dfFACTS["type"]==0].empty:
         ram=[]
         i=0
         return ram,i
@@ -130,6 +134,17 @@ def create_SVC(dfFACTS,ind_i):
     @return ram - list of instances of branch class with the information about the network branches
     @return i - number of branches 
     """
+
+    if dfFACTS.empty:
+        svc=[]
+        i=0
+        return svc,i    
+
+    if dfFACTS[dfFACTS["type"]==1].empty:
+        svc=[]
+        i=0
+        return svc,i
+    
     svc={}
     i=0
     d={}
@@ -185,3 +200,13 @@ def addTCSCingraph(graph,ramfacts):
             graph[m].adjm.update({key:item}) #inserts the ram key in the bus to adjm dict
             graph[m].ladjm.append(k) #inserts the ram key in the bus to adjm list
 
+def addSVCingraph(graph,busSVC):
+     
+    if not busSVC:
+        return
+
+    for k,svc in busSVC.items():
+        graph[k].SVC=svc # it is not a reference of the original object in busSVC
+        graph[k].FlagSVC=True
+
+    

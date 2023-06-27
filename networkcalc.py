@@ -304,6 +304,29 @@ def create_z_x_loadflow_TCSC(graph):
                 i=i+1
     return zPf,var_x
 
+
+def create_x_loadflow_SVC(graph,var_v):
+    
+    var_svc={}
+    i=0
+    for no in graph:
+        if no.FlagSVC==True:
+            var_svc[no.id]=i
+            i=i+1
+    
+    i=0
+    keys=list(var_v.keys())
+    for key in keys:
+        if key in var_svc.keys():
+            del var_v[key]
+        else:
+            var_v[key]=i
+            i=i+1
+
+    return var_svc
+
+
+
 def create_x_TCSC(graph):
     var_x={}
     i=0
@@ -344,7 +367,7 @@ def calc_H_fp(z,var_t,var_v,graph,H):
                     soma2=soma2+branch.dPfdV(graph,1,item.k) 
                 if  branch.de in var_v.keys():
                     H[i][var_v[branch.de]+n_teta]=branch.dPfdV(graph,1,branch.de)
-            if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1:
+            if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1 and (item.k in var_v.keys()):
                 H[i][var_v[item.k]+n_teta]=soma2
             soma2=0
         elif item.type==1:
@@ -371,7 +394,7 @@ def calc_H_fp(z,var_t,var_v,graph,H):
                     soma2=soma2+branch.dQfdV(graph,1,item.k) 
                 if  branch.de in var_v.keys():
                     H[i][var_v[branch.de]+n_teta]=branch.dQfdV(graph,1,branch.de)
-            if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1:
+            if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1 and (item.k in var_v.keys()):
                 if graph[item.k].FlagBS==1:
                     soma2=soma2-2*graph[item.k].Bs*graph[item.k].V 
                 H[i][var_v[item.k]+n_teta]=soma2
@@ -469,6 +492,21 @@ def calc_H_fp_TCSC(z,var_x,graph,H):
                 for key in var_x.keys():
                     H[i][var_x[key]]=0 
         i=i+1
+
+def calc_H_fp_SVC(z,var_svc,graph,H):
+    i=0
+
+    for item in z:
+        if item.type==0:
+            k=item.k
+            if graph[k].FlagSVC==1:
+                H[i][var_svc[k]]= (graph[k].V**2)*graph[k].SVC.dGkdBsvc()
+        if item.type==0:
+            k=item.k
+            if graph[k].FlagSVC==1:
+                H[i][var_svc[k]]= -(graph[k].V**2)*graph[k].SVC.dBkdBsvc()
+        i=i+1
+
 
 
 def calc_H_fp_TCSC_B(z,var_x,graph,H):
@@ -743,6 +781,14 @@ def new_X(graph,var_t,var_v,dx):
     for key,item in var_v.items():
         graph[key].V=graph[key].V+dx[item+n_teta]
 
+
+def new_X_SVC(graph,offset,var_svc,dx):
+    for key,item in var_svc.items():
+        graph[key].SVC.BSVC=graph[key].SVC.BSVC+dx[offset+item]
+        graph[key].SVC.attYk()
+
+
+
 def new_X_TCSCC(graph,nvars,var_x,dx):
     for key,item in var_x.items():
         k=int(key.split("-")[0])
@@ -773,12 +819,16 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     
     zPf,var_x = create_z_x_loadflow_TCSC(graph)#create z and dinctionary with the variables for the FACTS devices
     [z,var_t,var_v]=create_z_x_loadflow(graph)#create z and var_v and var_t for the traditional load flow
+    var_svc=create_x_loadflow_SVC(graph,var_v)
+
+
     z=z+zPf
     FACTSini(graph,useDFACTS=1)
     Vinici_lf(graph,useDBAR=inici,var_t=var_t,var_x=var_x,z=z)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     Hx=np.zeros((len(z),len(var_x)))
+    HSVC=np.zeros((len(z),len(var_svc)))
     it=0
     conv=0
     lstdx=[]
@@ -788,11 +838,13 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
         calc_dz(z,graph,dz)
         calc_H_fp(z,var_t,var_v,graph,H)
         calc_H_fp_TCSC(z,var_x,graph,Hx)
-        HTCSC=np.concatenate((H,Hx),axis=1)
+        calc_H_fp_SVC(z,var_svc,graph,HSVC)
+        HTCSC=np.concatenate((H,Hx,HSVC),axis=1)
         A=sparse.csc_matrix(HTCSC, dtype=float)
         dx=sliang.spsolve(A,dz)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
+        new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         maxdx=np.max(np.abs(dx))
         maxdz=np.max(np.abs(dz))
         lstdx.append(maxdx)

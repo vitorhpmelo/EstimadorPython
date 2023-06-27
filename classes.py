@@ -245,10 +245,13 @@ class node_graph():
         self.teta=0
         self.FlagBS=0
         self.FlagTCSC=0
+        self.FlagSVC=0
         self.bFACTS_adjk=dict()
         self.bFACTS_adjm=dict()
     def P(self,graph):
         P=0
+        if self.FlagSVC==1:
+            P=P+self.SVC.Gk*self.V**2 
         for key,item in self.adjk.items():
             P=P+item.Pf(graph,0)
         for key,item in self.adjm.items():
@@ -261,6 +264,8 @@ class node_graph():
             Q=0
         else:    
             Q=-self.Bs*self.V**2 
+        if self.FlagSVC==1:
+            Q=Q+self.SVC.Bk*self.V**2 
         for key,item in self.adjk.items():
             Q=Q+item.Qf(graph,0)
         for key,item in self.adjm.items():
@@ -336,12 +341,29 @@ class SVC():
         self.Rt=Rt
         self.Xt=Xt
         self.Bini=Bini
-        self.B=Bini
+        self.BSVC=Bini
+        self.Xeq=(self.Xt-1/self.BSVC)
+        self.Bk=-self.Xeq/(self.Xeq**2+self.Rt**2)
+        self.Gk=self.Rt/(self.Xeq**2+self.Rt**2)
         self.BMAX=BMAX
         self.BMIN=BMIN
         self.aini=aini
         self.amax=amax
         self.amin=amin
+    def attYk(self):
+        self.Xeq=(self.Xt-1/self.BSVC)
+        self.Bk=-self.Xeq/(self.Xeq**2+self.Rt**2)
+        self.Gk=self.Rt/(self.Xeq**2+self.Rt**2)
+    def dGkdBsvc(self):
+        numerador=2*self.Rt*self.BSVC*(self.Xt*self.BSVC-1)
+        denominador=((self.Rt**2)*(self.BSVC**2)+(self.Xt*self.BSVC-1)**2)**2
+        return numerador/denominador
+    def dBkdBsvc(self):
+        #parei aqui
+        numerador=(self.Rt**2)*(self.BSVC**2)-(self.Xt**2)*(self.BSVC**2)+2*(self.Xt)*(self.BSVC)-1  
+        denominador=((self.Rt**2)*(self.BSVC**2)+(self.Xt*self.BSVC-1)**2)**2
+        return numerador/denominador
+
 
 
 class netinfo():
