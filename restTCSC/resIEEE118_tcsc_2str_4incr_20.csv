@@ -1,3 +1,7 @@
 ,Solver,prec,EMA_V,EMA_T,EMA_X,EMA_total,Media Tempo total,Media Tempo iteçoes,Númeoro Médio de Iterações,Max itera,Numero Convs,Namos
+<<<<<<< HEAD
 0,A,20,0.0003867340912296418,0.5236679389877376,0.0013505654450584915,0.17513507950800858,0.6989923090037733,0.05464442357958546,11.049504950495049,15.0,101,102
+=======
+0,A,20,,,,,,,,,0,201
+>>>>>>> refs/remotes/origin/TCSC
 1,B,20,,,,,,,,,0,201

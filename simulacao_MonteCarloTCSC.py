@@ -17,8 +17,13 @@ import scipy.sparse.linalg as sliang
 #%% Lê arquivos e constroi a estrutura da rede
 
 sys="IEEE118_tcsc_2"
+<<<<<<< HEAD
 increase=20
 flatstart=4
+=======
+increase=5
+flatstart=5
+>>>>>>> refs/remotes/origin/TCSC
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -76,7 +81,11 @@ NumeroItsB=[]
 pre1=1e-5
 prec2=1e-8
 i=0
+<<<<<<< HEAD
 itmax=10
+=======
+itmax=500
+>>>>>>> refs/remotes/origin/TCSC
 amostrasA=0
 amostrasB=0
 while((len(NumeroItsA)<101)or(len(NumeroItsB)<101)):
@@ -110,6 +119,10 @@ while((len(NumeroItsA)<101)or(len(NumeroItsB)<101)):
     if i>itmax:
         break
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> refs/remotes/origin/TCSC
 # %% calculo erros
 
 erro_A_V=[]

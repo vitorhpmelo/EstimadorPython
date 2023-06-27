@@ -36,9 +36,16 @@ def read_files(sys):
         dfDTCSC["type"]=0
     except:
         print("There is no DTCSC")
-        dfDTCSC=[]    
+        dfDTCSC=pd.DataFrame()   
+    try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
+        dfDSVC=pd.read_csv(sys+"/DSVC.csv",header=None,dtype={0:np.int64,1:np.int64,2:np.float64,3:np.float64,4:np.float64,5:np.float64,6:np.float64,7:np.float64,8:np.float64,9:np.float64})
+        dfDSVC.columns=["id","de","Rt","Xt","Bini","Bmax","Bmin","aini","amax","amin"]
+        dfDSVC["type"]=1
+    except:
+        print("There is no DSVC")
+        dfDSVC=pd.DataFrame()   
     try:
-        dfDFACTS=pd.concat([dfDTCSC], axis=0, ignore_index=True)
+        dfDFACTS=pd.concat([dfDTCSC,dfDSVC], axis=0, ignore_index=True)
     except:
         dfDFACTS=[]
     return dfDBAR,dfDBRAN,dfDMED,dfDFACTS
