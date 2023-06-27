@@ -17,7 +17,7 @@ import scipy.sparse.linalg as sliang
 #%% Lê arquivos e constroi a estrutura da rede
 
 sys="IEEE118_tcsc_2"
-increase=5
+increase=20
 flatstart=4
 
 
@@ -36,8 +36,8 @@ graph=create_graph(bars,ram)
 addFACTSingraph(graph,ramTCSC)
 
 
-conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
-# conv=load_flow_FACTS_2(graph,prt=1)
+# conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
+conv=load_flow_FACTS_2(graph,prt=1)
 
 ram.update(ramTCSC)
 save_DMED_fp(graph,ram,sys)
@@ -76,7 +76,7 @@ NumeroItsB=[]
 pre1=1e-5
 prec2=1e-8
 i=0
-itmax=200
+itmax=10
 amostrasA=0
 amostrasB=0
 while((len(NumeroItsA)<101)or(len(NumeroItsB)<101)):
@@ -110,39 +110,6 @@ while((len(NumeroItsA)<101)or(len(NumeroItsB)<101)):
     if i>itmax:
         break
 
-i=0
-while (sum(nconvsA)<100) | (sum(nconvsB) <100):
-    dfDMEDr=insert_res(dfDMEDsr,i)
-    i=i+1
-    if sum(nconvsA)<100:
-        [conv,nIT,tits,tf]=SS_WLS_FACTS_clean(graph,dfDMEDr,ind_i,flatstart=5)
-        nconvsA.append(conv)
-        print("{} Amostras do Estimador A".format(sum(nconvsA)))
-        if conv == 1:
-            stateA.append(get_state(graph))
-            stateA_X.append(get_state_TCSC(ramTCSC))
-            TemposTotaisA.append(tf)
-            TemposiTA.append(np.mean(tits))
-            NumeroItsA.append(nIT)
-        del nIT,tits,tf
-        if sum(nconvsA)==100:
-            NA=i
-    if sum(nconvsB)<101:   
-        [conv,nIT,tits,tf]=SS_WLS_FACTS_2_clean(graph,dfDMEDr,ind_i,flatstart=5)
-        nconvsB.append(conv)
-        print("{} Amostras do Estimador B".format(sum(nconvsB)))
-        if conv == 1:
-            stateB.append(get_state(graph))
-            stateB_X.append(get_state_TCSC(ramTCSC))
-            TemposTotaisB.append(tf)
-            TemposiTB.append(np.mean(tits))
-            NumeroItsB.append(nIT)
-        if sum(nconvsA)==100:
-            NB=i
-        del nIT,tits,tf
-    print(i)
-    if i>500:
-        break
 # %% calculo erros
 
 erro_A_V=[]
@@ -190,7 +157,6 @@ try:
 except:
     maxiteB=np.nan
 
-    NumeroItsA
 
 
 try:

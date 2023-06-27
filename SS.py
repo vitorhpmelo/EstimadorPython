@@ -500,7 +500,7 @@ def SS_WLS_FACTS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
     it2=0
     itmax=10
     condlst=[]
-    while(it <30):
+    while(it <20):
         t0=tm.time()
         a=1
         calc_dz(z,graph,dz)
