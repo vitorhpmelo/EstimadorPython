@@ -265,7 +265,7 @@ class node_graph():
         else:    
             Q=-self.Bs*self.V**2 
         if self.FlagSVC==1:
-            Q=Q+self.SVC.Bk*self.V**2 
+            Q=Q-self.SVC.Bk*self.V**2 
         for key,item in self.adjk.items():
             Q=Q+item.Qf(graph,0)
         for key,item in self.adjm.items():
@@ -316,7 +316,7 @@ class node_graph():
             return  self.adjk[str(self.i)+"-"+str(bar)].dQdt(graph,1,bar)
         else:
             return 0
-    def dQdV(self,graph,bar):
+    def dQdV(self,graph,bar): ## ENTRA AQUI A DERIVADA DO SVC
         if self.i==bar:
             if self.FlagBS==0:
                 dQdV=0
@@ -355,7 +355,7 @@ class SVC():
         self.Bk=-self.Xeq/(self.Xeq**2+self.Rt**2)
         self.Gk=self.Rt/(self.Xeq**2+self.Rt**2)
     def dGkdBsvc(self):
-        numerador=2*self.Rt*self.BSVC*(self.Xt*self.BSVC-1)
+        numerador=-2*self.Rt*self.BSVC*(self.Xt*self.BSVC-1)
         denominador=((self.Rt**2)*(self.BSVC**2)+(self.Xt*self.BSVC-1)**2)**2
         return numerador/denominador
     def dBkdBsvc(self):
