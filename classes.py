@@ -366,7 +366,7 @@ class SVC():
         #parei aqui
         numerador=(self.Rt**2)*(self.BSVC**2)-(self.Xt**2)*(self.BSVC**2)+2*(self.Xt)*(self.BSVC)-1  
         denominador=((self.Rt**2)*(self.BSVC**2)+(self.Xt*self.BSVC-1)**2)**2
-        return numerador/denominador
+        return -numerador/denominador
 
 
 

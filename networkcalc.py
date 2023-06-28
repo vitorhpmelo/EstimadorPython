@@ -216,7 +216,7 @@ def Vinici_DBAR(graph):
     '''
     for no in graph:
         no.V=no.bar.V
-        no.teta=round(no.bar.teta,1)
+        no.teta=no.bar.teta
 
 def FACTSini(graph,useDFACTS=1):
     """
@@ -502,7 +502,7 @@ def calc_H_fp_SVC(z,var_svc,graph,H):
             k=item.k
             if graph[k].FlagSVC==1:
                 H[i][var_svc[k]]= (graph[k].V**2)*graph[k].SVC.dGkdBsvc()
-        if item.type==0:
+        if item.type==1:
             k=item.k
             if graph[k].FlagSVC==1:
                 H[i][var_svc[k]]= -(graph[k].V**2)*graph[k].SVC.dBkdBsvc()
@@ -826,6 +826,7 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     z=z+zPf
     FACTSini(graph,useDFACTS=1)
     Vinici_lf(graph,useDBAR=inici,var_t=var_t,var_x=var_x,z=z)
+    # Vinici_DBAR(graph)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
     Hx=np.zeros((len(z),len(var_x)))
@@ -848,6 +849,8 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         maxdx=np.max(np.abs(dx))
         maxdz=np.max(np.abs(dz))
+        print(maxdx)
+        print(maxdz)
         lstdx.append(maxdx)
         lstdz.append(maxdz)
         if maxdx< tol and maxdz < tol:
