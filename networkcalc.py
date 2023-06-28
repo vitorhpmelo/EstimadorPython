@@ -368,7 +368,8 @@ def calc_H_fp(z,var_t,var_v,graph,H):
                 if  branch.de in var_v.keys():
                     H[i][var_v[branch.de]+n_teta]=branch.dPfdV(graph,1,branch.de)
             if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1 and (item.k in var_v.keys()):
-                H[i][var_v[item.k]+n_teta]=soma2
+                H[i][var_v[item.k]+n_teta]=soma2## Colocar as derivadas do shunt
+
             soma2=0
         elif item.type==1:
             for key,branch in graph[item.k].adjk.items():#calcula as derivadas relativa as barras de e a do próprio angulo
@@ -396,7 +397,7 @@ def calc_H_fp(z,var_t,var_v,graph,H):
                     H[i][var_v[branch.de]+n_teta]=branch.dQfdV(graph,1,branch.de)
             if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1 and (item.k in var_v.keys()):
                 if graph[item.k].FlagBS==1:
-                    soma2=soma2-2*graph[item.k].Bs*graph[item.k].V 
+                    soma2=soma2-2*graph[item.k].Bs*graph[item.k].V ## Colocar as derivadas do shunt## Colocar as derivadas do shunt## Colocar as derivadas do shunt## Colocar as derivadas do shunt
                 H[i][var_v[item.k]+n_teta]=soma2
             soma2=0
         elif item.type==2:

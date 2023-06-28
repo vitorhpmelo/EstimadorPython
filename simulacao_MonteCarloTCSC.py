@@ -36,8 +36,8 @@ graph=create_graph(bars,ram)
 addFACTSingraph(graph,ramTCSC)
 
 
-conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
-# conv=load_flow_FACTS_2(graph,prt=1)
+# conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
+conv=load_flow_FACTS_2(graph,prt=1)
 
 ram.update(ramTCSC)
 save_DMED_fp(graph,ram,sys)
@@ -110,7 +110,6 @@ while((len(NumeroItsA)<101)or(len(NumeroItsB)<101)):
     if i>itmax:
         break
 
-
 # %% calculo erros
 
 erro_A_V=[]
@@ -158,7 +157,6 @@ try:
 except:
     maxiteB=np.nan
 
-    NumeroItsA
 
 
 try:

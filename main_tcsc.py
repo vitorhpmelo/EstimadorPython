@@ -41,7 +41,7 @@ addTCSCingraph(graph,ramTCSC)
 addSVCingraph(graph,busSVC)
 
 #%%
-conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
+conv=load_flow_FACTS(graph,inici=0,prt=1,itmax=40)
 
 #%%
 conv=load_flow_FACTS_2(graph,prt=1)
