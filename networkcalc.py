@@ -182,7 +182,10 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
                     else:
                         no.teta=0+tetaini  
             else:
-                no.V=1
+                if  no.FlagSVC==True:
+                    no.V=no.bar.V 
+                else:
+                    no.V=1
                 no.teta=0+tetaini 
     else:
         [x,H]=load_flow_FACTS_cc(z,graph,var_x,var_t)
@@ -829,7 +832,7 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     # Vinici_DBAR(graph)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
-    Hx=np.zeros((len(z),len(var_x)))
+    HTCSC=np.zeros((len(z),len(var_x)))
     HSVC=np.zeros((len(z),len(var_svc)))
     it=0
     conv=0
@@ -839,18 +842,17 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     while it<itmax:
         calc_dz(z,graph,dz)
         calc_H_fp(z,var_t,var_v,graph,H)
-        calc_H_fp_TCSC(z,var_x,graph,Hx)
+        calc_H_fp_TCSC(z,var_x,graph,HTCSC)
         calc_H_fp_SVC(z,var_svc,graph,HSVC)
-        HTCSC=np.concatenate((H,Hx,HSVC),axis=1)
-        A=sparse.csc_matrix(HTCSC, dtype=float)
+        Hx=np.concatenate((H,HTCSC,HSVC),axis=1)
+        A=sparse.csc_matrix(Hx, dtype=float)
         dx=sliang.spsolve(A,dz)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         maxdx=np.max(np.abs(dx))
         maxdz=np.max(np.abs(dz))
-        print(maxdx)
-        print(maxdz)
+        print("max dx {:e} | max dz {:e} ".format(maxdx,maxdz))
         lstdx.append(maxdx)
         lstdz.append(maxdz)
         if maxdx< tol and maxdz < tol:
@@ -883,12 +885,15 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
 
     zPf,var_x = create_z_x_loadflow_TCSC(graph)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
+    var_svc=create_x_loadflow_SVC(graph,var_v)
+
     z=z+zPf
     FACTSini(graph,useDFACTS=1)
     Vinici_lf(graph,useDBAR=inici,var_t=var_t,var_x=var_x,z=z)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
-    Hx=np.zeros((len(z),len(var_x)))
+    HTCSC=np.zeros((len(z),len(var_x)))
+    HSVC=np.zeros((len(z),len(var_svc)))
     it=0
     conv=0
     lstdx=[]
@@ -896,9 +901,10 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     while it<40:
         calc_dz(z,graph,dz)
         calc_H_fp(z,var_t,var_v,graph,H)
-        calc_H_fp_TCSC_B(z,var_x,graph,Hx)
-        HTCSC=np.concatenate((H,Hx),axis=1)
-        A=sparse.csc_matrix(HTCSC, dtype=float)
+        calc_H_fp_TCSC_B(z,var_x,graph,HTCSC)
+        calc_H_fp_SVC(z,var_svc,graph,HSVC)
+        Hx=np.concatenate((H,HTCSC,HSVC),axis=1)
+        A=sparse.csc_matrix(Hx, dtype=float)
         dx=sliang.spsolve(A,dz)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC_B(graph,len(var_t)+len(var_v),var_x,dx)

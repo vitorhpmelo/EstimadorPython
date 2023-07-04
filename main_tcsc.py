@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE4_SVC"
+sys="IEEE14_SVC"
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -42,6 +42,18 @@ addSVCingraph(graph,busSVC)
 
 #%%
 conv=load_flow_FACTS(graph,inici=1,prt=1,itmax=40)
+#%%
+
+try:
+    for key,r in ramTCSC.items():
+        print("{:e}".format(r.xtcsc))
+except:
+    pass
+
+ram.update(ramTCSC)
+
+save_DMED_fp(graph,ram,sys)
+
 
 #%%
 conv=load_flow_FACTS_2(graph,prt=1)
@@ -49,12 +61,6 @@ conv=load_flow_FACTS_2(graph,prt=1)
 #%%
 
 
-#%%
-for key,r in ramTCSC.items():
-    print("{:e}".format(r.xtcsc))
-
-ram.update(ramTCSC)
-save_DMED_fp(graph,ram,sys)
 
 #%%
 state_ref=get_state(graph)
