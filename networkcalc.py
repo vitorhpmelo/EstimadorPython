@@ -199,7 +199,10 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
             if no.bar.type == 1 or no.bar.type == 0:
                 no.V=no.bar.V
             else:
-                no.V=1
+                if  no.FlagSVC==True:
+                    no.V=no.bar.V 
+                else:
+                    no.V=1
         for key,i in var_x.items():
             k=int(key.split("-")[0])
             if key in graph[k].adjk.keys():
@@ -231,13 +234,18 @@ def FACTSini(graph,useDFACTS=1):
                 for  key in no.bFACTS_adjk.keys():
                     no.bFACTS_adjk[key].xtcsc=0.0001
                     no.bFACTS_adjk[key].AttY()
-                    
+            if no.FlagSVC==True:
+                no.SVC.BSVC=0.10
+                no.SVC.attYk()    
     if useDFACTS==1:
         for no in graph:
             if no.FlagTCSC==1:
                 for  key in no.bFACTS_adjk.keys():
                     no.bFACTS_adjk[key].xtcsc=no.bFACTS_adjk[key].xtcsc_ini
                     no.bFACTS_adjk[key].AttY()
+            if no.FlagSVC==True:
+                no.SVC.BSVC=no.SVC.Bini
+                no.SVC.attYk()    
 
 
 
@@ -309,6 +317,11 @@ def create_z_x_loadflow_TCSC(graph):
 
 
 def create_x_loadflow_SVC(graph,var_v):
+    """
+    Auxiliar funcition for the load flow routine, creates the dictionary with the variables from the SVC and REMOVES the voltage magnitudes of the buses with SVC.
+
+    """
+
     
     var_svc={}
     i=0
@@ -328,6 +341,20 @@ def create_x_loadflow_SVC(graph,var_v):
 
     return var_svc
 
+
+def create_x_SVC(graph):
+    """
+    Creates the dictionary for the SVC variables
+    """
+    
+    var_svc={}
+    i=0
+    for no in graph:
+        if no.FlagSVC==True:
+            var_svc[no.id]=i
+            i=i+1
+    
+    return var_svc
 
 
 def create_x_TCSC(graph):
@@ -510,6 +537,21 @@ def calc_H_fp_SVC(z,var_svc,graph,H):
             if graph[k].FlagSVC==1:
                 H[i][var_svc[k]]= -(graph[k].V**2)*graph[k].SVC.dBkdBsvc()
         i=i+1
+
+def calc_H_EE_SVC(z,var_svc,graph,H):
+    
+    i=0
+    for item in z:
+        if item.type==0:
+            k=item.k
+            if graph[k].FlagSVC==1:
+                H[i][var_svc[k]]= (graph[k].V**2)*graph[k].SVC.dGkdBsvc()
+        if item.type==1:
+            k=item.k
+            if graph[k].FlagSVC==1:
+                H[i][var_svc[k]]= -(graph[k].V**2)*graph[k].SVC.dBkdBsvc()
+        i=i+1
+
 
 
 
@@ -908,6 +950,7 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
         dx=sliang.spsolve(A,dz)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC_B(graph,len(var_t)+len(var_v),var_x,dx)
+        new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         maxdx=np.max(np.abs(dx))
         maxdz=np.max(np.abs(dz))
         lstdx.append(maxdx)
