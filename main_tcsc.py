@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE118_tcsc_elizete_SVC"
+sys="IEEE118_SVC"
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -72,7 +72,7 @@ print("FACTS1")
 dfDMEDr=insert_res(dfDMEDsr)
 with open("conds.csv","w") as f:
     f.write("Estimador 1 \n")
-SS_WLS_FACTS(graph,dfDMEDsr,ind_i,flatstart=4,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
+SS_WLS_FACTS(graph,dfDMEDr,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 #%%
 
 #%%
