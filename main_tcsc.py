@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE118_SVC"
+sys="IEEE118_SVC_TCSC_Rakpenthai"
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -29,11 +29,9 @@ dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
 
 [busSVC,BUS_SVC]=create_SVC(dfDFACTS,ind_i)
 
-#%%
-
 
 graph=create_graph(bars,ram)
-#%%
+
 addTCSCingraph(graph,ramTCSC)
 
 addSVCingraph(graph,busSVC)
@@ -53,12 +51,6 @@ ram.update(ramTCSC)
 save_DMED_fp(graph,ram,sys)
 
 
-# #%%
-# conv=load_flow_FACTS_2(graph,inici=1,prt=1)
-# # 
-# #%%
-
-
 
 #%%
 state_ref=get_state(graph)
@@ -72,7 +64,7 @@ print("FACTS1")
 dfDMEDr=insert_res(dfDMEDsr)
 with open("conds.csv","w") as f:
     f.write("Estimador 1 \n")
-SS_WLS_FACTS(graph,dfDMEDr,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
+SS_WLS_FACTS(graph,dfDMEDr,ind_i,flatstart=4,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 #%%
 
 #%%

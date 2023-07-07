@@ -424,8 +424,8 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
         calc_H_EE_SVC(z,var_svc,graph,HSVC)
         H=np.concatenate((Htrad,HTCSC,HSVC),axis=1)
         grad=np.matmul(np.matmul(H.T,W),dz)
-        dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)
-        # dx=NormalEQ_QR(H,W,dz,printcond=printcond,printmat=printmat)
+        # dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)
+        dx=NormalEQ_QR(H,W,dz,printcond=printcond,printmat=printmat)
         Jxk=np.matmul(np.matmul(dz,W),dz)
         if it==0:
             norminicial=liang.norm(grad)

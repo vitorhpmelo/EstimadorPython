@@ -113,6 +113,11 @@ def Vinici(graph,flatStart=0,dfDMED=[],ind_i=[]):
         if no.bar.type==0:
             idxref=no.id
             break
+    for no in graph:
+        if no.bar.type == 0:
+            tetaini=no.bar.teta
+            break
+
 
     if flatStart==0:
         for no in graph:
@@ -125,7 +130,7 @@ def Vinici(graph,flatStart=0,dfDMED=[],ind_i=[]):
     elif flatStart==2:
         for no in graph:
             no.V=no.bar.V
-            no.teta=0
+            no.teta=tetaini
     elif flatStart==3:
         for no in graph:
             no.V=1+np.random.uniform(low=0,high=0.1)
@@ -136,14 +141,16 @@ def Vinici(graph,flatStart=0,dfDMED=[],ind_i=[]):
                 no.V=1.1    
             else:
                 no.V=1.0   
-            no.teta=0
+            no.teta=no.bar.teta
     elif flatStart==5:
         [x,H,var_t,var_v,var_x]=SS_WLS_linear(graph,dfDMED,ind_i)
         for no in graph:
             k=no.id
             if no.bar.type!=0:
                 i=var_t[k]
-                no.teta=x[i]
+                no.teta=x[i]+tetaini
+            elif no.bar.type==0:
+                no.teta=tetaini
             no.V=1
         for key,i in var_x.items():
             k=int(key.split("-")[0])
