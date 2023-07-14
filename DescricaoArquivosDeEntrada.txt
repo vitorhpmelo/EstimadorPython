@@ -49,3 +49,23 @@ BMIN -  sucptance min value of the SVC
 aini - alpha initialization value of the SVC
 amax - alpha initialization value of the SVC
 amin - alpha initialization value of the SVC
+
+---------------------------------------------------------------------------------------
+
+DUPFC -- File with the information of the system's UPFC
+
+id - identification of the UPFC
+from - from bus id 
+to - to bus id
+Vse - iniitial value of the series source magnitude (p.u.)
+t_se - iniitial value of the series source phase angle (deg)
+Vsh - iniitial value of the series source magnitude (p.u.)
+t_sh - iniitial value of the series source phase angle (deg)
+Psp - set point of terminal "s-p" active power flow (p.u.)
+Qsp - set point of terminal "s-p" reactive power flow (p.u.)
+Vp- ser point of terminal "p" voltage (p.u.)
+Rse - series transformer resistence (p.u.)
+Xse - series transformer reactance (p.u.)
+Rsh - shunt transformer resistence (p.u.)
+Xsh - shunt transformer reactance (p.u.)
+mode - 0 controles voltage at bus "p"/ 1 does note control voltage at bus "p"
