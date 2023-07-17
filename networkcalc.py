@@ -113,6 +113,11 @@ def Vinici(graph,flatStart=0,dfDMED=[],ind_i=[]):
         if no.bar.type==0:
             idxref=no.id
             break
+    for no in graph:
+        if no.bar.type == 0:
+            tetaini=no.bar.teta
+            break
+
 
     if flatStart==0:
         for no in graph:
@@ -125,7 +130,7 @@ def Vinici(graph,flatStart=0,dfDMED=[],ind_i=[]):
     elif flatStart==2:
         for no in graph:
             no.V=no.bar.V
-            no.teta=0
+            no.teta=tetaini
     elif flatStart==3:
         for no in graph:
             no.V=1+np.random.uniform(low=0,high=0.1)
@@ -136,14 +141,16 @@ def Vinici(graph,flatStart=0,dfDMED=[],ind_i=[]):
                 no.V=1.1    
             else:
                 no.V=1.0   
-            no.teta=0
+            no.teta=no.bar.teta
     elif flatStart==5:
         [x,H,var_t,var_v,var_x]=SS_WLS_linear(graph,dfDMED,ind_i)
         for no in graph:
             k=no.id
             if no.bar.type!=0:
                 i=var_t[k]
-                no.teta=x[i]
+                no.teta=x[i]+tetaini
+            elif no.bar.type==0:
+                no.teta=tetaini
             no.V=1
         for key,i in var_x.items():
             k=int(key.split("-")[0])
@@ -182,7 +189,10 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
                     else:
                         no.teta=0+tetaini  
             else:
-                no.V=1
+                if  no.FlagSVC==True:
+                    no.V=no.bar.V 
+                else:
+                    no.V=1
                 no.teta=0+tetaini 
     else:
         [x,H]=load_flow_FACTS_cc(z,graph,var_x,var_t)
@@ -196,7 +206,10 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
             if no.bar.type == 1 or no.bar.type == 0:
                 no.V=no.bar.V
             else:
-                no.V=1
+                if  no.FlagSVC==True:
+                    no.V=no.bar.V 
+                else:
+                    no.V=1
         for key,i in var_x.items():
             k=int(key.split("-")[0])
             if key in graph[k].adjk.keys():
@@ -216,7 +229,7 @@ def Vinici_DBAR(graph):
     '''
     for no in graph:
         no.V=no.bar.V
-        no.teta=round(no.bar.teta,1)
+        no.teta=no.bar.teta
 
 def FACTSini(graph,useDFACTS=1):
     """
@@ -228,13 +241,18 @@ def FACTSini(graph,useDFACTS=1):
                 for  key in no.bFACTS_adjk.keys():
                     no.bFACTS_adjk[key].xtcsc=0.0001
                     no.bFACTS_adjk[key].AttY()
-                    
+            if no.FlagSVC==True:
+                no.SVC.BSVC=0.10
+                no.SVC.attYk()    
     if useDFACTS==1:
         for no in graph:
             if no.FlagTCSC==1:
                 for  key in no.bFACTS_adjk.keys():
                     no.bFACTS_adjk[key].xtcsc=no.bFACTS_adjk[key].xtcsc_ini
                     no.bFACTS_adjk[key].AttY()
+            if no.FlagSVC==True:
+                no.SVC.BSVC=no.SVC.Bini
+                no.SVC.attYk()    
 
 
 
@@ -306,6 +324,11 @@ def create_z_x_loadflow_TCSC(graph):
 
 
 def create_x_loadflow_SVC(graph,var_v):
+    """
+    Auxiliar funcition for the load flow routine, creates the dictionary with the variables from the SVC and REMOVES the voltage magnitudes of the buses with SVC.
+
+    """
+
     
     var_svc={}
     i=0
@@ -325,6 +348,20 @@ def create_x_loadflow_SVC(graph,var_v):
 
     return var_svc
 
+
+def create_x_SVC(graph):
+    """
+    Creates the dictionary for the SVC variables
+    """
+    
+    var_svc={}
+    i=0
+    for no in graph:
+        if no.FlagSVC==True:
+            var_svc[no.id]=i
+            i=i+1
+    
+    return var_svc
 
 
 def create_x_TCSC(graph):
@@ -502,11 +539,26 @@ def calc_H_fp_SVC(z,var_svc,graph,H):
             k=item.k
             if graph[k].FlagSVC==1:
                 H[i][var_svc[k]]= (graph[k].V**2)*graph[k].SVC.dGkdBsvc()
-        if item.type==0:
+        if item.type==1:
             k=item.k
             if graph[k].FlagSVC==1:
                 H[i][var_svc[k]]= -(graph[k].V**2)*graph[k].SVC.dBkdBsvc()
         i=i+1
+
+def calc_H_EE_SVC(z,var_svc,graph,H):
+    
+    i=0
+    for item in z:
+        if item.type==0:
+            k=item.k
+            if graph[k].FlagSVC==1:
+                H[i][var_svc[k]]= (graph[k].V**2)*graph[k].SVC.dGkdBsvc()
+        if item.type==1:
+            k=item.k
+            if graph[k].FlagSVC==1:
+                H[i][var_svc[k]]= -(graph[k].V**2)*graph[k].SVC.dBkdBsvc()
+        i=i+1
+
 
 
 
@@ -826,9 +878,10 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     z=z+zPf
     FACTSini(graph,useDFACTS=1)
     Vinici_lf(graph,useDBAR=inici,var_t=var_t,var_x=var_x,z=z)
+    # Vinici_DBAR(graph)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
-    Hx=np.zeros((len(z),len(var_x)))
+    HTCSC=np.zeros((len(z),len(var_x)))
     HSVC=np.zeros((len(z),len(var_svc)))
     it=0
     conv=0
@@ -838,16 +891,17 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     while it<itmax:
         calc_dz(z,graph,dz)
         calc_H_fp(z,var_t,var_v,graph,H)
-        calc_H_fp_TCSC(z,var_x,graph,Hx)
+        calc_H_fp_TCSC(z,var_x,graph,HTCSC)
         calc_H_fp_SVC(z,var_svc,graph,HSVC)
-        HTCSC=np.concatenate((H,Hx,HSVC),axis=1)
-        A=sparse.csc_matrix(HTCSC, dtype=float)
+        Hx=np.concatenate((H,HTCSC,HSVC),axis=1)
+        A=sparse.csc_matrix(Hx, dtype=float)
         dx=sliang.spsolve(A,dz)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         maxdx=np.max(np.abs(dx))
         maxdz=np.max(np.abs(dz))
+        print("max dx {:e} | max dz {:e} ".format(maxdx,maxdz))
         lstdx.append(maxdx)
         lstdz.append(maxdz)
         if maxdx< tol and maxdz < tol:
@@ -880,12 +934,15 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
 
     zPf,var_x = create_z_x_loadflow_TCSC(graph)
     [z,var_t,var_v]=create_z_x_loadflow(graph)
+    var_svc=create_x_loadflow_SVC(graph,var_v)
+
     z=z+zPf
     FACTSini(graph,useDFACTS=1)
     Vinici_lf(graph,useDBAR=inici,var_t=var_t,var_x=var_x,z=z)
     dz=np.zeros(len(z))
     H=np.zeros((len(z),len(var_t)+len(var_v)))
-    Hx=np.zeros((len(z),len(var_x)))
+    HTCSC=np.zeros((len(z),len(var_x)))
+    HSVC=np.zeros((len(z),len(var_svc)))
     it=0
     conv=0
     lstdx=[]
@@ -893,12 +950,14 @@ def load_flow_FACTS_2(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     while it<40:
         calc_dz(z,graph,dz)
         calc_H_fp(z,var_t,var_v,graph,H)
-        calc_H_fp_TCSC_B(z,var_x,graph,Hx)
-        HTCSC=np.concatenate((H,Hx),axis=1)
-        A=sparse.csc_matrix(HTCSC, dtype=float)
+        calc_H_fp_TCSC_B(z,var_x,graph,HTCSC)
+        calc_H_fp_SVC(z,var_svc,graph,HSVC)
+        Hx=np.concatenate((H,HTCSC,HSVC),axis=1)
+        A=sparse.csc_matrix(Hx, dtype=float)
         dx=sliang.spsolve(A,dz)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC_B(graph,len(var_t)+len(var_v),var_x,dx)
+        new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         maxdx=np.max(np.abs(dx))
         maxdz=np.max(np.abs(dz))
         lstdx.append(maxdx)

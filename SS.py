@@ -1,6 +1,7 @@
 from classes import *
 import numpy as np
 import pandas as pd
+from networkcalc import Vinici
 from readfiles import *
 import scipy.sparse.linalg as sliang 
 import scipy.sparse as sparse 
@@ -395,30 +396,36 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
 
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
     var_x=create_x_TCSC(graph)
+    var_svc=create_x_SVC(graph)
+
     if flatstart==2:
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[1])
             graph[m].V=graph[m].V+0.1
+
     Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
     HTCSC=np.zeros((len(z),len(var_x)))
+    HSVC=np.zeros((len(z),len(var_svc)))
+
     dz=np.zeros(len(z))
     W=create_W(z,flag_ones=0,prec_virtual=prec_virtual)
     it=0
     it2=0
-    itmax=15
+    itmax=2
     lstdx=[]
     lstdz=[]
-    condlst=[]
-    while(it <20):
+    
+    while(it <30):
         a=1
         calc_dz(z,graph,dz)
         calc_H_EE(z,var_t,var_v,graph,Htrad)
         calc_H_EE_TCSC(z,var_x,graph,HTCSC)
-        H=np.concatenate((Htrad,HTCSC),axis=1)
+        calc_H_EE_SVC(z,var_svc,graph,HSVC)
+        H=np.concatenate((Htrad,HTCSC,HSVC),axis=1)
         grad=np.matmul(np.matmul(H.T,W),dz)
-        dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)
-        # dx=NormalEQ_QR(H,W,dz,printcond=printcond,printmat=printmat)
+        # dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)
+        dx=NormalEQ_QR(H,W,dz,printcond=printcond,printmat=printmat)
         Jxk=np.matmul(np.matmul(dz,W),dz)
         if it==0:
             norminicial=liang.norm(grad)
@@ -426,6 +433,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
         while it2<itmax:
             new_X(graph,var_t,var_v,a*dx)
             new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,a*dx)
+            new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,a*dx)
             calc_dz(z,graph,dz)
             Jxn=np.matmul(np.matmul(dz,W),dz)
             if Jxn < Jxk + c1*a*np.dot(grad,dx):
@@ -433,6 +441,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
             else:
                 new_X(graph,var_t,var_v,-a*dx)
                 new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,-a*dx)
+                new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,-a*dx)
                 a=a/2
                 it2=it2+1
         print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))

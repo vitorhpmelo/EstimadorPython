@@ -289,6 +289,8 @@ class node_graph():
             return 0
     def dPdV(self,graph,bar):
         dPdV=0
+        if self.FlagSVC==1:
+            dPdV=dPdV+2*self.SVC.Gk*self.V      
         if self.i==bar:
             for key,item in self.adjk.items(): 
                 dPdV=dPdV+item.dPfdV(graph,FlagT=0,var=bar)
@@ -321,7 +323,9 @@ class node_graph():
             if self.FlagBS==0:
                 dQdV=0
             else:    
-                dQdV=-2*self.Bs*self.V 
+                dQdV=-2*self.Bs*self.V
+            if self.FlagSVC==1:
+                dQdV=dQdV-2*self.SVC.Bk*self.V      
             for key,item in self.adjk.items(): 
                 dQdV=dQdV+item.dQdV(graph,FlagT=0,var=bar)
             for key,item in self.adjm.items():
@@ -362,7 +366,7 @@ class SVC():
         #parei aqui
         numerador=(self.Rt**2)*(self.BSVC**2)-(self.Xt**2)*(self.BSVC**2)+2*(self.Xt)*(self.BSVC)-1  
         denominador=((self.Rt**2)*(self.BSVC**2)+(self.Xt*self.BSVC-1)**2)**2
-        return numerador/denominador
+        return -numerador/denominador
 
 
 
