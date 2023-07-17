@@ -1,0 +1,2 @@
+id,from,to,Vse,t_se,Vsh,t_sh,Psp,Qsp,Vp,Rse,Xse,Rsh,Xsh,Vse_max,Vse_min,Vsh_max,Vsh_min,mode,
+0:np.int64,1:np.int64,2:np.int64,3:np.float64,4:np.float64,5:np.float64,6:np.float64,7:np.float64,8:np.float64,9:np.float64,10:np.float64,11:np.float64,12:np.float64,13:np.float64,14:np.float64,15:np.float64,16:np.float64,17:np.float64,18:np.float64,

@@ -44,8 +44,15 @@ def read_files(sys):
     except:
         print("There is no DSVC")
         dfDSVC=pd.DataFrame()   
+    try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
+        dfUPFC=pd.read_csv(sys+"/DUPFC.csv",header=None,dtype={0:np.int64,1:np.int64,2:np.float64,3:np.float64,4:np.float64,5:np.float64,6:np.float64,7:np.float64,8:np.float64,9:np.float64})
+        dfUPFC.columns=["id","from","to","Vse","t_se","Vsh","t_sh","Psp","Qsp","Vp","Rse","Xse","Rsh","Xsh","Vse_max","Vse_min","Vsh_max","Vsh_min","mode"]
+        dfUPFC["type"]=2
+    except:
+        print("There is no DSVC")
+        dfDSVC=pd.DataFrame()   
     try:
-        dfDFACTS=pd.concat([dfDTCSC,dfDSVC], axis=0, ignore_index=True)
+        dfDFACTS=pd.concat([dfDTCSC,dfDSVC,dfUPFC], axis=0, ignore_index=True)
     except:
         dfDFACTS=[]
     return dfDBAR,dfDBRAN,dfDMED,dfDFACTS
