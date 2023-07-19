@@ -157,6 +157,42 @@ def create_SVC(dfFACTS,ind_i):
         i+=1
     return svc,i
 
+
+def create_UPFC(dfFACTS,ind_i):
+    """
+    Function to read the information in the data frame dfFACTS and exatract the ones about the UPFC and put it into a dictionary, that is composed by instances of the
+    UPFC class. This ditc contains all the information about the network UFPCS.
+    @param: dfFACTS - Data Frame with the information about the buses
+    @param: ind_i - dict to translate the name of the bus to it index
+    @return ramUPFC - list of instances of branch class with the information about the network branches
+    @return i - number of UPFC 
+    """
+    ram={}
+    i=0
+    d={}
+##determina linhas paralelas
+    if dfFACTS.empty:
+        ram=[]
+        i=0
+        return ram,i    
+    if dfFACTS[dfFACTS["type"]==2].empty:
+        ram=[]
+        i=0
+        return ram,i
+    
+    dfTCSC=dfFACTS[dfFACTS["type"]==2].copy()
+    for id, row in dfTCSC.iterrows():
+        #ram type 3 == TCSC
+
+        key=str(ind_i[int(row["from"])])+"-"+str(ind_i[int(row["to"])])
+        item=UPFC(id=int(row["id"]),de=ind_i[int(row["from"])],para=ind_i[int(row["to"])],Vse_ini=row["Vse"],\
+                t_se_ini=row["t_se"],Vsh_ini=row["Vsh"],t_sh_ini=row["t_sh"],Psp=row["Psp"],Qsp=row["Qsp"],\
+                Vp=row["Vp"],Rse=row["Rse"],Xse=row["Xse"],Rsh=row["Rsh"],Xsh=row["Xsh"],Vse_max=row["Vse_max"],\
+                Vse_min=row["Vse_min"],Vsh_max=row["Vsh_max"],Vsh_min=row["Vsh_min"],mode=row["mode"])
+        ram[key]=item    
+        i+=1
+    return ram,i
+
 def create_graph(bars,ram):
     """
     Creates the network graph usinf the information of the bars list and the ram dic.
@@ -209,4 +245,16 @@ def addSVCingraph(graph,busSVC):
         graph[k].SVC=svc # it is not a reference of the original object in busSVC
         graph[k].FlagSVC=True
 
-    
+
+def addUPFCingraph(graph,ramUPFC):
+
+    if not ramUPFC:
+        return
+
+    for key,item in ramUPFC.items(): #save the adjacent buses in the node and the rams connected to it
+        k=int(key.split("-")[0]) #bus from
+        m=int(key.split("-")[1]) #bus to
+        graph[k].FlagUPFC=1 # indicates that there is TCSC in the bus from
+        graph[m].FlagUPFC=1# indicates that there is TCSC connected in the bus to
+        graph[k].bUFPC_adjk.update({key:item}) #inserts the ram key in the bus adj of the bus from dic only of FACTS
+        graph[m].bUFPC_adjm.update({key:item}) #inserts the ram key in the bus adj of the bus to dic only of FACTS

@@ -29,12 +29,29 @@ dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
 
 [busSVC,BUS_SVC]=create_SVC(dfDFACTS,ind_i)
 
+[ramUPFC,nbranUPFC]=create_UPFC(dfDFACTS,ind_i)
+
+
+
 
 graph=create_graph(bars,ram)
 
 addTCSCingraph(graph,ramTCSC)
 
 addSVCingraph(graph,busSVC)
+
+addUPFCingraph(graph,ramUPFC)
+
+#%%
+graph[1].V=1.00
+graph[1].teta=-6.02*np.pi/180
+#%%
+graph[3].V=0.997
+graph[3].teta=-2.51*np.pi/180
+#%%
+ANS=graph[1].bUFPC_adjk["1-3"].Pse(graph) -graph[1].bUFPC_adjk["1-3"].Psh(graph)
+
+
 
 #%%
 conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)

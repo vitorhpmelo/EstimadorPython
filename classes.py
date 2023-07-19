@@ -248,8 +248,11 @@ class node_graph():
         self.FlagBS=0
         self.FlagTCSC=0
         self.FlagSVC=0
+        self.FlagUPFC=0
         self.bFACTS_adjk=dict()
         self.bFACTS_adjm=dict()
+        self.bUFPC_adjk=dict()
+        self.bUFPC_adjm=dict()
     def P(self,graph):
         P=0
         if self.FlagSVC==1:
@@ -348,12 +351,12 @@ class UPFC():
         self.s=para # bus to, folliwing the graph order 
         self.Vse_ini=Vse_ini # Vse_ini initialization for the series source
         self.Vse=Vse_ini # Vse series source voltage magnitude
-        self.t_se_ini=t_se_ini*np.pi()/180 # t_se_ini series source voltage phase angle initizalization value
-        self.t_se=t_se_ini*np.pi()/180 # t_se series source voltage phase angle
+        self.t_se_ini=t_se_ini*np.pi/180 # t_se_ini series source voltage phase angle initizalization value
+        self.t_se=t_se_ini*np.pi/180 # t_se series source voltage phase angle
         self.Vsh_ini=Vsh_ini # Vsh_ini inirialization for the shunt source
         self.Vsh=Vsh_ini # Vsh shunt voltage source magnitude
-        self.t_sh_ini=t_sh_ini*np.pi()/180 # t_sh_ini shunt source voltage phase angle initizalization value
-        self.t_sh=t_sh_ini*np.pi()/180 # t_sh sgunt source voltage phase angle
+        self.t_sh_ini=t_sh_ini*np.pi/180 # t_sh_ini shunt source voltage phase angle initizalization value
+        self.t_sh=t_sh_ini*np.pi/180 # t_sh sgunt source voltage phase angle
         self.Psp_set=Psp # specified value for the active power flow over the UPFC 
         self.Qsp_set=Qsp # specified value for the reactve power flow over the UPFC
         self.Vp=Vp #specified value for the voltage magnitude in the terminal p
@@ -424,7 +427,7 @@ class UPFC():
         s=self.s
         PartI=(self.Vse**2)*self.bse
         PartII=-self.Vse*graph[p].V*(self.bse*np.cos(self.t_se-graph[p].teta)-self.gse*np.sin(self.t_se-graph[p].teta))
-        PartIII=-self.Vse*graph[s].V*(self.bse*np.cos(self.t_se-graph[s].teta)-self.bse*np.sin(self.t_se-graph[s].teta))
+        PartIII=self.Vse*graph[s].V*(self.bse*np.cos(self.t_se-graph[s].teta)-self.gse*np.sin(self.t_se-graph[s].teta))
         return -PartI-PartII-PartIII
 
     def Psh(self,graph):
@@ -433,7 +436,7 @@ class UPFC():
         """
         p=self.p
         PartI=-(self.Vsh**2)*self.gsh
-        PartII=self.Vsh*graph[p].V(self.gsh*np.cos(self.t_sh-graph[p].teta)+self.bsh*np.sin(self.t_sh+graph[p].teta))
+        PartII=self.Vsh*graph[p].V*(self.gsh*np.cos(self.t_sh-graph[p].teta)+self.bsh*np.sin(self.t_sh-graph[p].teta))
         return PartI+PartII
     
     def Qsh(self,graph):
@@ -442,18 +445,844 @@ class UPFC():
         """
         p=self.p
         PartI=-(self.Vsh**2)*self.bsh
-        PartII=self.Vsh*graph[p].V(self.bsh*np.cos(self.t_sh-graph[p].teta)-self.gsh*np.sin(self.t_sh+graph[p].teta))
+        PartII=self.Vsh*graph[p].V*(self.bsh*np.cos(self.t_sh-graph[p].teta)-self.gsh*np.sin(self.t_sh-graph[p].teta))
         return -PartI-PartII
+    
+    def dPpsdp(self,graph):
+        """
+        Calcualte the derivative of the active power in respect to the "p" (from) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*Vs*(bse*np.cos(tp - ts) - gse*np.sin(tp - ts)) - Vp*Vse*(bse*np.cos(tp - tse) - gse *np.sin(tp - tse)) \
+            - Vp*Vsh*(bsh*np.cos(tp - tsh) - gsh*np.sin(tp - tsh))
+    
+    
+    def dQpsdtp(self,graph):
+        """
+        Calcualte the derivative of the reactve power in respect to the "p" (from) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vp*Vs*((-bse)*np.sin(tp -ts) - gse*np.cos(tp - ts)) + Vp*Vse+((-bse)*np.sin(tp - tse) - gₛₑ*np.cos(tp - tse))\
+              + Vp*Vsh*((-bsh)*np.sin(tp - tsh) - gsh*np.cos(tp - tsh))
+    
+
+    def dPpsdts(self,graph):
+        """
+        Calcualte the derivative of the active power in respect to the "s" (to) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*Vs*(-bse*np.cos(tp - ts) + gse*np.sin(tp - ts))
+
+    def dQpsdts(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "s" (to) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vp*Vs*(bse*np.sin(tp - ts) + gse*np.cos(tp - ts))
 
 
+    def dPpsdtse(self,graph):
+        """
+        Calcualte the derivative of the active power in respect to the "se" (series voltage source) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*Vse*(-bse*np.cos(tp - tse) + gse*np.sin(tp - tse))
+
+    def dQpsdtse(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "se" (series voltage source) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vp*Vse*(bse*np.sin(tp - tse) + gse*np.cos(tp - tse))
+
+    def dPpsdtsh(self,graph):
+        """
+        Calcualte the derivative of the active power in respect to the "sh" (shunt voltage source) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*Vsh*(-bsh*np.cos(tp - tsh) + gsh*np.sin(tp - tsh))
+
+    def dQpsdtsh(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "sh" (shunt voltage source) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vp*Vsh+(bsh*np.sin(tp - tsh) + gsh*np.cos(tp - tsh))
+    
+    def dPpsdVp(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "p" (from terminal) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return 2*Vp*(gse + gsh) - Vs*(bse*np.sin(tp - ts) + gse*np.cos(tp - ts)) - Vse*(bse*np.sin(tp- tse) + gse*np.cos(tp - tse)) \
+            - Vsh*(bsh*np.sin(tp -tsh) + gsh*np.cos(tp -tsh))
+
+    def dQpsdVp(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "p" (from terminal) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -2*Vp*(bse + bsh) + Vs*(bse*np.cos(tp - ts) - gse*np.sin(tp - ts)) + \
+        Vse*(bse*np.cos(tp-tse) - gse*np.sin(tp- tse)) + Vsh*(bsh*np.cos(tp - tsh) -gsh*np.sin(tp - tsh))
 
 
+    def dPpsdVs(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "s" (to terminal) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*(bse*np.sin(tp - ts) + gse*np.cos(tp - ts))
+
+    def dQpsdVs(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "s" (to bus) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vp*(bse*np.cos(tp - ts) - gse*np.sin(tp - ts))
+    
+    def dPpsdVse(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "se" (series source) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*(bse*np.sin(tp - tse) + gse*np.cos(tp - tse))
+
+    def dQpsdVse(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "s" (series source) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vp*(bse*np.cos(tp - tse) - gse*np.sin(tp - tse))
+
+    def dPpsdVsh(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "sh" (shunt source) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*(bsh*np.sin(tp - tsh) + gsh*np.cos(tp - tsh))
+
+    def dQpsdVsh(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "sh" (shunt voltage) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vp*(bsh*np.cos(tp - tsh) - gsh*np.sin(tp - tsh))
+
+    #-------------------derivatives from s to p---------------------------------------------------
+
+    def dPspdp(self,graph):
+        """
+        Calcualte the derivative of the active power in respect to the "p" (from) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*Vs-(-bse*np.cos(tp - ts) - gse*np.sin(tp - ts))
+    
+    
+    def dQspdtp(self,graph):
+        """
+        Calcualte the derivative of the reactve power in respect to the "p" (from) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vp*Vs*(-bse*np.sin(tp - ts) + gse*np.cos(tp - ts))
+    
+    def dPspdts(self,graph):
+        """
+        Calcualte the derivative of the active power in respect to the "s" (to) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*Vs*(bse*np.cos(tp- ts) + gse*np.sin(tp- ts)) + Vs*Vse*(bse*np.cos(ts - tse) \
+                                                                          - gse*np.sin(ts - tse))
+
+    def dQspdts(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "s" (to) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vp*Vs*(bse*np.sin(tp - ts) - gse*np.cos(tp - ts)) -\
+             Vs*Vse*(-bse*np.sin(ts - tse) - gₛ*np.cos(ts - tse))
 
 
+    def dPspdtse(self,graph):
+        """
+        Calcualte the derivative of the active power in respect to the "se" (series voltage source) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vs*Vse*(-bse*np.cos(ts - tse) + gse*np.sin(ts - tse))
+
+    def dQspdtse(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "se" (series voltage source) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*Vse*(bse*np.sin(ts - tse) + gse*np.cos(ts - tse))
+
+    def dPspdtsh(self,graph):
+        """
+        Calcualte the derivative of the active power in respect to the "sh" (shunt voltage source) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return 0
+
+    def dQspdtsh(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "sh" (shunt voltage source) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return 0
+    
+    def dPspdVp(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "p" (from terminal) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vs*(-bse*np.sin(tp - ts) + gse*np.cos(tp - ts))
+
+    def dQspdVp(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "p" (from terminal) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vs*(bse*np.cos(tp - ts) + gse*np.sin(tp - ts))
 
 
+    def dPspdVs(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "s" (to terminal) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*(-bse*np.sin(tp - ts) + gse*np.cos(tp - ts)) + 2*Vs*gse \
+            + Vse*(bse*np.sin(ts - tse) + gse*np.cos(ts - tse))
+
+    def dQspdVs(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "s" (to bus) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vp*(bse*np.cos(tp - ts) + gse*np.sin(tp - ts)) - 2*Vs*bse \
+            - Vse*(bse*np.cos(ts - tse) - gse*np.sin(ts - tse))
+    
+    def dPspdVse(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "se" (series source) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vs*(bse*np.sin(ts - tse) + gse*np.cos(ts - tse))
+
+    def dQspdVse(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "s" (series source) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vs*(bse*np.cos(ts - tse) - gse*np.sin(ts - tse))
+
+    def dPspdVsh(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "sh" (shunt source) voltage magnitude
+        """    
 
 
+        return 0
+
+    def dQspdVsh(self,graph):
+        """
+        Calcualte the derivative of the reactive power in respect to the "sh" (shunt voltage) voltage magnitude
+        """    
+
+        return 0
+    
+    def dIgdtp(self,graph):
+        """
+        Calcualte the derivative of the power mismatch in respect to the "p" (from bus) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*Vse*(-bse*np.cos(tp - tse) - gse*np.sin(tp - tse)) -\
+            Vp*Vsh*(-bsh*np.cos(tp - tsh)- gsh*np.sin(tp - tsh))
+
+    
+    def dIgdts(self,graph):
+        """
+        Calcualte the derivative of the power mismatch in respect to the "s" (to bus) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vs*Vse*(-bse*np.cos(ts - tse) - gse*np.sin(ts - tse))
+
+    def dIgdtse(self,graph):
+        """
+        Calcualte the derivative of the power mismatch in respect to the "se" (series source) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*Vse*(bse*np.cos(tp - tse) + gse*np.sin(tp - tse)) \
+            + Vs*Vse*(bse*np.cos(ts - tse) + gse*np.sin(ts - tse))
+
+    def dIgdtsh(self,graph):
+        """
+        Calcualte the derivative of the power mismatch in respect to the "sh" (shun source) voltage angle
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*Vsh*(bsh*np.cos(tp - tsh) + gsh*np.sin(tp - tsh))
+
+
+    def dIgdVp(self,graph):
+        """
+        Calcualte the derivative of the power mismatch in respect to the "p" (from) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vse*(-bse*np.sin(tp - tse) + gse*np.cos(tp - tse)) \
+            - Vsh*(-bsh*np.sin(tp - tsh) + gsh*np.cos(tp - tsh))
+
+    def dIgdVs(self,graph):
+        """
+        Calcualte the derivative of the power mismatch in respect to the "s" (to bus) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return Vse*(-bse*np.sin(ts - tse) + gse*np.cos(ts - tse))
+
+    def dIgdVse(self,graph):
+        """
+        Calcualte the derivative of the power mismatch in respect to the "se" (series source) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*(-bse*np.sin(tp - tse) + gse*np.cos(tp - tse)) \
+            + Vs*(-bse*np.sin(ts - tse) + gse*np.cos(ts - tse)) + 2*Vse*gse
+
+    def dIgdVsh(self,graph):
+        """
+        Calcualte the derivative of the power mismatch in respect to the "sh" (series source) voltage magnitude
+        """    
+        p=self.p
+        s=self.s
+        Vp=graph[p].V
+        Vs=graph[s].V
+        tp=graph[p].teta
+        ts=graph[s].teta
+        Vse=self.Vse
+        Vsh=self.Vsh
+        tse=self.t_se
+        tsh=self.t_sh
+        gse=self.gse
+        bse=self.bse
+        gsh=self.gsh
+        bsh=self.bsh
+
+        return -Vp*(-bsh*np.sin(tp - tsh) + gsh*np.cos(tp - tsh)) + 2*Vsh*gsh
 
 
 class SVC():
