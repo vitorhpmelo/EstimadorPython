@@ -794,7 +794,7 @@ class UPFC():
 
     #-------------------derivatives from s to p---------------------------------------------------
 
-    def dPspdp(self,graph):
+    def dPspdtp(self,graph):
         """
         Calcualte the derivative of the active power in respect to the "p" (from) voltage angle
         """    
