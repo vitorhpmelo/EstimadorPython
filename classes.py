@@ -448,7 +448,7 @@ class UPFC():
         PartII=self.Vsh*graph[p].V*(self.bsh*np.cos(self.t_sh-graph[p].teta)-self.gsh*np.sin(self.t_sh-graph[p].teta))
         return -PartI-PartII
     
-    def dPpsdp(self,graph):
+    def dPpsdtp(self,graph):
         """
         Calcualte the derivative of the active power in respect to the "p" (from) voltage angle
         """    
