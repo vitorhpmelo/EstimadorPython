@@ -261,6 +261,10 @@ class node_graph():
             P=P+item.Pf(graph,0)
         for key,item in self.adjm.items():
             P=P+item.Pf(graph,1)
+        for key,item in self.bUFPC_adjk.items():
+            P=P+item.Pps(graph)
+        for key,item in self.bUFPC_adjm.items():
+            P=P+item.Psp(graph)
         if np.abs(P)<1e-12:
             P=0
         return P
@@ -275,6 +279,10 @@ class node_graph():
             Q=Q+item.Qf(graph,0)
         for key,item in self.adjm.items():
             Q=Q+item.Qf(graph,1)
+        for key,item in self.bUFPC_adjk.items():
+            Q=Q+item.Qps(graph)
+        for key,item in self.bUFPC_adjm.items():
+            Q=Q+item.Qsp(graph)
         if np.abs(Q)<1e-12:
             Q=0
         return Q
@@ -879,7 +887,7 @@ class UPFC():
         bsh=self.bsh
 
         return Vp*Vs*(bse*np.sin(tp - ts) - gse*np.cos(tp - ts)) -\
-             Vs*Vse*(-bse*np.sin(ts - tse) - gₛ*np.cos(ts - tse))
+             Vs*Vse*(-bse*np.sin(ts - tse) - gse*np.cos(ts - tse))
 
 
     def dPspdtse(self,graph):
@@ -1339,16 +1347,20 @@ class meas():
         self.sigma=np.abs(val)*prec/3
     def dz(self,graph):
         if self.type==0:
-            return self.val-graph[self.k].P(graph)
+            return self.val-graph[self.k].P(graph) ## inserir fluxos do UPFC
         elif self.type==1:
-            return self.val-graph[self.k].Q(graph)
+            return self.val-graph[self.k].Q(graph) ## inserir fluxos do UPFC
         elif self.type==2:
             keyk=str(self.k)+"-"+str(self.m)
             keym=str(self.m)+"-"+str(self.k)
             if keyk in graph[self.k].adjk.keys():
-                return self.val-graph[self.k].adjk[keyk].Pf(graph,0)
+                return self.val-graph[self.k].adjk[keyk].Pf(graph,0) # Se for UPFC branch
             elif keym in graph[self.k].adjm.keys():
-                return self.val-graph[self.k].adjm[keym].Pf(graph,1)        
+                return self.val-graph[self.k].adjm[keym].Pf(graph,1) # Se for UPFC branch.
+            elif keyk in graph[self.k].bUFPC_adjk.keys(): 
+                return self.val-graph[self.k].bUFPC_adjk[keyk].Pps(graph)
+            elif keym in graph[self.k].bUFPC_adjm.keys():
+                return self.val-graph[self.k].bUFPC_adjm[keyk].Psp(graph)
             else:
                 print("medida de fluxo de potencia ativa com ramo não existente")
                 exit(1)
@@ -1359,6 +1371,10 @@ class meas():
                 return self.val-graph[self.k].adjk[keyk].Qf(graph,0)
             elif keym in graph[self.k].adjm.keys():
                 return self.val-graph[self.k].adjm[keym].Qf(graph,1)
+            elif keyk in graph[self.k].bUFPC_adjk.keys(): 
+                return self.val-graph[self.k].bUFPC_adjk[keyk].Qps(graph)
+            elif keym in graph[self.k].bUFPC_adjm.keys():
+                return self.val-graph[self.k].bUFPC_adjm[keyk].Qsp(graph)
             else:
                 print("medida de fluxo de potencia reativa com ramo não existente")
                 exit(1)

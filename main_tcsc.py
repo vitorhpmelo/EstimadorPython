@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE4_UPFC"
+sys="5busAcha"
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -43,18 +43,21 @@ addSVCingraph(graph,busSVC)
 addUPFCingraph(graph,ramUPFC)
 
 #%%
-graph[1].V=1.00
-graph[1].teta=-6.02*np.pi/180
-#%%
-graph[3].V=0.997
-graph[3].teta=-2.51*np.pi/180
-#%%
-ANS=graph[1].bUFPC_adjk["1-3"].Pse(graph) -graph[1].bUFPC_adjk["1-3"].Psh(graph)
+# graph[1].V=1.00
+# graph[1].teta=-6.02*np.pi/180
+# #%%
+# graph[3].V=0.997
+# graph[3].teta=-2.51*np.pi/180
+# #%%
+# ANS=graph[1].bUFPC_adjk["1-3"].Pse(graph) -graph[1].bUFPC_adjk["1-3"].Psh(graph)
+# #%%
 
-
+# [zmeas,var_t,var_v]=create_z_x_loadflow(graph)
+# #%%
+# [z_PUFPC,var_UPFC,var_UPFC_vsh]=create_x_loadflow_UPFC(graph,var_v)
 
 #%%
-conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
+conv=load_flow_FACTS(graph,inici=1,prt=1,itmax=40)
 #%%
 
 try:

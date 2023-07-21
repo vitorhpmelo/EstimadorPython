@@ -349,6 +349,46 @@ def create_x_loadflow_SVC(graph,var_v):
     return var_svc
 
 
+def create_x_loadflow_UPFC(graph,var_v):
+    """
+    Auxiliar funcition for the load flow routine, creates the dictionary with the variables from the SVC and REMOVES the voltage magnitudes of the buses with SVC.
+
+    """
+
+    
+    var_UPFC={}
+    var_UPFC_vsh={}
+    i=0
+    i_vsh=0
+    zPf=[]
+    zQf=[]
+    p_controlled=[]
+    for no in graph:
+        if no.FlagUPFC==1 and len(no.bUFPC_adjk.keys())>0:
+            for key,item in no.bUFPC_adjk.items():
+                mes=meas(item.s,item.p,2,item.Psp_set,1)
+                zPf.append(mes)
+                mes=meas(item.s,item.p,2,item.Qsp_set,1)
+                zQf.append(mes)
+                var_UPFC[str(item.p)+"-"+str(item.s)]=i
+                i=i+1
+                if item.mode==1:
+                    var_UPFC_vsh[str(item.p)+"-"+str(item.s)]=i_vsh
+                    i_vsh=i_vsh+1
+                    p_controlled.append(item.p)
+
+
+    i=0
+    keys=list(var_v.keys())
+    for key in keys:
+        if key in p_controlled:
+            del var_v[key]
+        else:
+            var_v[key]=i
+            i=i+1
+
+    return [zPf+zQf,var_UPFC,var_UPFC_vsh]
+
 def create_x_SVC(graph):
     """
     Creates the dictionary for the SVC variables
@@ -873,9 +913,10 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     zPf,var_x = create_z_x_loadflow_TCSC(graph)#create z and dinctionary with the variables for the FACTS devices
     [z,var_t,var_v]=create_z_x_loadflow(graph)#create z and var_v and var_t for the traditional load flow
     var_svc=create_x_loadflow_SVC(graph,var_v)
+    [z_PUFPC,var_UPFC,var_UPFC_vsh]=create_x_loadflow_UPFC(graph,var_v)
 
 
-    z=z+zPf
+    z=z+zPf+z_PUFPC
     FACTSini(graph,useDFACTS=1)
     Vinici_lf(graph,useDBAR=inici,var_t=var_t,var_x=var_x,z=z)
     # Vinici_DBAR(graph)

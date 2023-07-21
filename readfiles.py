@@ -49,12 +49,12 @@ def read_files(sys):
         dfUPFC.columns=["id","from","to","Vse","t_se","Vsh","t_sh","Psp","Qsp","Vp","Rse","Xse","Rsh","Xsh","Vse_max","Vse_min","Vsh_max","Vsh_min","mode"]
         dfUPFC["type"]=2
     except:
-        print("There is no DSVC")
+        print("There is no DUPFC")
         dfDSVC=pd.DataFrame()   
     try:
         dfDFACTS=pd.concat([dfDTCSC,dfDSVC,dfUPFC], axis=0, ignore_index=True)
     except:
-        dfDFACTS=[]
+        dfDFACTS=pd.DataFrame()  
     return dfDBAR,dfDBRAN,dfDMED,dfDFACTS
 
 
