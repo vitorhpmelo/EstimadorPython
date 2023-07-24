@@ -1360,7 +1360,7 @@ class meas():
             elif keyk in graph[self.k].bUFPC_adjk.keys(): 
                 return self.val-graph[self.k].bUFPC_adjk[keyk].Pps(graph)
             elif keym in graph[self.k].bUFPC_adjm.keys():
-                return self.val-graph[self.k].bUFPC_adjm[keyk].Psp(graph)
+                return self.val-graph[self.k].bUFPC_adjm[keym].Psp(graph)
             else:
                 print("medida de fluxo de potencia ativa com ramo não existente")
                 exit(1)
@@ -1374,7 +1374,7 @@ class meas():
             elif keyk in graph[self.k].bUFPC_adjk.keys(): 
                 return self.val-graph[self.k].bUFPC_adjk[keyk].Qps(graph)
             elif keym in graph[self.k].bUFPC_adjm.keys():
-                return self.val-graph[self.k].bUFPC_adjm[keyk].Qsp(graph)
+                return self.val-graph[self.k].bUFPC_adjm[keym].Qsp(graph)
             else:
                 print("medida de fluxo de potencia reativa com ramo não existente")
                 exit(1)
