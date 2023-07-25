@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE4_UPFC"
+sys="5busAchaUPFC"
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)

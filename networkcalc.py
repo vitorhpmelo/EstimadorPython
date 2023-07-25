@@ -743,6 +743,29 @@ def calc_H_fp_UPFC(z,var_UPFC,var_UPFC_vsh,graph,H,Hsh):
                     Hsh[i][var_UPFC_vsh[mk]]=upfc.dQspdVsh(graph)
         i=i+1
 
+def calc_C_fp_UPFC(var_t,var_v,var_x,var_svc,var_UPFC,var_UPFC_vsh,graph,C_UPFC):
+    i=0
+
+    off=len(var_t)+len(var_v)+len(var_x)+len(var_svc)
+    n_upfcs=len(var_UPFC)
+    for key in var_UPFC.keys():
+        p,s=key.split("-") 
+        p=int(p)
+        s=int(s)
+        C_UPFC[i][var_t[p]]=graph[p].bUFPC_adjk[key].dIgdtp(graph)
+        C_UPFC[i][var_t[s]]=graph[p].bUFPC_adjk[key].dIgdts(graph)
+        if p in var_v.keys():
+            C_UPFC[i][var_v[p]+len(var_t)]=graph[p].bUFPC_adjk[key].dIgdVp(graph)
+        if s in var_v.keys():
+            C_UPFC[i][var_v[s]+len(var_t)]=graph[p].bUFPC_adjk[key].dIgdVs(graph)
+        C_UPFC[i][off+var_UPFC[key]]=graph[p].bUFPC_adjk[key].dIgdtse(graph)
+        C_UPFC[i][off+n_upfcs+var_UPFC[key]]=graph[p].bUFPC_adjk[key].dIgdtsh(graph)
+        C_UPFC[i][off+2*n_upfcs+var_UPFC[key]]=graph[p].bUFPC_adjk[key].dIgdVse(graph)
+        if key in var_UPFC_vsh.keys():
+            C_UPFC[i][off+3*n_upfcs+var_UPFC_vsh[key]]=graph[p].bUFPC_adjk[key].dIgdVsh(graph)
+
+
+
 
 
 def calc_H_EE_SVC(z,var_svc,graph,H):
@@ -1019,6 +1042,14 @@ def calc_dz(vecZ,graph,dz):
         dz[i]=z.dz(graph)
         i=i+1
 
+def calc_cUPFC(graph,var_UPFC,c):
+    i=0
+
+    for key in var_UPFC.keys():
+        p,s=key.split("-") 
+        p=int(p)
+        c[i]=graph[p].bUFPC_adjk[key].Pse(graph)-graph[p].bUFPC_adjk[key].Psh(graph)
+        i=i+1
 
 def calc_cx(vecc,graph,cx):
     i=0
@@ -1039,6 +1070,19 @@ def new_X_SVC(graph,offset,var_svc,dx):
     for key,item in var_svc.items():
         graph[key].SVC.BSVC=graph[key].SVC.BSVC+dx[offset+item]
         graph[key].SVC.attYk()
+
+def new_X_UPFC(graph,offset,var_UPFC,var_UPFC_sh,dx):
+    
+    n_upfc=len(var_UPFC)
+    for key,item in var_UPFC.items():
+        p,s = key.split("-")
+        p=int(p)
+        graph[p].bUFPC_adjk[key].t_se=graph[p].bUFPC_adjk[key].t_se+dx[offset+var_UPFC[key]]
+        graph[p].bUFPC_adjk[key].t_sh=graph[p].bUFPC_adjk[key].t_sh+dx[offset+n_upfc+var_UPFC[key]]
+        graph[p].bUFPC_adjk[key].Vse=graph[p].bUFPC_adjk[key].Vse+dx[offset+2*n_upfc+var_UPFC[key]]
+        if key in var_UPFC_sh.keys():
+            graph[p].bUFPC_adjk[key].Vsh=graph[p].bUFPC_adjk[key].Vsh+dx[offset+3*n_upfc+var_UPFC_sh[key]]
+
 
 
 
@@ -1086,6 +1130,10 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
     HSVC=np.zeros((len(z),len(var_svc)))
     HUPFC=np.zeros((len(z),3*len(var_UPFC)))
     HUPFC_sh=np.zeros((len(z),len(var_UPFC_vsh)))
+    nvar=len(var_v)+len(var_t)+len(var_x)+len(var_svc)+3*len(var_UPFC)+len(var_UPFC_vsh)
+    c_UPFC=np.zeros(len(var_UPFC))
+    C_UPFC=np.zeros((len(var_UPFC),nvar))
+
     it=0
     conv=0
     lstdx=[]
@@ -1093,19 +1141,25 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
 
     while it<itmax:
         calc_dz(z,graph,dz)
+        calc_cUPFC(graph,var_UPFC,c_UPFC)
         calc_H_fp(z,var_t,var_v,graph,H)
         calc_H_fp_TCSC(z,var_x,graph,HTCSC)
         calc_H_fp_SVC(z,var_svc,graph,HSVC)
         calc_H_fp_UPFC(z,var_UPFC,var_UPFC_vsh,graph,HUPFC,HUPFC_sh)
+        calc_C_fp_UPFC(var_t,var_v,var_x,var_svc,var_UPFC,var_UPFC_vsh,graph,C_UPFC)
+
         #calc H fp UPFC
         # calc C fp UPFC
 
-        Hx=np.concatenate((H,HTCSC,HSVC),axis=1)
+        Hx=np.concatenate((H,HTCSC,HSVC,HUPFC,HUPFC_sh),axis=1)
+        Hx=np.concatenate((Hx,C_UPFC),axis=0)
         A=sparse.csc_matrix(Hx, dtype=float)
-        dx=sliang.spsolve(A,dz)
+        b=np.concatenate((dz,c_UPFC))
+        dx=sliang.spsolve(A,b)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
+        new_X_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,var_UPFC_vsh,dx)#
         maxdx=np.max(np.abs(dx))
         maxdz=np.max(np.abs(dz))
         print("max dx {:e} | max dz {:e} ".format(maxdx,maxdz))

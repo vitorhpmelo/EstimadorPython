@@ -475,7 +475,8 @@ class UPFC():
         gsh=self.gsh
         bsh=self.bsh
 
-        return -Vp*Vs*(bse*np.cos(tp - ts) - gse*np.sin(tp - ts)) - Vp*Vse*(bse*np.cos(tp - tse) - gse *np.sin(tp - tse)) \
+        return -Vp*Vs*(bse*np.cos(tp - ts) - gse*np.sin(tp - ts))\
+               -Vp*Vse*(bse*np.cos(tp - tse) - gse *np.sin(tp - tse)) \
             - Vp*Vsh*(bsh*np.cos(tp - tsh) - gsh*np.sin(tp - tsh))
     
     
@@ -498,7 +499,8 @@ class UPFC():
         gsh=self.gsh
         bsh=self.bsh
 
-        return Vp*Vs*((-bse)*np.sin(tp -ts) - gse*np.cos(tp - ts)) + Vp*Vse+((-bse)*np.sin(tp - tse) - gₛₑ*np.cos(tp - tse))\
+        return Vp*Vs*((-bse)*np.sin(tp -ts) - gse*np.cos(tp - ts))\
+              + Vp*Vse*((-bse)*np.sin(tp - tse) - gse*np.cos(tp - tse))\
               + Vp*Vsh*((-bsh)*np.sin(tp - tsh) - gsh*np.cos(tp - tsh))
     
 
@@ -627,7 +629,7 @@ class UPFC():
         gsh=self.gsh
         bsh=self.bsh
 
-        return Vp*Vsh+(bsh*np.sin(tp - tsh) + gsh*np.cos(tp - tsh))
+        return Vp*Vsh*(bsh*np.sin(tp - tsh) + gsh*np.cos(tp - tsh))
     
     def dPpsdVp(self,graph):
         """
@@ -648,7 +650,8 @@ class UPFC():
         gsh=self.gsh
         bsh=self.bsh
 
-        return 2*Vp*(gse + gsh) - Vs*(bse*np.sin(tp - ts) + gse*np.cos(tp - ts)) - Vse*(bse*np.sin(tp- tse) + gse*np.cos(tp - tse)) \
+        return 2*Vp*(gse + gsh) - Vs*(bse*np.sin(tp - ts) + gse*np.cos(tp - ts)) \
+            - Vse*(bse*np.sin(tp- tse) + gse*np.cos(tp - tse)) \
             - Vsh*(bsh*np.sin(tp -tsh) + gsh*np.cos(tp -tsh))
 
     def dQpsdVp(self,graph):
@@ -671,7 +674,8 @@ class UPFC():
         bsh=self.bsh
 
         return -2*Vp*(bse + bsh) + Vs*(bse*np.cos(tp - ts) - gse*np.sin(tp - ts)) + \
-        Vse*(bse*np.cos(tp-tse) - gse*np.sin(tp- tse)) + Vsh*(bsh*np.cos(tp - tsh) -gsh*np.sin(tp - tsh))
+        Vse*(bse*np.cos(tp-tse) - gse*np.sin(tp- tse)) +\
+        Vsh*(bsh*np.cos(tp - tsh) -gsh*np.sin(tp - tsh))
 
 
     def dPpsdVs(self,graph):
@@ -821,7 +825,7 @@ class UPFC():
         gsh=self.gsh
         bsh=self.bsh
 
-        return -Vp*Vs-(-bse*np.cos(tp - ts) - gse*np.sin(tp - ts))
+        return -Vp*Vs*(-bse*np.cos(tp - ts) - gse*np.sin(tp - ts))
     
     
     def dQspdtp(self,graph):
@@ -864,8 +868,8 @@ class UPFC():
         gsh=self.gsh
         bsh=self.bsh
 
-        return -Vp*Vs*(bse*np.cos(tp- ts) + gse*np.sin(tp- ts)) + Vs*Vse*(bse*np.cos(ts - tse) \
-                                                                          - gse*np.sin(ts - tse))
+        return -Vp*Vs*(bse*np.cos(tp- ts) + gse*np.sin(tp- ts)) \
+            + Vs*Vse*(bse*np.cos(ts - tse) - gse*np.sin(ts - tse))
 
     def dQspdts(self,graph):
         """
@@ -936,20 +940,6 @@ class UPFC():
         """
         Calcualte the derivative of the active power in respect to the "sh" (shunt voltage source) voltage angle
         """    
-        p=self.p
-        s=self.s
-        Vp=graph[p].V
-        Vs=graph[s].V
-        tp=graph[p].teta
-        ts=graph[s].teta
-        Vse=self.Vse
-        Vsh=self.Vsh
-        tse=self.t_se
-        tsh=self.t_sh
-        gse=self.gse
-        bse=self.bse
-        gsh=self.gsh
-        bsh=self.bsh
 
         return 0
 
@@ -957,20 +947,6 @@ class UPFC():
         """
         Calcualte the derivative of the reactive power in respect to the "sh" (shunt voltage source) voltage angle
         """    
-        p=self.p
-        s=self.s
-        Vp=graph[p].V
-        Vs=graph[s].V
-        tp=graph[p].teta
-        ts=graph[s].teta
-        Vse=self.Vse
-        Vsh=self.Vsh
-        tse=self.t_se
-        tsh=self.t_sh
-        gse=self.gse
-        bse=self.bse
-        gsh=self.gsh
-        bsh=self.bsh
 
         return 0
     
