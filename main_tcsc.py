@@ -42,19 +42,56 @@ addSVCingraph(graph,busSVC)
 
 addUPFCingraph(graph,ramUPFC)
 
-#%%
-# graph[1].V=1.00
-# graph[1].teta=-6.02*np.pi/180
-# #%%
-# graph[3].V=0.997
-# graph[3].teta=-2.51*np.pi/180
-# #%%
-# ANS=graph[1].bUFPC_adjk["1-3"].Pse(graph) -graph[1].bUFPC_adjk["1-3"].Psh(graph)
-# #%%
+#%% confere derivadas Acha
 
-# [zmeas,var_t,var_v]=create_z_x_loadflow(graph)
+# Vinici_DBAR(graph)
+# ramUPFC["2-5"].dPpsdtp(graph)
+# ramUPFC["2-5"].dQpsdtp(graph)
+# ramUPFC["2-5"].dPpsdts(graph)
+# ramUPFC["2-5"].dQpsdts(graph)
+# ramUPFC["2-5"].dPpsdtse(graph)
+# ramUPFC["2-5"].dQpsdtse(graph)
+# ramUPFC["2-5"].dPpsdtsh(graph)
+# ramUPFC["2-5"].dQpsdtsh(graph)
+# ramUPFC["2-5"].dPspdtp(graph)
+# ramUPFC["2-5"].dQspdtp(graph)
+# ramUPFC["2-5"].dPspdts(graph)
+# ramUPFC["2-5"].dQspdts(graph)
+# ramUPFC["2-5"].dPspdtse(graph)
+# ramUPFC["2-5"].dQspdtse(graph)
+# ramUPFC["2-5"].dPspdtsh(graph)
+# ramUPFC["2-5"].dQspdtsh(graph)
+
 # #%%
-# [z_PUFPC,var_UPFC,var_UPFC_vsh]=create_x_loadflow_UPFC(graph,var_v)
+# ramUPFC["2-5"].dPpsdVp(graph)
+# ramUPFC["2-5"].dQpsdVp(graph)
+# ramUPFC["2-5"].dPpsdVs(graph)
+# ramUPFC["2-5"].dQpsdVs(graph)
+# ramUPFC["2-5"].dPpsdVse(graph)
+# ramUPFC["2-5"].dQpsdVse(graph)
+# ramUPFC["2-5"].dPpsdVsh(graph)
+# ramUPFC["2-5"].dQpsdVsh(graph)
+# ramUPFC["2-5"].dPspdVp(graph)
+# ramUPFC["2-5"].dQspdVp(graph)
+# ramUPFC["2-5"].dPspdVs(graph)
+# ramUPFC["2-5"].dQspdVs(graph)
+# ramUPFC["2-5"].dPspdVse(graph)
+# ramUPFC["2-5"].dQspdVse(graph)
+# ramUPFC["2-5"].dPspdVsh(graph)
+# ramUPFC["2-5"].dQspdVsh(graph)
+
+
+# ramUPFC["2-5"].dIgdVp(graph)
+# ramUPFC["2-5"].dIgdVs(graph)
+# ramUPFC["2-5"].dIgdVse(graph)
+# ramUPFC["2-5"].dIgdVsh(graph)
+
+# ramUPFC["2-5"].dIgdtp(graph)
+# ramUPFC["2-5"].dIgdts(graph)
+# ramUPFC["2-5"].dIgdtse(graph)
+# ramUPFC["2-5"].dIgdtsh(graph)
+
+
 
 #%%
 conv=load_flow_FACTS(graph,inici=1,prt=1,itmax=40)

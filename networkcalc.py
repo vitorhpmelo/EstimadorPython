@@ -465,7 +465,7 @@ def calc_H_fp(z,var_t,var_v,graph,H):
                     H[i][var_v[upfc.s]+n_teta]=upfc.dPpsdVs(graph) # cacula dPps/dVs  dPfdV(graph,0,para)
             for key,upfc in graph[item.k].bUFPC_adjm.items(): #o branch entra com p-s e barra s é a variável
                 if  graph[item.k].bar.type!=0:
-                    soma1=soma1+upfc.dPspdVs(graph) # calcula dPsp/dVs dfPf(graph,1,para)
+                    soma2=soma2+upfc.dPspdVs(graph) # calcula dPsp/dVs dfPf(graph,1,para)
                 if upfc.p in var_v.keys():
                     H[i][var_v[upfc.p]+n_teta]=upfc.dPspdVp(graph) #cacula dPsp/dVp  dfPfdV(graph,1,de)          
             if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1 and (item.k in var_v.keys()):
@@ -516,7 +516,7 @@ def calc_H_fp(z,var_t,var_v,graph,H):
                     H[i][var_v[upfc.s]+n_teta]=upfc.dQpsdVs(graph) # cacula dQps/dVs  dPfdV(graph,0,para)
             for key,upfc in graph[item.k].bUFPC_adjm.items(): #o branch entra com p-s e barra s é a variável
                 if  graph[item.k].bar.type!=0:
-                    soma1=soma1+upfc.dQspdVs(graph) # calcula dQsp/dVs dfQf(graph,1,para)
+                    soma2=soma2+upfc.dQspdVs(graph) # calcula dQsp/dVs dfQf(graph,1,para)
                 if upfc.p in var_v.keys():
                     H[i][var_v[upfc.p]+n_teta]=upfc.dQspdVp(graph) #cacula dQsp/dVp  dfPfdV(graph,1,de)    
             if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1 and (item.k in var_v.keys()):
@@ -1048,7 +1048,7 @@ def calc_cUPFC(graph,var_UPFC,c):
     for key in var_UPFC.keys():
         p,s=key.split("-") 
         p=int(p)
-        c[i]=graph[p].bUFPC_adjk[key].Pse(graph)-graph[p].bUFPC_adjk[key].Psh(graph)
+        c[i]=-graph[p].bUFPC_adjk[key].Pse(graph)+graph[p].bUFPC_adjk[key].Psh(graph)
         i=i+1
 
 def calc_cx(vecc,graph,cx):
@@ -1103,7 +1103,7 @@ def new_X_TCSCC_B(graph,nvars,var_x,dx):
 
 
 
-def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
+def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=-1,itmax=20):
     """
     Function to run load flow with FACTS devices (only TCSC implemented yet)
     @param graph with the informations of the network
@@ -1155,7 +1155,13 @@ def load_flow_FACTS(graph,prt=0,tol=1e-6,inici=-1,itmax=20):
         Hx=np.concatenate((Hx,C_UPFC),axis=0)
         A=sparse.csc_matrix(Hx, dtype=float)
         b=np.concatenate((dz,c_UPFC))
+
+
         dx=sliang.spsolve(A,b)
+        if it==0:
+            np.savetxt("Hmatrix.csv",Hx,fmt="%.18e",delimiter=",")
+            np.savetxt("bvect.csv",b,fmt="%.18e",delimiter=",")
+            np.savetxt("dx.csv",dx,fmt="%.18e",delimiter=",")
         new_X(graph,var_t,var_v,dx)
         new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,dx)
         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)

@@ -673,7 +673,8 @@ class UPFC():
         gsh=self.gsh
         bsh=self.bsh
 
-        return -2*Vp*(bse + bsh) + Vs*(bse*np.cos(tp - ts) - gse*np.sin(tp - ts)) + \
+        return -2*Vp*(bse + bsh)+ \
+        Vs*(bse*np.cos(tp - ts) - gse*np.sin(tp - ts)) + \
         Vse*(bse*np.cos(tp-tse) - gse*np.sin(tp- tse)) +\
         Vsh*(bsh*np.cos(tp - tsh) -gsh*np.sin(tp - tsh))
 
@@ -934,7 +935,7 @@ class UPFC():
         gsh=self.gsh
         bsh=self.bsh
 
-        return -Vp*Vse*(bse*np.sin(ts - tse) + gse*np.cos(ts - tse))
+        return -Vs*Vse*(bse*np.sin(ts - tse) + gse*np.cos(ts - tse))
 
     def dPspdtsh(self,graph):
         """
