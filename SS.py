@@ -408,10 +408,17 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
     HTCSC=np.zeros((len(z),len(var_x)))
     HSVC=np.zeros((len(z),len(var_svc)))
-    HSVC=np.zeros((len(z),3*len(var_UPFC)))
-
+    UPFC=np.zeros((len(z),4*len(var_UPFC)))
+    n_teta=len(var_t)
+    n_v=len(var_v)
+    n_TCSC=len(var_x)
+    n_SVC=len(var_svc)
+    n_UPFC=len(var_UPFC)
+    nvar=n_teta+n_v+n_TCSC+n_SVC+4*n_UPFC
     dz=np.zeros(len(z))
-    W=create_W(z+c_upfc,flag_ones=0,prec_virtual=prec_virtual) #expandir W para caber as c_FACTS
+    W=create_W(z+list(c_upfc),flag_ones=0,prec_virtual=prec_virtual) #expandir W para caber as c_FACTS
+    
+    C_UPFC=np.zeros((len(c_upfc),nvar))
 
     it=0
     it2=0
@@ -423,15 +430,20 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     while(it <30):
         a=1
         calc_dz(z,graph,dz)
-        calc_H_EE(z,var_t,var_v,graph,Htrad) #modificar H_EE para colocar upfc
-        calc_H_EE_TCSC(z,var_x,graph,HTCSC) # não muda 
-        calc_H_EE_SVC(z,var_svc,graph,HSVC) # não muda
-        #cacl_C_EE_UPFC
-        H=np.concatenate((Htrad,HTCSC,HSVC),axis=1)
-        grad=np.matmul(np.matmul(H.T,W),dz)
+        calc_cUPFC(graph,var_UPFC,c_upfc)
+        calc_H_EE(z,var_t,var_v,graph,Htrad) 
+        calc_H_EE_TCSC(z,var_x,graph,HTCSC) 
+        calc_H_EE_SVC(z,var_svc,graph,HSVC) 
+        calc_H_EE_UPFC(z,var_UPFC,graph,UPFC)
+        calc_C_EE_UPFC(var_t,var_v,var_x,var_svc,var_UPFC,graph,C_UPFC)
+        
+        Hx=np.concatenate((Htrad,HTCSC,HSVC,UPFC),axis=1)
+        H=np.concatenate((Hx,C_UPFC),axis=0)
+        b=np.append(dz,c_upfc)
+        grad=np.matmul(np.matmul(H.T,W),b)
         # dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)
-        dx=NormalEQ_QR(H,W,dz,printcond=printcond,printmat=printmat)
-        Jxk=np.matmul(np.matmul(dz,W),dz)
+        dx=NormalEQ_QR(H,W,b,printcond=printcond,printmat=printmat)
+        Jxk=np.matmul(np.matmul(b,W),b)
         if it==0:
             norminicial=liang.norm(grad)
         it2=0
@@ -439,14 +451,18 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
             new_X(graph,var_t,var_v,a*dx)
             new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,a*dx)
             new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,a*dx)
+            new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,a*dx)
             calc_dz(z,graph,dz)
-            Jxn=np.matmul(np.matmul(dz,W),dz)
+            calc_cUPFC(graph,var_UPFC,c_upfc)
+            b=np.append(dz,c_upfc)
+            Jxn=np.matmul(np.matmul(b,W),b)
             if Jxn < Jxk + c1*a*np.dot(grad,dx):
                 break
             else:
                 new_X(graph,var_t,var_v,-a*dx)
                 new_X_TCSCC(graph,len(var_t)+len(var_v),var_x,-a*dx)
                 new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,-a*dx)
+                new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-a*dx)
                 a=a/2
                 it2=it2+1
         print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
