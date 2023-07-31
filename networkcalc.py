@@ -191,6 +191,8 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
             else:
                 if  no.FlagSVC==True:
                     no.V=no.bar.V 
+                if  (no.FlagUPFC==True) and (len(no.bUFPC_adjk.items())>0):
+                    no.V=no.bar.V 
                 else:
                     no.V=1
                 no.teta=0+tetaini 
@@ -252,7 +254,11 @@ def FACTSini(graph,useDFACTS=1):
                     no.bFACTS_adjk[key].AttY()
             if no.FlagSVC==True:
                 no.SVC.BSVC=no.SVC.Bini
-                no.SVC.attYk()    
+                no.SVC.attYk() 
+            if no.FlagUPFC==True:
+                for key, item in no.bUFPC_adjk.items():
+                    if item.mode==1:
+                        no.V=item.Vp      
 
 
 
@@ -414,6 +420,29 @@ def create_x_TCSC(graph):
                 i=i+1
     return var_x
 
+
+def create_c_x_UPFC(graph):
+    """
+    Auxiliar funcition for the load flow routine, creates the dictionary with the variables for the UPFC 
+    for the State Estimator
+    """
+    var_UPFC={}
+    i=0
+    c_upfc=[]
+    for no in graph:
+        if no.FlagUPFC==1 and len(no.bUFPC_adjk.keys())>0:
+            for key,item in no.bUFPC_adjk.items():
+                var_UPFC[str(item.p)+"-"+str(item.s)]=i
+                i=i+1
+                c=meas(item.p,item.s,-1,0,1)
+                c_upfc.append(c)
+
+
+
+
+    return var_UPFC,c_upfc
+
+
 def calc_H_fp(z,var_t,var_v,graph,H):
     i=0
     n_teta=len(var_t)
@@ -468,6 +497,8 @@ def calc_H_fp(z,var_t,var_v,graph,H):
                     soma2=soma2+upfc.dPspdVs(graph) # calcula dPsp/dVs dfPf(graph,1,para)
                 if upfc.p in var_v.keys():
                     H[i][var_v[upfc.p]+n_teta]=upfc.dPspdVp(graph) #cacula dPsp/dVp  dfPfdV(graph,1,de)          
+            if graph[item.k].FlagSVC==1:
+                soma2=soma2+ 2*graph[item.k].SVC.Gk*graph[item.k].V
             if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1 and (item.k in var_v.keys()):
                 H[i][var_v[item.k]+n_teta]=soma2## Colocar as derivadas do shunt
             soma2=0
@@ -522,6 +553,8 @@ def calc_H_fp(z,var_t,var_v,graph,H):
             if  graph[item.k].bar.type!=0 and graph[item.k].bar.type!=1 and (item.k in var_v.keys()):
                 if graph[item.k].FlagBS==1:
                     soma2=soma2-2*graph[item.k].Bs*graph[item.k].V ## Colocar as derivadas do shunt## Colocar as derivadas do shunt## Colocar as derivadas do shunt## Colocar as derivadas do shunt
+                if graph[item.k].FlagSVC==1:
+                    soma2=soma2-2*graph[item.k].SVC.Gk*graph[item.k].SVC.V
                 H[i][var_v[item.k]+n_teta]=soma2 # fazer o mesmo para as derivadas do upfc
             soma2=0
         elif item.type==2:
@@ -956,6 +989,8 @@ def calc_H_EE(z,var_t,var_v,graph,H):
                 if  branch.de in var_v.keys():
                     H[i][var_v[branch.de]+n_teta]=branch.dPfdV(graph,1,branch.de)
             if item.k in bar_v:
+                if graph[item.k].FlagSVC==1:
+                    soma2=soma2-2*graph[item.k].SVC.Gk*graph[item.k].V
                 H[i][var_v[item.k]+n_teta]=soma2
             soma2=0
         elif item.type==1:
@@ -984,6 +1019,8 @@ def calc_H_EE(z,var_t,var_v,graph,H):
                     H[i][var_v[branch.de]+n_teta]=branch.dQfdV(graph,1,branch.de)
             if graph[item.k].FlagBS==1:
                 soma2=soma2-2*graph[item.k].Bs*graph[item.k].V 
+            if graph[item.k].FlagBS==1:
+                soma2=soma2-2*graph[item.k].SVC.Bk*graph[item.k].V
             H[i][var_v[item.k]+n_teta]=soma2
             soma2=0
         elif item.type==2:
@@ -1168,7 +1205,8 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=-1,itmax=20):
         new_X_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,var_UPFC_vsh,dx)#
         maxdx=np.max(np.abs(dx))
         maxdz=np.max(np.abs(dz))
-        print("max dx {:e} | max dz {:e} ".format(maxdx,maxdz))
+        maxc=np.max(np.abs(c_UPFC),initial=0)
+        print("max dx {:e} | max dz {:e} | max cUPFC {:e}  ".format(maxdx,maxdz,maxc))
         lstdx.append(maxdx)
         lstdz.append(maxdz)
         if maxdx< tol and maxdz < tol:

@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="5busAchaUPFC"
+sys="IEEE14_SVC"
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -105,7 +105,7 @@ except:
 
 ram.update(ramTCSC)
 
-save_DMED_fp(graph,ram,sys)
+save_DMED_fp(graph,ram,sys,ramUPFC)
 
 
 
