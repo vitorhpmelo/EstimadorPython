@@ -50,7 +50,7 @@ def read_files(sys):
         dfUPFC["type"]=2
     except:
         print("There is no DUPFC")
-        dfDSVC=pd.DataFrame()   
+        dfUPFC=pd.DataFrame()   
     try:
         dfDFACTS=pd.concat([dfDTCSC,dfDSVC,dfUPFC], axis=0, ignore_index=True)
     except:
@@ -68,7 +68,7 @@ def prt_state(graph):
         print(s)
 
 
-def save_DMED_fp(graph,ram,sys):
+def save_DMED_fp(graph,ram,sys,dUPFC={}):
     """
     Function to save the file with all measurements possible, from a load flow simulation. 
     It use the graph of the network to calculate every possible measurement and save it in a file called 
@@ -106,6 +106,20 @@ def save_DMED_fp(graph,ram,sys):
         linha2=[3,graph[r.para].bar.id,graph[r.de].bar.id,r.Qf(graph,1),1.0]
         Pmk.append(linha)
         Qmk.append(linha2)
+    #calculates the flows in the upfc
+    for key,upfc in dUPFC.items():
+        linha=[2,graph[upfc.p].bar.id,graph[upfc.s].bar.id,upfc.Pps(graph),1.0]
+        linha2=[3,graph[upfc.p].bar.id,graph[upfc.s].bar.id,upfc.Qps(graph),1.0]
+        Pkm.append(linha)
+        Qkm.append(linha2)
+        #calculate from m to k
+        linha=[2,graph[upfc.s].bar.id,graph[upfc.p].bar.id,upfc.Psp(graph),1.0]
+        linha2=[3,graph[upfc.s].bar.id,graph[upfc.p].bar.id,upfc.Qsp(graph),1.0]
+        Pmk.append(linha)
+        Qmk.append(linha2)
+
+
+
 
     medidas=Pinj+Qinj+Pkm+Qkm+Pmk+Qmk+Vmod
     dfDMED=pd.DataFrame(medidas,columns=["type","de","para","zmed","pre"])

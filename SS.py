@@ -1,7 +1,6 @@
 from classes import *
 import numpy as np
 import pandas as pd
-from networkcalc import Vinici
 from readfiles import *
 import scipy.sparse.linalg as sliang 
 import scipy.sparse as sparse 
@@ -397,6 +396,8 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
     var_x=create_x_TCSC(graph)
     var_svc=create_x_SVC(graph)
+    [var_UPFC,c_upfc]=create_c_x_UPFC(graph)
+    #create var UPFC
 
     if flatstart==2:
         for key in var_x.keys():
@@ -407,21 +408,25 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
     Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
     HTCSC=np.zeros((len(z),len(var_x)))
     HSVC=np.zeros((len(z),len(var_svc)))
+    HSVC=np.zeros((len(z),3*len(var_UPFC)))
 
     dz=np.zeros(len(z))
-    W=create_W(z,flag_ones=0,prec_virtual=prec_virtual)
+    W=create_W(z+c_upfc,flag_ones=0,prec_virtual=prec_virtual) #expandir W para caber as c_FACTS
+
     it=0
     it2=0
     itmax=2
     lstdx=[]
     lstdz=[]
+    lstc_upfc=[]
     
     while(it <30):
         a=1
         calc_dz(z,graph,dz)
-        calc_H_EE(z,var_t,var_v,graph,Htrad)
-        calc_H_EE_TCSC(z,var_x,graph,HTCSC)
-        calc_H_EE_SVC(z,var_svc,graph,HSVC)
+        calc_H_EE(z,var_t,var_v,graph,Htrad) #modificar H_EE para colocar upfc
+        calc_H_EE_TCSC(z,var_x,graph,HTCSC) # não muda 
+        calc_H_EE_SVC(z,var_svc,graph,HSVC) # não muda
+        #cacl_C_EE_UPFC
         H=np.concatenate((Htrad,HTCSC,HSVC),axis=1)
         grad=np.matmul(np.matmul(H.T,W),dz)
         # dx=NormalEQ(H,W,dz,printcond=printcond,printmat=printmat)

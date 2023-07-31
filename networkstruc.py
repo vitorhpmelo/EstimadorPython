@@ -172,16 +172,16 @@ def create_UPFC(dfFACTS,ind_i):
     d={}
 ##determina linhas paralelas
     if dfFACTS.empty:
-        ram=[]
+        ram={}
         i=0
         return ram,i    
     if dfFACTS[dfFACTS["type"]==2].empty:
-        ram=[]
+        ram={}
         i=0
         return ram,i
     
-    dfTCSC=dfFACTS[dfFACTS["type"]==2].copy()
-    for id, row in dfTCSC.iterrows():
+    dfUPFC=dfFACTS[dfFACTS["type"]==2].copy()
+    for id, row in dfUPFC.iterrows():
         #ram type 3 == TCSC
 
         key=str(ind_i[int(row["from"])])+"-"+str(ind_i[int(row["to"])])
