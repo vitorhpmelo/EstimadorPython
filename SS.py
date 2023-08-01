@@ -475,6 +475,7 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
             print(liang.norm(grad)/norminicial)
             print(txt)
             prt_state(graph)
+            prt_state_FACTS(graph)
             conv=1
             break
 

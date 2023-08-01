@@ -68,6 +68,30 @@ def prt_state(graph):
         print(s)
 
 
+def prt_state_FACTS(graph):
+    """
+    Function to print in the scream the value of the state variables, in the network's graph
+    @param: graph Graph structure with the information about the network
+    """
+    for no in graph:
+        if no.FlagTCSC==True:
+            for key, item in no.bFACTS_adjk.items():
+                k=int(key.split("-")[0])
+                m=int(key.split("-")[1])
+                s="TCSC | de {:d} | para {:d}| X : {:f}".format(graph[k].bar.id,graph[m].bar.id,item.xtcsc)
+                print(s)
+        if no.FlagSVC==True:
+            s="SVC | Barra {:d} | X : {:f}".format(no.bar.id,1/no.SVC.BSVC)
+            print(s)
+        if no.FlagUPFC==True:
+            for key, item in no.bUFPC_adjk.items():
+                k=int(key.split("-")[0])
+                m=int(key.split("-")[1])
+                s="UPFC | de {:d} | para {:d}| Vse: {:f} | Tse {:f} |  Vsh: {:f} | Tsh {:f}"\
+                    .format(graph[k].bar.id,graph[m].bar.id,item.Vse,item.t_se*180/np.pi,item.Vsh,item.t_sh*180/np.pi)
+                print(s)
+
+
 def save_DMED_fp(graph,ram,sys,dUPFC={}):
     """
     Function to save the file with all measurements possible, from a load flow simulation. 

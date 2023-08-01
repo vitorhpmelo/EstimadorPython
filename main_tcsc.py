@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE14_SVC"
+sys="IEEE14_rakp2009"
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -97,11 +97,7 @@ addUPFCingraph(graph,ramUPFC)
 conv=load_flow_FACTS(graph,inici=1,prt=1,itmax=40)
 #%%
 
-try:
-    for key,r in ramTCSC.items():
-        print("{:e}".format(r.xtcsc))
-except:
-    pass
+
 
 ram.update(ramTCSC)
 

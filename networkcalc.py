@@ -191,7 +191,7 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
             else:
                 if  no.FlagSVC==True:
                     no.V=no.bar.V 
-                if  (no.FlagUPFC==True) and (len(no.bUFPC_adjk.items())>0):
+                elif (no.FlagSVC==False) and (no.FlagUPFC==True) and (len(no.bUFPC_adjk.items())>0):
                     no.V=no.bar.V 
                 else:
                     no.V=1
@@ -1392,6 +1392,7 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=-1,itmax=20):
         if maxdx< tol and maxdz < tol:
             print("convergiu em {} itereacoes".format(it))
             prt_state(graph)
+            prt_state_FACTS(graph)
             conv=1
             break
         it=it+1
