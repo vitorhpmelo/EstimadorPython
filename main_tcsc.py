@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE14_rakp2009"
+sys="IEEE118_SVC_TCSC_Rakpenthai"
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -44,57 +44,8 @@ addUPFCingraph(graph,ramUPFC)
 
 #%% confere derivadas Acha
 
-# Vinici_DBAR(graph)
-# ramUPFC["2-5"].dPpsdtp(graph)
-# ramUPFC["2-5"].dQpsdtp(graph)
-# ramUPFC["2-5"].dPpsdts(graph)
-# ramUPFC["2-5"].dQpsdts(graph)
-# ramUPFC["2-5"].dPpsdtse(graph)
-# ramUPFC["2-5"].dQpsdtse(graph)
-# ramUPFC["2-5"].dPpsdtsh(graph)
-# ramUPFC["2-5"].dQpsdtsh(graph)
-# ramUPFC["2-5"].dPspdtp(graph)
-# ramUPFC["2-5"].dQspdtp(graph)
-# ramUPFC["2-5"].dPspdts(graph)
-# ramUPFC["2-5"].dQspdts(graph)
-# ramUPFC["2-5"].dPspdtse(graph)
-# ramUPFC["2-5"].dQspdtse(graph)
-# ramUPFC["2-5"].dPspdtsh(graph)
-# ramUPFC["2-5"].dQspdtsh(graph)
-
-# #%%
-# ramUPFC["2-5"].dPpsdVp(graph)
-# ramUPFC["2-5"].dQpsdVp(graph)
-# ramUPFC["2-5"].dPpsdVs(graph)
-# ramUPFC["2-5"].dQpsdVs(graph)
-# ramUPFC["2-5"].dPpsdVse(graph)
-# ramUPFC["2-5"].dQpsdVse(graph)
-# ramUPFC["2-5"].dPpsdVsh(graph)
-# ramUPFC["2-5"].dQpsdVsh(graph)
-# ramUPFC["2-5"].dPspdVp(graph)
-# ramUPFC["2-5"].dQspdVp(graph)
-# ramUPFC["2-5"].dPspdVs(graph)
-# ramUPFC["2-5"].dQspdVs(graph)
-# ramUPFC["2-5"].dPspdVse(graph)
-# ramUPFC["2-5"].dQspdVse(graph)
-# ramUPFC["2-5"].dPspdVsh(graph)
-# ramUPFC["2-5"].dQspdVsh(graph)
-
-
-# ramUPFC["2-5"].dIgdVp(graph)
-# ramUPFC["2-5"].dIgdVs(graph)
-# ramUPFC["2-5"].dIgdVse(graph)
-# ramUPFC["2-5"].dIgdVsh(graph)
-
-# ramUPFC["2-5"].dIgdtp(graph)
-# ramUPFC["2-5"].dIgdts(graph)
-# ramUPFC["2-5"].dIgdtse(graph)
-# ramUPFC["2-5"].dIgdtsh(graph)
-
-
-
 #%%
-conv=load_flow_FACTS(graph,inici=1,prt=1,itmax=40)
+conv=load_flow_FACTS(graph,inici=-1,prt=1,itmax=40)
 #%%
 
 

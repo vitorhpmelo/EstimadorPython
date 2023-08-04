@@ -403,7 +403,9 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[1])
-            graph[m].V=graph[m].V+0.1
+            graph[m].V=graph[m].V-0.1
+
+
 
     Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
     HTCSC=np.zeros((len(z),len(var_x)))
@@ -472,10 +474,11 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
         lstdz.append(gradredux)
         if gradredux <tol2 and maxdx<tol:
             txt="Convergiu em {:d} iteracoes".format(it)
+            upfc_angle(graph)
             print(liang.norm(grad)/norminicial)
             print(txt)
             prt_state(graph)
-            prt_state_FACTS(graph)
+            prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
             conv=1
             break
 
@@ -745,8 +748,6 @@ def SS_WLS_FACTS_2_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_
 
     tf=tm.time()
     return conv,it,tits,tf-tin
-
-
 
 
 

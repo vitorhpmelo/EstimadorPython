@@ -141,7 +141,6 @@ def Vinici(graph,flatStart=0,dfDMED=[],ind_i=[]):
                 no.V=1.1    
             else:
                 no.V=1.0   
-            no.teta=no.bar.teta
     elif flatStart==5:
         [x,H,var_t,var_v,var_x]=SS_WLS_linear(graph,dfDMED,ind_i)
         for no in graph:
@@ -196,6 +195,12 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
                 else:
                     no.V=1
                 no.teta=0+tetaini 
+                    
+        for key in var_x.keys():
+            key=key.split("-")
+            m=int(key[1])
+            graph[m].V=graph[m].V+0.1
+
     else:
         [x,H]=load_flow_FACTS_cc(z,graph,var_x,var_t)
         for no in graph:
@@ -246,6 +251,12 @@ def FACTSini(graph,useDFACTS=1):
             if no.FlagSVC==True:
                 no.SVC.BSVC=0.10
                 no.SVC.attYk()    
+            if no.FlagUPFC==1:
+                for  key in no.bUFPC_adjk.keys():
+                    no.bUFPC_adjk[key].Vse=0.02
+                    no.bUFPC_adjk[key].Vsh=1.00
+                    no.bUFPC_adjk[key].t_se=-90/np.pi()
+                    no.bUFPC_adjk[key].t_sh=0
     if useDFACTS==1:
         for no in graph:
             if no.FlagTCSC==1:
@@ -258,7 +269,13 @@ def FACTSini(graph,useDFACTS=1):
             if no.FlagUPFC==True:
                 for key, item in no.bUFPC_adjk.items():
                     if item.mode==1:
-                        no.V=item.Vp      
+                        no.V=item.Vp 
+            if no.FlagUPFC==1:
+                for  key in no.bUFPC_adjk.keys():
+                    no.bUFPC_adjk[key].Vse=no.bUFPC_adjk[key].Vse_ini
+                    no.bUFPC_adjk[key].Vsh=no.bUFPC_adjk[key].Vsh_ini
+                    no.bUFPC_adjk[key].t_se=no.bUFPC_adjk[key].t_se_ini
+                    no.bUFPC_adjk[key].t_sh=no.bUFPC_adjk[key].t_sh_ini
 
 
 
@@ -858,6 +875,7 @@ def calc_C_fp_UPFC(var_t,var_v,var_x,var_svc,var_UPFC,var_UPFC_vsh,graph,C_UPFC)
         C_UPFC[i][off+2*n_upfcs+var_UPFC[key]]=graph[p].bUFPC_adjk[key].dIgdVse(graph)
         if key in var_UPFC_vsh.keys():
             C_UPFC[i][off+3*n_upfcs+var_UPFC_vsh[key]]=graph[p].bUFPC_adjk[key].dIgdVsh(graph)
+        i=i+1
 
 
 def calc_C_EE_UPFC(var_t,var_v,var_x,var_svc,var_UPFC,graph,C_UPFC):
@@ -879,6 +897,7 @@ def calc_C_EE_UPFC(var_t,var_v,var_x,var_svc,var_UPFC,graph,C_UPFC):
         C_UPFC[i][off+n_upfcs+var_UPFC[key]]=graph[p].bUFPC_adjk[key].dIgdtsh(graph)
         C_UPFC[i][off+2*n_upfcs+var_UPFC[key]]=graph[p].bUFPC_adjk[key].dIgdVse(graph)
         C_UPFC[i][off+3*n_upfcs+var_UPFC[key]]=graph[p].bUFPC_adjk[key].dIgdVsh(graph)
+        i=i+1
 
 
 
@@ -1391,8 +1410,9 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=-1,itmax=20):
         lstdz.append(maxdz)
         if maxdx< tol and maxdz < tol:
             print("convergiu em {} itereacoes".format(it))
+            upfc_angle(graph)
             prt_state(graph)
-            prt_state_FACTS(graph)
+            prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
             conv=1
             break
         it=it+1
@@ -1672,3 +1692,22 @@ def load_flow_FACTS_cc(z,graph,var_x,var_t):
 
     x=np.linalg.solve(A_red,b)
     return x,A
+
+
+
+def upfc_angle(graph):
+    for no in graph:
+        if no.FlagUPFC==1:
+            for key in no.bUFPC_adjk.keys():
+                tse=no.bUFPC_adjk[key].t_se
+                vse=no.bUFPC_adjk[key].Vse
+                j=complex(0,1)
+                Vsecom=vse*np.exp(j*tse)
+                no.bUFPC_adjk[key].t_se=np.angle(Vsecom)
+                no.bUFPC_adjk[key].Vse=np.absolute(Vsecom)
+                tsh=no.bUFPC_adjk[key].t_sh
+                vsh=no.bUFPC_adjk[key].Vsh
+                j=complex(0,1)
+                Vshcom=vsh*np.exp(j*tsh)
+                no.bUFPC_adjk[key].t_sh=np.angle(Vshcom)
+                no.bUFPC_adjk[key].Vsh=np.absolute(Vshcom)

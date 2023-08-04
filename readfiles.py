@@ -68,28 +68,30 @@ def prt_state(graph):
         print(s)
 
 
-def prt_state_FACTS(graph):
+def prt_state_FACTS(graph,var_x,var_svc,var_upfc):
     """
     Function to print in the scream the value of the state variables, in the network's graph
     @param: graph Graph structure with the information about the network
     """
-    for no in graph:
-        if no.FlagTCSC==True:
-            for key, item in no.bFACTS_adjk.items():
-                k=int(key.split("-")[0])
-                m=int(key.split("-")[1])
-                s="TCSC | de {:d} | para {:d}| X : {:f}".format(graph[k].bar.id,graph[m].bar.id,item.xtcsc)
-                print(s)
-        if no.FlagSVC==True:
-            s="SVC | Barra {:d} | X : {:f}".format(no.bar.id,1/no.SVC.BSVC)
-            print(s)
-        if no.FlagUPFC==True:
-            for key, item in no.bUFPC_adjk.items():
-                k=int(key.split("-")[0])
-                m=int(key.split("-")[1])
-                s="UPFC | de {:d} | para {:d}| Vse: {:f} | Tse {:f} |  Vsh: {:f} | Tsh {:f}"\
-                    .format(graph[k].bar.id,graph[m].bar.id,item.Vse,item.t_se*180/np.pi,item.Vsh,item.t_sh*180/np.pi)
-                print(s)
+    for key,item in var_x.items():
+        k=int(key.split("-")[0])
+        m=int(key.split("-")[1])
+        s="TCSC | de {:d} | para {:d}| X : {:f}".format(graph[k].bar.id,graph[m].bar.id,graph[k].adjk[key].xtcsc)
+        print(s)
+    for key,item in var_svc.items():
+        k=int(key)
+        s="SVC | Barra {:d} | X : {:f}".format(graph[k].bar.id,1/graph[k].SVC.BSVC)
+        print(s)
+    
+    for key, item in var_upfc.items():
+        k=int(key.split("-")[0])
+        m=int(key.split("-")[1])
+
+
+        s="UPFC | de {:d} | para {:d}| Vse: {:f} | Tse {:f} |  Vsh: {:f} | Tsh {:f}"\
+            .format(graph[k].bar.id,graph[m].bar.id,graph[k].bUFPC_adjk[key].Vse,\
+                    graph[k].bUFPC_adjk[key].t_se*180/np.pi,graph[k].bUFPC_adjk[key].Vsh,graph[k].bUFPC_adjk[key].t_sh*180/np.pi)
+        print(s)
 
 
 def save_DMED_fp(graph,ram,sys,dUPFC={}):
