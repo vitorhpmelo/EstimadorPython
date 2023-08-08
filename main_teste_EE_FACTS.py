@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE118_tcsc_elizete"
+sys="IEEE14_rakp2009"
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -42,24 +42,26 @@ addSVCingraph(graph,busSVC)
 
 addUPFCingraph(graph,ramUPFC)
 
-
-
-conv=load_flow_FACTS(graph,inici=1,prt=1,itmax=40)
 #%%
 
-ram.update(ramTCSC)
+print("Estimador 1")
+print("FACTS with BC")
+SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
+#%%
+print("Estimador 2")
+print("FACTS no BC")
+SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
+#%%
+print("Estimador 3")
+print("FACTS with BC and jump first iterations facts")
+SS_WLS_FACTS_withBC_limalphavarfacts(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 
-save_DMED_fp(graph,ram,sys,ramUPFC)
-
-
-state_ref=get_state(graph)
-
-prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
-dfDMEDsr=create_DMED(sys,prec,graph,ram)
-
+# %%
+print("Estimador 4")
+print("FACTS with BC lim for X and jump first iterations facts")
+SS_WLS_FACTS_withBC_limvarfacts(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 #%%
 
-
-print("FACTS1")
-SS_WLS_FACTS(graph,dfDMEDsr,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
-#%%
+print("Estimador 5")
+print("FACTS with BC lim for X and jump first iterations facts")
+SS_WLS_FACTS_withBC_itvarfacts(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)

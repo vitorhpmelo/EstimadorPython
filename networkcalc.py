@@ -198,8 +198,8 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
                     
         for key in var_x.keys():
             key=key.split("-")
-            m=int(key[1])
-            graph[m].V=graph[m].V+0.1
+            k=int(key[1])
+            graph[k].V=graph[k].V+0.1
 
     else:
         [x,H]=load_flow_FACTS_cc(z,graph,var_x,var_t)
@@ -1328,25 +1328,43 @@ def new_X_TCSC(graph,nvars,var_x,dx):
         graph[k].adjk[key].xtcsc=graph[k].adjk[key].xtcsc+dx[item+nvars]
         graph[k].adjk[key].AttY()
 
+
+def checklim_X_TCSC(graph,var_x):
+    x_lim_sup=0.2
+    x_lim_inf=-0.2
+    for key,item in var_x.items():
+        k=int(key.split("-")[0])
+        if graph[k].adjk[key].xtcsc> x_lim_sup:
+            graph[k].adjk[key].xtcsc=x_lim_sup
+        elif graph[k].adjk[key].xtcsc< x_lim_inf:
+            graph[k].adjk[key].xtcsc=x_lim_inf
+        elif np.abs(graph[k].adjk[key].xtcsc)<1e-6:
+            if graph[k].adjk[key].xtcsc >0:
+                graph[k].adjk[key].xtcsc=1e-6
+            else:
+                graph[k].adjk[key].xtcsc=-1e-6
+
+        graph[k].adjk[key].AttY()
+
 def new_X_TCSC_lim(graph,nvars,var_x,dx):
     for key,item in var_x.items():
-        x_lim_sup_p=1.50
-        x_lim_inf_n=-1.50
+        x_lim_sup_p=0.10
+        x_lim_inf_n=-0.10
         x_lim_inf_p=1e-6
         x_lim_sup_n=-1e-6
         k=int(key.split("-")[0])
-        print("{:e}".format(graph[k].adjk[key].xtcsc+dx[item+nvars] ))
+        # print("{:e}".format(graph[k].adjk[key].xtcsc+dx[item+nvars] ))
         if graph[k].adjk[key].xtcsc+dx[item+nvars] > x_lim_sup_p:
-            graph[k].adjk[key].xtcsc= x_lim_sup_p
+            graph[k].adjk[key].xtcsc= graph[k].adjk[key].xtcsc_ini
         elif graph[k].adjk[key].xtcsc+dx[item+nvars] < x_lim_inf_n:
-            graph[k].adjk[key].xtcsc= x_lim_inf_n 
+            graph[k].adjk[key].xtcsc= graph[k].adjk[key].xtcsc_ini
         elif (graph[k].adjk[key].xtcsc+dx[item+nvars] > 0) & (graph[k].adjk[key].xtcsc+dx[item+nvars] < x_lim_inf_p):
             graph[k].adjk[key].xtcsc= x_lim_inf_p
         elif (graph[k].adjk[key].xtcsc+dx[item+nvars] < 0) & (graph[k].adjk[key].xtcsc+dx[item+nvars] > x_lim_sup_n):
             graph[k].adjk[key].xtcsc= x_lim_sup_n
         else:
             graph[k].adjk[key].xtcsc=graph[k].adjk[key].xtcsc+dx[item+nvars]
-        print("xtcsc: {:e}".format(graph[k].adjk[key].xtcsc))
+        # print("xtcsc: {:e}".format(graph[k].adjk[key].xtcsc))
         graph[k].adjk[key].AttY()
 
 def new_X_TCSC_lim2(graph,nvars,var_x,dx):
@@ -1360,7 +1378,7 @@ def new_X_TCSC_lim2(graph,nvars,var_x,dx):
             graph[k].adjk[key].xtcsc= x_lim_sup_n
         else:
             graph[k].adjk[key].xtcsc=graph[k].adjk[key].xtcsc+dx[item+nvars]
-        print("xtcsc: {:e}".format(graph[k].adjk[key].xtcsc))
+        # print("xtcsc: {:e}".format(graph[k].adjk[key].xtcsc))
         graph[k].adjk[key].AttY()
 
 
@@ -1403,7 +1421,7 @@ def new_X_TCSCC_B(graph,nvars,var_x,dx):
 
 
 
-def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=-1,itmax=20):
+def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=1,itmax=20):
     """
     Function to run load flow with FACTS devices (only TCSC implemented yet)
     @param graph with the informations of the network
@@ -1463,13 +1481,14 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=-1,itmax=20):
             np.savetxt("Hmatrix.csv",Hx,fmt="%.18e",delimiter=",")
             np.savetxt("bvect.csv",b,fmt="%.18e",delimiter=",")
             np.savetxt("dx.csv",dx,fmt="%.18e",delimiter=",")
-        # if 0.1<dx_TCSC_max(graph,len(var_t)+len(var_v),var_x,dx):
+        
+        # if 0.5<dx_TCSC_max(graph,len(var_t)+len(var_v),var_x,dx):
         #     X_TCSC_its(graph,len(var_t)+len(var_v),var_x,dx)    
 
         new_X(graph,var_t,var_v,dx)
-        if it>2:
-            new_X_TCSC(graph,len(var_t)+len(var_v),var_x,dx)
-        
+        if it>10:
+            new_X_TCSC_lim(graph,len(var_t)+len(var_v),var_x,dx)
+            
         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         new_X_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,var_UPFC_vsh,dx)#
         maxdx=np.max(np.abs(dx))
