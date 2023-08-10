@@ -42,8 +42,6 @@ addSVCingraph(graph,busSVC)
 
 addUPFCingraph(graph,ramUPFC)
 
-#%% confere derivadas Acha
-
 #%%
 conv=load_flow_FACTS(graph,inici=1,prt=1,itmax=20)
 #%%

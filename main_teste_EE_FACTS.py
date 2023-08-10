@@ -65,3 +65,4 @@ SS_WLS_FACTS_withBC_limvarfacts(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printc
 print("Estimador 5")
 print("FACTS with BC lim for X and jump first iterations facts")
 SS_WLS_FACTS_withBC_itvarfacts(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
+# %%
