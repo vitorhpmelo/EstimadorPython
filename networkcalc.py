@@ -1487,9 +1487,8 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=1,itmax=20):
             X_TCSC_its(graph,len(var_t)+len(var_v),var_x,dx)    
 
         new_X(graph,var_t,var_v,dx)
-        # if it>2:
-        new_X_TCSC_lim(graph,len(var_t)+len(var_v),var_x,dx)
-            
+        if it>10:
+            new_X_TCSC_lim(graph,len(var_t)+len(var_v),var_x,dx)
         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         new_X_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,var_UPFC_vsh,dx)#
 
