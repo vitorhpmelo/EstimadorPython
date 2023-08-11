@@ -80,7 +80,7 @@ def prt_state_FACTS(graph,var_x,var_svc,var_upfc):
         print(s)
     for key,item in var_svc.items():
         k=int(key)
-        s="SVC | Barra {:d} | X : {:f}".format(graph[k].bar.id,1/graph[k].SVC.BSVC)
+        s="SVC | Barra {:d} | B_SVC : {:f}".format(graph[k].bar.id,graph[k].SVC.BSVC)
         print(s)
     
     for key, item in var_upfc.items():
