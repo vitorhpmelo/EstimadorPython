@@ -593,7 +593,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
     lstdz=[]
     lstc_upfc=[]
     
-    while(it <100):
+    while(it <30):
         a=1
         calc_dz(z,graph,dz)
         calc_cUPFC(graph,var_UPFC,c_upfc)
@@ -1005,7 +1005,7 @@ def SS_WLS_FACTS_withBC_limalphavarfacts(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,s
     lstdz=[]
     lstc_upfc=[]
     
-    while(it <100):
+    while(it <30):
         a=1
         calc_dz(z,graph,dz)
         calc_cUPFC(graph,var_UPFC,c_upfc)
@@ -1131,7 +1131,7 @@ def SS_WLS_FACTS_withBC_itvarfacts(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver=
     lstdz=[]
     lstc_upfc=[]
     
-    while(it <100):
+    while(it <30):
         a=1
         calc_dz(z,graph,dz)
         calc_cUPFC(graph,var_UPFC,c_upfc)
@@ -1259,7 +1259,7 @@ def SS_WLS_FACTS_withBC_limvarfacts(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver
     lstdz=[]
     lstc_upfc=[]
     
-    while(it <100):
+    while(it <30):
         a=1
         calc_dz(z,graph,dz)
         calc_cUPFC(graph,var_UPFC,c_upfc)

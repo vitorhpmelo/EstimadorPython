@@ -200,6 +200,7 @@ def Vinici_lf(graph,useDBAR=1,var_x=[],var_t=[],z=[]):
             key=key.split("-")
             k=int(key[1])
             graph[k].V=graph[k].V+0.1
+            graph[k].teta=graph[k].teta+0.01
 
     else:
         [x,H]=load_flow_FACTS_cc(z,graph,var_x,var_t)
@@ -1486,11 +1487,11 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=1,itmax=20):
         #     X_TCSC_its(graph,len(var_t)+len(var_v),var_x,dx)    
 
         new_X(graph,var_t,var_v,dx)
-        if it>3:
-            new_X_TCSC(graph,len(var_t)+len(var_v),var_x,dx)
-            
+        if it>10:
+            new_X_TCSC_lim(graph,len(var_t)+len(var_v),var_x,dx)
         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         new_X_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,var_UPFC_vsh,dx)#
+
         maxdx=np.max(np.abs(dx))
         maxdz=np.max(np.abs(dz))
         maxc=np.max(np.abs(c_UPFC),initial=0)

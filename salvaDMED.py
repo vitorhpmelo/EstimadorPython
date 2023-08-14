@@ -44,7 +44,7 @@ addUPFCingraph(graph,ramUPFC)
 
 #%%
 
-conv=load_flow_FACTS(graph,inici=1,prt=1,itmax=40)
+conv=load_flow_FACTS(graph,inici=1,prt=1,itmax=30)
 #%%
 
 ram.update(ramTCSC)
