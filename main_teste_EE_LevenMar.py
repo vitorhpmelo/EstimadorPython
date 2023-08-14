@@ -44,19 +44,10 @@ addUPFCingraph(graph,ramUPFC)
 
 #%%
 
-conv=load_flow_FACTS(graph,inici=1,prt=1,itmax=40)
+print("Estimador 2")
+print("FACTS no BC")
+SS_WLS_FACTS_LM(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
+# SS_WLS_FACTS_LM_2(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 #%%
-
-ram.update(ramTCSC)
-
-save_DMED_fp(graph,ram,sys,ramUPFC)
-
+SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 #%%
-state_ref=get_state(graph)
-
-prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
-dfDMEDsr=create_DMED(sys,prec,graph,ram)
-
-#%%
-dfDMEDsr.to_csv(sys+"/DMED.csv",header=None,index=None,float_format="%.7f")
-# %%
