@@ -852,6 +852,26 @@ def calc_H_EE_UPFC(z,var_UPFC,graph,H):
                 H[i][n_UPFCs+var_UPFC[mk]]= graph[k].bUFPC_adjm[mk].dQspdtsh(graph)
                 H[i][2*n_UPFCs+var_UPFC[mk]]= graph[k].bUFPC_adjm[mk].dQspdVse(graph)
                 H[i][3*n_UPFCs+var_UPFC[mk]]=upfc.dQspdVsh(graph)
+        if item.type==12:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            H[i][3*n_UPFCs+var_UPFC[km]]=1 
+        if item.type==13:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            H[i][n_UPFCs+var_UPFC[km]]=-1 
+        if item.type==14:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            H[i][2*n_UPFCs+var_UPFC[km]]=1 
+        if item.type==15:
+            k=item.k
+            m=item.m
+            km=str(k)+"-"+str(m)
+            H[i][var_UPFC[km]]=-1 
         i=i+1
 
 
@@ -910,10 +930,13 @@ def calc_H_EE_SVC(z,var_svc,graph,H):
             k=item.k
             if graph[k].FlagSVC==1:
                 H[i][var_svc[k]]= (graph[k].V**2)*graph[k].SVC.dGkdBsvc()
-        if item.type==1:
+        elif item.type==1:
             k=item.k
             if graph[k].FlagSVC==1:
                 H[i][var_svc[k]]= -(graph[k].V**2)*graph[k].SVC.dBkdBsvc()
+        elif item.type==11:
+            k=item.k
+            H[i][var_svc[k]]=1
         i=i+1
 
 
@@ -1003,6 +1026,8 @@ def calc_H_EE_TCSC(z,var_x,graph,H):
         elif item.type==4:
                 for key in var_x.keys():
                     H[i][var_x[key]]=0 
+        elif item.type==10:
+            H[i][var_x[key]]=1
         i=i+1
 
 
@@ -1256,8 +1281,14 @@ def calc_H_EE(z,var_t,var_v,graph,H):
                     print("erro ao calcular fluxo na Jacobiana, medida Fluxo de P {:d}-{:d}".format(graph[k].id,graph[m].id))
                     exit(1)
         elif item.type==4:
-                k=item.k
-                H[i][var_v[k]+n_teta]=1
+            k=item.k
+            H[i][var_v[k]+n_teta]=1
+        elif item.type==13:
+            k=item.k
+            H[i][var_t[k]]=1
+        elif item.type==14:
+            k=item.k
+            H[i][var_t[k]]=1
         i=i+1
 
 
@@ -1320,6 +1351,33 @@ def new_X_EE_UPFC(graph,offset,var_UPFC,dx):
         graph[p].bUFPC_adjk[key].Vsh=graph[p].bUFPC_adjk[key].Vsh+dx[offset+3*n_upfc+var_UPFC[key]]
 
 
+
+
+def reini_X_TCSC(graph,var_x,z):
+    for key,item in var_x.items():
+        k=int(key.split("-")[0])
+        m=int(key.split("-")[1])
+        for item2 in z:
+            if (item2.k==k) and (item2.m==m):
+                if item2.type==2:
+                    P=item2.val
+            if (item2.k==k) and (item2.m==m):
+                if item2.type==3:
+                    Q=item2.val
+        xtcsc=graph[k].adjk[key].xtcsc
+        Pcal=graph[k].V*graph[m].V*np.sin(graph[k].teta-graph[m].teta)/xtcsc
+        Qcal=graph[k].V*(graph[k].V-graph[m].V*np.cos(graph[k].teta-graph[m].teta))/xtcsc
+
+        res=np.abs(Pcal-P)+np.abs(Qcal-Q)
+        res2=np.abs(-Pcal-P)+np.abs(-Qcal-Q)
+        
+        if res<1:
+            pass
+        elif res>res2:
+            k=int(key.split("-")[0])
+            m=int(key.split("-")[1])
+            graph[k].adjk[key].xtcsc=-xtcsc
+            graph[k].adjk[key].AttY()
 
 
 
@@ -1483,12 +1541,12 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=1,itmax=20):
             np.savetxt("bvect.csv",b,fmt="%.18e",delimiter=",")
             np.savetxt("dx.csv",dx,fmt="%.18e",delimiter=",")
         
-        # if 0.1<dx_TCSC_max(graph,len(var_t)+len(var_v),var_x,dx):
-        #     X_TCSC_its(graph,len(var_t)+len(var_v),var_x,dx)    
+        if 0.5<dx_TCSC_max(graph,len(var_t)+len(var_v),var_x,dx):
+            X_TCSC_its(graph,len(var_t)+len(var_v),var_x,dx)    
 
         new_X(graph,var_t,var_v,dx)
         if it>10:
-            new_X_TCSC_lim(graph,len(var_t)+len(var_v),var_x,dx)
+            new_X_TCSC(graph,len(var_t)+len(var_v),var_x,dx)
         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         new_X_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,var_UPFC_vsh,dx)#
 
@@ -1618,7 +1676,7 @@ def create_z_x(graph,dfDMED,ind_i):
         j=j+1
 
     for idx,row in dfDMED.iterrows():
-        if int(row["type"])==0 or int(row["type"])==1 or  int(row["type"])==4:
+        if (int(row["type"])==0) or (int(row["type"])==1) or  (int(row["type"])==4) or (int(row["type"])==11) :
             mes=meas(ind_i[int(row["de"])],-1,int(row["type"]),row["zmed"],row["prec"])
         else:  
             mes=meas(ind_i[int(row["de"])],ind_i[int(row["para"])],int(row["type"]),row["zmed"],row["prec"])

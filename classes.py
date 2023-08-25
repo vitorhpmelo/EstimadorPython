@@ -1357,6 +1357,35 @@ class meas():
                 exit(1)
         elif self.type==4:
             return self.val-graph[self.k].V
+        elif self.type==10:
+            #medida é uma variavel de controle do TCSC
+            k=self.k
+            keyk=str(self.k)+"-"+str(self.m)
+            return self.val-graph[k].bFACTS_adjk[keyk].xtcsc
+        elif self.type==11:
+            #medida é uma variavel de controle do SVC
+            k=self.k
+            return self.val-graph[k].SVC.BSVC
+        elif self.type==12:
+            #medida é uma variavel de controle do UPFC (modulo de tensao da fonte shunt)
+            k=self.k
+            keyk=str(self.k)+"-"+str(self.m)
+            return self.val-graph[k].bUFPC_adjk[keyk].Vsh
+        elif self.type==13:
+            #medida é uma variavel de controle do UPFC (modulo de teta da fonte shunt)
+            k=self.k
+            keyk=str(self.k)+"-"+str(self.m)
+            return self.val - (graph[k].teta-graph[k].bUFPC_adjk[keyk].t_sh)
+        elif self.type==14:
+            #medida é uma variavel de controle do UPFC (modulo de tensao da fonte shunt)
+            k=self.k
+            keyk=str(self.k)+"-"+str(self.m)
+            return self.val - graph[k].bUFPC_adjk[keyk].Vse
+        elif self.type==15:
+            #medida é uma variavel de controle do UPFC (modulo de teta da fonte shunt)
+            k=self.k
+            keyk=str(self.k)+"-"+str(self.m)
+            return self.val - (graph[k].teta-graph[k].bUFPC_adjk[keyk].t_se)
         else:
             print("Tipo de medida não existente")
             exit(1)
@@ -1387,9 +1416,6 @@ class meas():
                 exit(1)
         elif self.type==4:
             return graph[self.k].V
-        else:
-            print("Tipo de medida não existente")
-            exit(1)
 
 
 

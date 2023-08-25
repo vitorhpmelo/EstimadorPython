@@ -45,9 +45,11 @@ addUPFCingraph(graph,ramUPFC)
 #%%
 
 print("Estimador 2")
-print("FACTS no BC")
+# print("FACTS no BC")
 SS_WLS_FACTS_LM(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
-# SS_WLS_FACTS_LM_2(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
+#%%
+# SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
+# SS_WLS_FACTS_LM_3(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 #%%
 SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 #%%

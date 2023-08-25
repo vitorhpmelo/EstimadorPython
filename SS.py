@@ -26,11 +26,13 @@ def NormalEQ(H,W,dz,printcond=0,printmat=0):
     return dx
 
 
-def NormalEQ_lev(H,W,damp,dz,printcond=0,printmat=0):
+def NormalEQ_lev(H,W,damp,dz,printcond=0,printmat=0,D=1):
     grad=np.matmul(np.matmul(H.T,W),dz)
     G=np.matmul(np.matmul(H.T,W),H)
     # I=np.diag(np.diag(G))
     I=np.eye(len(G))
+
+    I=np.eye(len(G))*D
     A=np.add(G,damp*I)
 
     if(printmat==1):
@@ -696,7 +698,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
 
     it=0
     it2=0
-    itmax=5
+    itmax=3
     lstdx=[]
     lstdz=[]
     lstc_upfc=[]
@@ -730,6 +732,9 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
             calc_cUPFC(graph,var_UPFC,c_upfc)
             b=np.append(dz,c_upfc)
             Jxn=np.matmul(np.matmul(b,W),b)
+            it2=it2+1
+            if it2==itmax:
+                break
             if Jxn < Jxk + c1*a*np.dot(grad,dx):
                 break
             else:
@@ -738,7 +743,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
                 new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,-a*dx)
                 new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-a*dx)
                 a=a/2
-                it2=it2+1
+                
         print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)
@@ -766,6 +771,139 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
 
     return it
 
+def SS_WLS_FACTS_grad(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
+    
+    '''
+    WLS state estimator with FACTS devices (only TCSC implemented yet)
+
+    @param graph with the informations of the network
+    @param prt param indicating if it is printing everyting or not
+    @param tol tolerance for the dx atualization of the variables
+    @param tol2 tolerance for the gradiente reduction
+    @param solver only gain matrix implemented yet
+    @param prec_virtual standard deviation of virtual measurements
+    @param printcond flag for calculating and printing condition number
+    @param printmat flag for calculating and printing the matrix for calculationg the descend direction
+    @param flat start, initialization of the state variables, if -1 uses the DC state estimator to intialize the angles and the X, 0 it ujses
+    the flat start, 1 it uses the DBAR
+    '''
+    conv=0
+    c1=1e-4 #constant for backintracking
+    FACTSini(graph)
+
+    Vinici(graph,flatStart=flatstart,dfDMED=dfDMED,ind_i=ind_i)
+
+    [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
+    var_x=create_x_TCSC(graph)
+    var_svc=create_x_SVC(graph)
+    [var_UPFC,c_upfc]=create_c_x_UPFC(graph)
+    #create var UPFC
+
+    if flatstart==2:
+        for key in var_x.keys():
+            key=key.split("-")
+            m=int(key[0])
+            graph[m].V=graph[m].V+0.1
+
+
+
+    Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
+    HTCSC=np.zeros((len(z),len(var_x)))
+    HSVC=np.zeros((len(z),len(var_svc)))
+    UPFC=np.zeros((len(z),4*len(var_UPFC)))
+    n_teta=len(var_t)
+    n_v=len(var_v)
+    n_TCSC=len(var_x)
+    n_SVC=len(var_svc)
+    n_UPFC=len(var_UPFC)
+    nvar=n_teta+n_v+n_TCSC+n_SVC+4*n_UPFC
+    dz=np.zeros(len(z))
+    W=create_W(z+list(c_upfc),flag_ones=0,prec_virtual=prec_virtual) #expandir W para caber as c_FACTS
+    
+    C_UPFC=np.zeros((len(c_upfc),nvar))
+
+    it=0
+    it2=0
+    itmax=5
+    lstdx=[]
+    lstdz=[]
+    lstc_upfc=[]
+    prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
+    
+    while(it <30):
+        a=1
+        calc_dz(z,graph,dz)
+        calc_cUPFC(graph,var_UPFC,c_upfc)
+        calc_H_EE(z,var_t,var_v,graph,Htrad) 
+        calc_H_EE_TCSC(z,var_x,graph,HTCSC) 
+        calc_H_EE_SVC(z,var_svc,graph,HSVC) 
+        calc_H_EE_UPFC(z,var_UPFC,graph,UPFC)
+        calc_C_EE_UPFC(var_t,var_v,var_x,var_svc,var_UPFC,graph,C_UPFC)
+        
+        Hx=np.concatenate((Htrad,HTCSC,HSVC,UPFC),axis=1)
+        H=np.concatenate((Hx,C_UPFC),axis=0)
+        b=np.append(dz,c_upfc)
+        grad=np.matmul(np.matmul(H.T,W),b)
+        if it<5:
+            dx=grad/np.linalg.norm(grad)
+        else:
+            dx=NormalEQ_QR(H,W,b,printcond=printcond,printmat=printmat)
+        Jxk=np.matmul(np.matmul(b,W),b)
+        if it==0:
+            norminicial=liang.norm(grad)
+        it2=0
+        while it2<itmax:
+            new_X(graph,var_t,var_v,a*dx)
+            new_X_TCSC(graph,len(var_t)+len(var_v),var_x,a*dx)
+            new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,a*dx)
+            new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,a*dx)
+            calc_dz(z,graph,dz)
+            calc_cUPFC(graph,var_UPFC,c_upfc)
+            b=np.append(dz,c_upfc)
+            Jxn=np.matmul(np.matmul(b,W),b)
+            print("funçao objetivo k {} | k+1 : {}".format(Jxk,Jxn))
+            it2=it2+1
+            if it2==itmax:
+                break
+            if Jxn < Jxk + c1*a*np.dot(grad,dx):
+                break
+            else:
+                new_X(graph,var_t,var_v,-a*dx)
+                new_X_TCSC(graph,len(var_t)+len(var_v),var_x,-a*dx)
+                new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,-a*dx)
+                new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-a*dx)
+                if it<5:
+                    a=a/20
+                else:
+                    a=a/2
+                
+        prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
+        print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
+        gradredux=liang.norm(grad)/norminicial
+        maxdx= liang.norm(a*dx)
+        lstdx.append(maxdx)
+        lstdz.append(gradredux)
+        if gradredux <tol2 and maxdx<tol:
+            txt="Convergiu em {:d} iteracoes".format(it)
+            upfc_angle(graph)
+            print(liang.norm(grad)/norminicial)
+            print(txt)
+            prt_state(graph)
+            prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
+            conv=1
+            break
+
+
+        it=it+1
+
+    if pirntits==1:
+        iterdict={"dx":lstdx,"dz":lstdz}
+        df = pd.DataFrame(iterdict)
+
+        # Save the DataFrame to a CSV file
+        df.to_csv('conv_A.csv', index=False)
+
+    return it
 
 
 def SS_WLS_FACTS_LM(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
@@ -826,7 +964,7 @@ def SS_WLS_FACTS_LM(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtu
     lstdz=[]
     lstc_upfc=[]
     
-    while(it <50):
+    while(it <30):
         calc_dz(z,graph,dz)
         calc_cUPFC(graph,var_UPFC,c_upfc)
         calc_H_EE(z,var_t,var_v,graph,Htrad) 
@@ -846,9 +984,13 @@ def SS_WLS_FACTS_LM(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtu
         if it==0:
             norminicial=liang.norm(grad)
             Jxkin=Jxk
+            G=np.matmul(np.matmul(H.T,W),H)
+            D=liang.norm(np.diag(G))*0.0001
+            print("O valor de D")
+            print(D)
             
         damp=calc_damp_leven_mod_2(grad/norminicial,it+1)
-        dx=NormalEQ_lev(H,W,damp,b)
+        dx=NormalEQ_lev(H,W,damp,b,D=D)
 
         new_X(graph,var_t,var_v,dx)
         new_X_TCSC(graph,len(var_t)+len(var_v),var_x,dx)
@@ -885,7 +1027,143 @@ def SS_WLS_FACTS_LM(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtu
     return it
 
 
-def SS_WLS_FACTS_LM_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
+
+def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
+    
+    '''
+    WLS state estimator with FACTS devices LevenberMerquard
+
+    @param graph with the informations of the network
+    @param prt param indicating if it is printing everyting or not
+    @param tol tolerance for the dx atualization of the variables
+    @param tol2 tolerance for the gradiente reduction
+    @param solver only gain matrix implemented yet
+    @param prec_virtual standard deviation of virtual measurements
+    @param printcond flag for calculating and printing condition number
+    @param printmat flag for calculating and printing the matrix for calculationg the descend direction
+    @param flat start, initialization of the state variables, if -1 uses the DC state estimator to intialize the angles and the X, 0 it ujses
+    the flat start, 1 it uses the DBAR
+    '''
+    conv=0
+    c1=1e-4 #constant for backintracking
+    FACTSini(graph)
+
+    Vinici(graph,flatStart=flatstart,dfDMED=dfDMED,ind_i=ind_i)
+
+    [z,var_t,var_v]=create_z_x(graph,dfDMED,ind_i)
+    var_x=create_x_TCSC(graph)
+    var_svc=create_x_SVC(graph)
+    [var_UPFC,c_upfc]=create_c_x_UPFC(graph)
+    #create var UPFC
+
+    if flatstart==2:
+        for key in var_x.keys():
+            key=key.split("-")
+            m=int(key[1])
+            graph[m].V=graph[m].V-0.1
+
+
+
+    Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
+    HTCSC=np.zeros((len(z),len(var_x)))
+    HSVC=np.zeros((len(z),len(var_svc)))
+    UPFC=np.zeros((len(z),4*len(var_UPFC)))
+    n_teta=len(var_t)
+    n_v=len(var_v)
+    n_TCSC=len(var_x)
+    n_SVC=len(var_svc)
+    n_UPFC=len(var_UPFC)
+    nvar=n_teta+n_v+n_TCSC+n_SVC+4*n_UPFC
+    dz=np.zeros(len(z))
+    W=create_W(z+list(c_upfc),flag_ones=0,prec_virtual=prec_virtual) #expandir W para caber as c_FACTS
+    
+    C_UPFC=np.zeros((len(c_upfc),nvar))
+
+    it=0
+    it2=0
+    itmax=5
+    lstdx=[]
+    lstdz=[]
+    lstc_upfc=[]
+    
+    while(it <35):
+        calc_dz(z,graph,dz)
+        calc_cUPFC(graph,var_UPFC,c_upfc)
+        calc_H_EE(z,var_t,var_v,graph,Htrad) 
+        calc_H_EE_TCSC(z,var_x,graph,HTCSC) 
+        calc_H_EE_SVC(z,var_svc,graph,HSVC) 
+        calc_H_EE_UPFC(z,var_UPFC,graph,UPFC)
+        calc_C_EE_UPFC(var_t,var_v,var_x,var_svc,var_UPFC,graph,C_UPFC)
+
+        
+        Hx=np.concatenate((Htrad,HTCSC,HSVC,UPFC),axis=1)
+        H=np.concatenate((Hx,C_UPFC),axis=0)
+        b=np.append(dz,c_upfc)
+
+        grad=np.matmul(np.matmul(H.T,W),b)
+        Jxk=np.matmul(np.matmul(b,W),b)
+
+        if it==0:
+            norminicial=liang.norm(grad)
+            Jxkin=Jxk
+            G=np.matmul(np.matmul(H.T,W),H)
+            D=liang.norm(np.diag(G))*0.000001
+            print("O valor de D")
+            print(D)
+            
+        damp=calc_damp_leven_mod_2(grad/norminicial,it+1)
+        dx=NormalEQ_lev(H,W,damp,b,D=D)
+        a=1
+        it2=0
+        while it2<itmax:
+            new_X(graph,var_t,var_v,a*dx)
+            new_X_TCSC(graph,len(var_t)+len(var_v),var_x,a*dx)
+            new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,a*dx)
+            new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,a*dx)
+            calc_dz(z,graph,dz)
+            calc_cUPFC(graph,var_UPFC,c_upfc)
+            b=np.append(dz,c_upfc)
+            Jxn=np.matmul(np.matmul(b,W),b)
+            it2=it2+1
+            if it2==itmax:
+                break
+            if Jxn < Jxk + c1*a*np.dot(grad,dx):
+                break
+            else:
+                new_X(graph,var_t,var_v,-a*dx)
+                new_X_TCSC(graph,len(var_t)+len(var_v),var_x,-a*dx)
+                new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,-a*dx)
+                new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-a*dx)
+                a=a/2
+                
+
+        print("grad {:e}, dx {:e}".format( liang.norm(grad)/norminicial,liang.norm(dx)))
+        gradredux=liang.norm(grad)/norminicial
+        maxdx= liang.norm(dx)
+        lstdx.append(maxdx)
+        lstdz.append(gradredux)
+        if gradredux <tol2 and maxdx<tol:
+            txt="Convergiu em {:d} iteracoes".format(it)
+            upfc_angle(graph)
+            print(liang.norm(grad)/norminicial)
+            print(txt)
+            prt_state(graph)
+            prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
+            conv=1
+            break
+
+        it=it+1
+
+    if pirntits==1:
+        iterdict={"dx":lstdx,"dz":lstdz}
+        df = pd.DataFrame(iterdict)
+
+        # Save the DataFrame to a CSV file
+        df.to_csv('conv_A.csv', index=False)
+
+    return it
+
+def SS_WLS_FACTS_LM_3(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
     
     '''
     WLS state estimator with FACTS devices LevenberMerquard
@@ -942,10 +1220,14 @@ def SS_WLS_FACTS_LM_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
     lstdx=[]
     lstdz=[]
     lstc_upfc=[]
-    damp=1e-3
-    Beta=10
-    aplha=1/Beta
-    Delta=Beta
+    LD=3
+    LI=2
+    count=0
+    beta=2
+    gama=3
+    
+    v=beta
+
     
     while(it <100):
         calc_dz(z,graph,dz)
@@ -967,15 +1249,18 @@ def SS_WLS_FACTS_LM_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         if it==0:
             norminicial=liang.norm(grad_xk)
             Jxkin=Jxk
+            G=np.matmul(np.matmul(H.T,W),H)
+            damp=np.max(np.diag(G))*0.001
         # gradnormal=grad/norminicial
         # Jxknorma=Jxk/Jxkin
         # damp=calc_damp_leven_mod(gradnormal)
         
-        pk=1
 
         dx=NormalEQ_lev(H,W,damp,b)
+        
         m0=cal_model_quad(grad_xk,Jxk,np.zeros(len(dx)),H,damp,np.eye(len(dx)),W)
         mk=cal_model_quad(grad_xk,Jxk,dx,H,damp,np.eye(len(dx)),W)
+        model=cal_model_2(grad_xk,dx,damp)
         new_X(graph,var_t,var_v,dx)
         new_X_TCSC(graph,len(var_t)+len(var_v),var_x,dx)
         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
@@ -984,17 +1269,36 @@ def SS_WLS_FACTS_LM_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         calc_cUPFC(graph,var_UPFC,c_upfc)
         b=np.append(dz,c_upfc)
         Jxk_novo=np.matmul(np.matmul(b,W),b)
-        pk=(Jxk-Jxk_novo)/(mk-m0)
-        if pk>1/4:
-            damp=damp*0.5
-            Delta=Beta
+        
+        pk=(Jxk-Jxk_novo)/(model)
+        # if pk<1/4:
+        #     count=0
+        #     damp=damp*LI
+        #     if pk<0:
+        #         new_X(graph,var_t,var_v,-dx)
+        #         new_X_TCSC(graph,len(var_t)+len(var_v),var_x,-dx)
+        #         new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,-dx)
+        #         new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-dx)
+        # elif pk>3/4:
+        #     damp=damp/LD
+        #     count=count+1
+        #     if count>2:
+        #         damp=damp/LD
+        if pk>0:
+            A=1/gama
+            B=1-(beta-1)*(2*pk-1)**3
+            damp=damp*np.max([A,B])
+            v=beta
         else:
+            damp=damp*v
+            v=2*v
             new_X(graph,var_t,var_v,-dx)
             new_X_TCSC(graph,len(var_t)+len(var_v),var_x,-dx)
             new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,-dx)
             new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-dx)
-            damp=(2)*damp
-            Delta=Delta*2
+
+
+
 
 
 
@@ -1040,6 +1344,11 @@ def SS_WLS_FACTS_LM_2(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
 
     return it
 
+
+
+
+
+
 def calc_damp_leven(grad,Jxk):
     return (np.linalg.norm(grad)**2)/Jxk
 
@@ -1047,11 +1356,15 @@ def calc_damp_leven_mod(grad):
     return (np.linalg.norm(grad))
 
 def calc_damp_leven_mod_2(grad,it):
-    return (2*np.linalg.norm(grad)/(3*it))
+    return 2*np.linalg.norm(grad)/(3*(it**4))
 
 def cal_model_quad(grad,Jx,dx,H,damp,D,W):
 
     return Jx+np.dot(dx,grad)+0.5*np.dot(dx,np.matmul(np.add(np.matmul(np.matmul(H.T,W),H),damp*D),dx))
+    
+def cal_model_2(grad,dx,damp):
+
+    return -0.5*np.dot(dx,np.add(damp*dx,-grad))
     
 
 
@@ -1234,7 +1547,7 @@ def SS_WLS_FACTS_withBC_itvarfacts(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver=
 
     it=0
     it2=0
-    itmax=5
+    itmax=3
     lstdx=[]
     lstdz=[]
     lstc_upfc=[]
@@ -1262,7 +1575,9 @@ def SS_WLS_FACTS_withBC_itvarfacts(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver=
         while it2<itmax:
             new_X(graph,var_t,var_v,a*dx)
             if it<2:
-                X_TCSC_its(graph,len(var_t)+len(var_v),var_x,dx)    
+                X_TCSC_its(graph,len(var_t)+len(var_v),var_x,dx)
+            if it==1:
+                reini_X_TCSC(graph,var_x,z)
             new_X_TCSC(graph,len(var_t)+len(var_v),var_x,a*dx)
             new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,a*dx)
             new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,a*dx)
@@ -1270,6 +1585,9 @@ def SS_WLS_FACTS_withBC_itvarfacts(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver=
             calc_cUPFC(graph,var_UPFC,c_upfc)
             b=np.append(dz,c_upfc)
             Jxn=np.matmul(np.matmul(b,W),b)
+            it2=it2+1
+            if it2==itmax:
+                break
             if Jxn < Jxk + c1*a*np.dot(grad,dx):
                 break
             else:
@@ -1278,7 +1596,6 @@ def SS_WLS_FACTS_withBC_itvarfacts(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver=
                 new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,-a*dx)
                 new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-a*dx)
                 a=a/2
-                it2=it2+1
         print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)

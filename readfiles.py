@@ -145,9 +145,48 @@ def save_DMED_fp(graph,ram,sys,dUPFC={}):
         Qmk.append(linha2)
 
 
+    Xtcsc=[]
+    BSVC=[]
+    Vsh=[]
+    t_sh=[]
+    Vse=[]
+    t_se=[]
+    for no in graph:
+        if no.FlagTCSC==True:
+            for key,item in  no.bFACTS_adjk.items():
+                k=int(key.split("-")[0])
+                m=int(key.split("-")[1])
+                linha=[10,graph[k].bar.id,graph[m].bar.id,item.xtcsc,1.0]
+                Xtcsc.append(linha)
+        if no.FlagSVC==True:
+            linha=[11,no.bar.id,-1,no.SVC.BSVC,1.0]
+            BSVC.append(linha)
+        if no.FlagUPFC==True:
+            for key,item in  no.bUFPC_adjk.items():
+                k=int(key.split("-")[0])
+                m=int(key.split("-")[1])
+                linha=[12,graph[k].bar.id,graph[m].bar.id,item.Vsh,1.0]
+                linha1=[13,graph[k].bar.id,graph[m].bar.id,graph[k].teta-item.t_sh,1.0]
+                linha2=[14,graph[k].bar.id,graph[m].bar.id,item.Vse,1.0]
+                linha3=[15,graph[k].bar.id,graph[m].bar.id,graph[k].teta-item.t_se,1.0]
+                Vsh.append(linha)
+                t_sh.append(linha1)
+                Vse.append(linha2)
+                t_se.append(linha3)
 
 
-    medidas=Pinj+Qinj+Pkm+Qkm+Pmk+Qmk+Vmod
+
+
+
+
+
+
+
+
+    medidas=Pinj+Qinj+Pkm+Qkm+Pmk+Qmk+Vmod+Xtcsc+BSVC+Vsh+t_sh+Vse+t_se
+
+
+
     dfDMED=pd.DataFrame(medidas,columns=["type","de","para","zmed","pre"])
     dfDMED.to_csv(sys+"/DMED_fp.csv",index=False,float_format="%.7f",header=False)
 
