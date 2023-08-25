@@ -698,7 +698,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
 
     it=0
     it2=0
-    itmax=3
+    itmax=5
     lstdx=[]
     lstdz=[]
     lstc_upfc=[]
@@ -728,6 +728,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
             new_X_TCSC(graph,len(var_t)+len(var_v),var_x,a*dx)
             new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,a*dx)
             new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,a*dx)
+            # new_X_EE_UPFC_lim(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,dx,a)
             calc_dz(z,graph,dz)
             calc_cUPFC(graph,var_UPFC,c_upfc)
             b=np.append(dz,c_upfc)
@@ -742,6 +743,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
                 new_X_TCSC(graph,len(var_t)+len(var_v),var_x,-a*dx)
                 new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,-a*dx)
                 new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-a*dx)
+                # new_X_EE_UPFC_lim(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-dx,a)
                 a=a/2
                 
         print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))

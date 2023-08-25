@@ -810,7 +810,7 @@ def calc_H_EE_UPFC(z,var_UPFC,graph,H):
                 H[i][n_UPFCs+var_UPFC[key]]=upfc.dPspdtsh(graph)
                 H[i][2*n_UPFCs+var_UPFC[key]]=upfc.dPspdVse(graph)
                 H[i][3*n_UPFCs+var_UPFC[key]]=upfc.dPspdVsh(graph)
-        if item.type==1: #medida de potencia reativa
+        elif item.type==1: #medida de potencia reativa
             k=item.k
             for key, upfc in graph[k].bUFPC_adjk.items():
                 H[i][var_UPFC[key]]=upfc.dQpsdtse(graph)
@@ -822,7 +822,7 @@ def calc_H_EE_UPFC(z,var_UPFC,graph,H):
                 H[i][n_UPFCs+var_UPFC[key]]=upfc.dQspdtsh(graph)
                 H[i][2*n_UPFCs+var_UPFC[key]]=upfc.dQspdVse(graph)
                 H[i][3*n_UPFCs+var_UPFC[key]]=upfc.dQspdVsh(graph)
-        if item.type==2: #medida de potencia ativa
+        elif item.type==2: #medida de potencia ativa
             k=item.k
             m=item.m
             km=str(k)+"-"+str(m)
@@ -837,7 +837,7 @@ def calc_H_EE_UPFC(z,var_UPFC,graph,H):
                 H[i][n_UPFCs+var_UPFC[mk]]= graph[k].bUFPC_adjm[mk].dPspdtsh(graph)
                 H[i][2*n_UPFCs+var_UPFC[mk]]= graph[k].bUFPC_adjm[mk].dPspdVse(graph)
                 H[i][3*n_UPFCs+var_UPFC[mk]]=upfc.dPspdVsh(graph)
-        if item.type==3: #medida de potencia ativa
+        elif item.type==3: #medida de potencia ativa
             k=item.k
             m=item.m
             km=str(k)+"-"+str(m)
@@ -852,22 +852,22 @@ def calc_H_EE_UPFC(z,var_UPFC,graph,H):
                 H[i][n_UPFCs+var_UPFC[mk]]= graph[k].bUFPC_adjm[mk].dQspdtsh(graph)
                 H[i][2*n_UPFCs+var_UPFC[mk]]= graph[k].bUFPC_adjm[mk].dQspdVse(graph)
                 H[i][3*n_UPFCs+var_UPFC[mk]]=upfc.dQspdVsh(graph)
-        if item.type==12:
+        elif item.type==12:
             k=item.k
             m=item.m
             km=str(k)+"-"+str(m)
             H[i][3*n_UPFCs+var_UPFC[km]]=1 
-        if item.type==13:
+        elif item.type==13:
             k=item.k
             m=item.m
             km=str(k)+"-"+str(m)
             H[i][n_UPFCs+var_UPFC[km]]=-1 
-        if item.type==14:
+        elif item.type==14:
             k=item.k
             m=item.m
             km=str(k)+"-"+str(m)
             H[i][2*n_UPFCs+var_UPFC[km]]=1 
-        if item.type==15:
+        elif item.type==15:
             k=item.k
             m=item.m
             km=str(k)+"-"+str(m)
@@ -1286,7 +1286,7 @@ def calc_H_EE(z,var_t,var_v,graph,H):
         elif item.type==13:
             k=item.k
             H[i][var_t[k]]=1
-        elif item.type==14:
+        elif item.type==15:
             k=item.k
             H[i][var_t[k]]=1
         i=i+1
@@ -1345,10 +1345,37 @@ def new_X_EE_UPFC(graph,offset,var_UPFC,dx):
     for key,item in var_UPFC.items():
         p,s = key.split("-")
         p=int(p)
+
         graph[p].bUFPC_adjk[key].t_se=graph[p].bUFPC_adjk[key].t_se+dx[offset+var_UPFC[key]]
         graph[p].bUFPC_adjk[key].t_sh=graph[p].bUFPC_adjk[key].t_sh+dx[offset+n_upfc+var_UPFC[key]]
         graph[p].bUFPC_adjk[key].Vse=graph[p].bUFPC_adjk[key].Vse+dx[offset+2*n_upfc+var_UPFC[key]]
         graph[p].bUFPC_adjk[key].Vsh=graph[p].bUFPC_adjk[key].Vsh+dx[offset+3*n_upfc+var_UPFC[key]]
+
+
+def new_X_EE_UPFC_lim(graph,offset,var_UPFC,dx,a=1):
+    
+    n_upfc=len(var_UPFC)
+    for key,item in var_UPFC.items():
+        p,s = key.split("-")
+        p=int(p)
+
+
+        t_se=graph[p].bUFPC_adjk[key].t_se+a*dx[offset+var_UPFC[key]]
+        if t_se>np.pi:
+            t_se=np.pi
+            dx_n=(t_se-graph[p].bUFPC_adjk[key].t_se)/a
+            dx[offset+var_UPFC[key]]=dx_n
+        elif t_se<-np.pi:
+            t_se=-np.pi
+            dx_n=(t_se-graph[p].bUFPC_adjk[key].t_se)/a
+            dx[offset+var_UPFC[key]]=dx_n       
+            
+        graph[p].bUFPC_adjk[key].t_se= t_se
+
+
+        graph[p].bUFPC_adjk[key].t_sh=graph[p].bUFPC_adjk[key].t_sh+a*dx[offset+n_upfc+var_UPFC[key]]
+        graph[p].bUFPC_adjk[key].Vse=graph[p].bUFPC_adjk[key].Vse+a*dx[offset+2*n_upfc+var_UPFC[key]]
+        graph[p].bUFPC_adjk[key].Vsh=graph[p].bUFPC_adjk[key].Vsh+a*dx[offset+3*n_upfc+var_UPFC[key]]
 
 
 

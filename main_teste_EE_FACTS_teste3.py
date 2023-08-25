@@ -49,8 +49,8 @@ addUPFCingraph(graph,ramUPFC)
 # it3=SS_WLS_FACTS_withBC_itvarfacts(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 
 # #%%
-# print("Estimador 1")
-# print("FACTS with BC")
+print("Estimador 1")
+print("FACTS with BC")
 it1=SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 
 
