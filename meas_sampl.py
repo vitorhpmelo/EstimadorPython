@@ -3,6 +3,115 @@ import numpy as np
 from networkcalc import *
 
 
+def create_dfmeasTCSC(dfDMEDfp,lstTCSC):
+    """
+    function to filter the TCSC measurements in the dfDMEDfp given the branches in the
+    lstFP. It recives the dfDMEDfp data frame with all the possible measurements avaible in the network
+    obatined by the load flow and returns only the ones desired.
+    @param: dfDMEDfp: pandas dataframe with all the measurements avaible in the loadflow
+    @param: lstFP: list with the branches with that type of measurement
+    @return: dfFLOW: pandas dataframe with the measurements filterd
+    """
+    dfTCSC=pd.DataFrame()
+
+    if len(lstTCSC)<1:
+        return dfDMEDfp[dfDMEDfp['type']==-1]
+    for item in lstTCSC:
+        [de,para]=item.split("-")
+        dfTCSC=pd.concat([dfTCSC,dfDMEDfp[((dfDMEDfp["type"]==10)) &(dfDMEDfp["de"]==int(de)) & (dfDMEDfp["para"]==int(para))]])
+    return dfTCSC
+
+
+
+def create_dfmeasUPFCVsh(dfDMEDfp,lstUPFC):
+    """
+    function to filter the UPFC Vsh measurements in the dfDMEDfp given the branches in the
+    lstFP. It recives the dfDMEDfp data frame with all the possible measurements avaible in the network
+    obatined by the load flow and returns only the ones desired.
+    @param: dfDMEDfp: pandas dataframe with all the measurements avaible in the loadflow
+    @param: lstUPFC: list with the branches with that type of measurement
+    @return: dfmeasUPFCVsh: pandas dataframe with the measurements filterd
+    """
+    dfmeasUPFCVsh=pd.DataFrame()
+
+    if len(lstUPFC)<1:
+        return dfDMEDfp[dfDMEDfp['type']==-1]
+    for item in lstUPFC:
+        [de,para]=item.split("-")
+        dfmeasUPFCVsh=pd.concat([dfmeasUPFCVsh,dfDMEDfp[((dfDMEDfp["type"]==12)) &(dfDMEDfp["de"]==int(de)) & (dfDMEDfp["para"]==int(para))]])
+    return dfmeasUPFCVsh
+
+
+
+def create_dfmeasUPFCtsh(dfDMEDfp,lstUPFC):
+    """
+    function to filter the UPFC tsh measurements in the dfDMEDfp given the branches in the
+    lstFP. It recives the dfDMEDfp data frame with all the possible measurements avaible in the network
+    obatined by the load flow and returns only the ones desired.
+    @param: dfDMEDfp: pandas dataframe with all the measurements avaible in the loadflow
+    @param: lstUPFC: list with the branches with that type of measurement
+    @return: dfmeasUPFCtsh: pandas dataframe with the measurements filterd
+    """
+    dfmeasUPFCtsh=pd.DataFrame()
+
+    if len(lstUPFC)<1:
+        return dfDMEDfp[dfDMEDfp['type']==-1]
+    for item in lstUPFC:
+        [de,para]=item.split("-")
+        dfmeasUPFCtsh=pd.concat([dfmeasUPFCtsh,dfDMEDfp[((dfDMEDfp["type"]==13)) &(dfDMEDfp["de"]==int(de)) & (dfDMEDfp["para"]==int(para))]])
+    return dfmeasUPFCtsh
+
+def create_dfmeasUPFCVse(dfDMEDfp,lstUPFC):
+    """
+    function to filter the UPFC Vse measurements in the dfDMEDfp given the branches in the
+    lstFP. It recives the dfDMEDfp data frame with all the possible measurements avaible in the network
+    obatined by the load flow and returns only the ones desired.
+    @param: dfDMEDfp: pandas dataframe with all the measurements avaible in the loadflow
+    @param: lstUPFC: list with the branches with that type of measurement
+    @return: dfmeasUPFCVse: pandas dataframe with the measurements filterd
+    """
+    dfmeasUPFCVse=pd.DataFrame()
+
+    if len(lstUPFC)<1:
+        return dfDMEDfp[dfDMEDfp['type']==-1]
+    for item in lstUPFC:
+        [de,para]=item.split("-")
+        dfmeasUPFCVse=pd.concat([dfmeasUPFCVse,dfDMEDfp[((dfDMEDfp["type"]==14)) &(dfDMEDfp["de"]==int(de)) & (dfDMEDfp["para"]==int(para))]])
+    return dfmeasUPFCVse
+
+def create_dfmeasUPFCtse(dfDMEDfp,lstUPFC):
+    """
+    function to filter the UPFC tse measurements in the dfDMEDfp given the branches in the
+    lstFP. It recives the dfDMEDfp data frame with all the possible measurements avaible in the network
+    obatined by the load flow and returns only the ones desired.
+    @param: dfDMEDfp: pandas dataframe with all the measurements avaible in the loadflow
+    @param: lstUPFC: list with the branches with that type of measurement
+    @return: create_dfmeasUPFCtse: pandas dataframe with the measurements filterd
+    """
+    dfmeasUPFCVse=pd.DataFrame()
+
+    if len(lstUPFC)<1:
+        return dfDMEDfp[dfDMEDfp['type']==-1]
+    for item in lstUPFC:
+        [de,para]=item.split("-")
+        dfmeasUPFCVse=pd.concat([dfmeasUPFCVse,dfDMEDfp[((dfDMEDfp["type"]==15)) &(dfDMEDfp["de"]==int(de)) & (dfDMEDfp["para"]==int(para))]])
+    return dfmeasUPFCVse
+
+
+
+def create_dfmeasSVC(dfDMEDfp,lst_svc):
+    """
+    Funcion to filter the SVC variable measurements in the the dfDMEDfp given buses in the
+    list lst_IP. It recives the dfDMEDfp data frame with all the possible measurements avaible in the network
+    obatined by the load flow  and returns only the ones desired.
+    @param: dfDMEDfp: pandas dataframe with all the measurements avaible in the loadflow
+    @param: lst_svc: list with the buses with that type of measurement
+    """
+    if len(lst_svc)<1:
+        return dfDMEDfp[dfDMEDfp['type']==-1]
+    return dfDMEDfp[((dfDMEDfp["type"]==11)) & (dfDMEDfp["de"].isin(lst_svc))]
+
+
 
 def create_dfFluxo(dfDMEDfp,lstFP):
     """
@@ -45,7 +154,7 @@ def create_dfV(dfDMEDfp,lst_V):
     return dfDMEDfp[(dfDMEDfp["type"]==4)& (dfDMEDfp["de"].isin(lst_V))]
 
 
-def create_DMED(sys,prec,graph,ram):
+def create_DMED(sys,prec,graph,ram,dUPFC={}):
     """
     Creates a DMED file with the measurements according to the "measplan.csv" file
     if, it reads the measurements avaible in the "DMED_fp.csv" file, if it do not exits it runs
@@ -61,7 +170,7 @@ def create_DMED(sys,prec,graph,ram):
         dfDMEDfp.columns=["type","de","para","zmed","prec"]
     except:
         conv = load_flow(graph,tol=1e-10)
-        save_DMED_fp(graph,ram,sys)
+        save_DMED_fp(graph,ram,sys,dUPFC)
         dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
         dfDMEDfp.columns=["type","de","para","zmed","prec"]
     try:
@@ -69,6 +178,12 @@ def create_DMED(sys,prec,graph,ram):
     except:
         print("There is no measurement plan file")
         exit()
+    prec_standard={"SCADAPF":0.01,"SCADAPI":0.01,"SCADAV":0.01,"SMP":0.01,"SMP":0.01,"SMV":0.01,"PSEUDO":0.01,"VIRTUAL":0.01}
+    
+
+
+    for key in list(set(prec_standard.keys())-(prec.keys())):
+        prec[key]=prec_standard[key]
 
     SCADAlstIP=list(np.int32(list(filter(None,df["PISCADA"].to_list()))))
     SCADAlstFP=list(filter(None,df["PFSCADA"].to_list()))
@@ -124,3 +239,68 @@ def insert_res(dfDMEDsr,N=100):
     dfDMEDr=dfDMEDsr.copy()
     dfDMEDr.loc[:,"zmed"]=dfDMEDsr["zmed"]+e*dfDMEDsr["prec"]*np.abs(dfDMEDsr["zmed"])/3
     return dfDMEDr
+
+
+
+
+def create_DMED_FACTS(sys,prec,graph,ram,ramUPFC):
+    """
+    Creates a DMED part for the FACTS with the measurements according to the "measplan_FACTS.csv" file
+    if, it reads the measurements avaible in the "DMED_fp.csv" file, if it do not exits it runs
+    the load flow and creates it. The function recives @sys a string with the name of the system's file
+    and the prec dictionary with the pr parameter for each measurement
+    @param: sys-string with the name of the system's file
+    @param: prec - dictionary with the precision of each measurement type
+    @return: dfDMED - pandas dictionary with the measurement set   
+    """
+    #read the file with the measurement plan
+    try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
+        dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
+        dfDMEDfp.columns=["type","de","para","zmed","prec"]
+    except:
+        conv = load_flow(graph,tol=1e-10)
+        save_DMED_fp(graph,ram,sys,ramUPFC)
+        dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
+        dfDMEDfp.columns=["type","de","para","zmed","prec"]
+    try:
+        df=pd.read_csv(sys+"/measplanFACTS.csv",keep_default_na=False)
+    except:
+        print("There is no measurement fatcs plan file")
+        exit()
+
+
+    
+    prec_standard={"TCSCvar":0.01,"SVCvar":0.01,"UPFCt_sh":0.01,"UPFCV_sh":0.01,"UPFCt_se":0.01,"UPFCV_se":0.01}
+    
+    for key in list(set(prec_standard.keys())-(prec.keys())):
+        prec[key]=prec_standard[key]
+
+
+    TCSCvar=list(filter(None,df["TCSCvar"].to_list()))
+    SVCvar=list(np.int32(list(filter(None,df["SVCvar"].to_list()))))
+    UPFCt_se=list(filter(None,df["UPFCt_se"].to_list()))
+    UPFCV_se=list(filter(None,df["UPFCV_se"].to_list()))
+    UPFCt_sh=list(filter(None,df["UPFCt_sh"].to_list()))
+    UPFCV_sh=list(filter(None,df["UPFCV_sh"].to_list()))
+
+
+    dfmeasTCSC=create_dfmeasTCSC(dfDMEDfp,TCSCvar)
+
+    dfmeasSVCvar=create_dfmeasSVC(dfDMEDfp,SVCvar)
+
+    dfcreate_dfmeasUPFCVsh=create_dfmeasUPFCVsh(dfDMEDfp,UPFCV_sh)
+    dfcreate_dfmeasUPFCtsh=create_dfmeasUPFCtsh(dfDMEDfp,UPFCt_sh)
+    dfcreate_dfmeasUPFCVse=create_dfmeasUPFCVse(dfDMEDfp,UPFCV_se)
+    dfcreate_dfmeasUPFCtse=create_dfmeasUPFCtse(dfDMEDfp,UPFCt_se)
+
+
+    dfmeasTCSC.loc[:,"prec"]=prec["TCSCvar"]
+    dfmeasSVCvar.loc[:,"prec"]=prec["SVCvar"]
+    dfcreate_dfmeasUPFCVsh.loc[:,"prec"]=prec["UPFCt_sh"]
+    dfcreate_dfmeasUPFCtsh.loc[:,"prec"]=prec["UPFCV_sh"]
+    dfcreate_dfmeasUPFCVse.loc[:,"prec"]=prec["UPFCt_se"]
+    dfcreate_dfmeasUPFCtse.loc[:,"prec"]=prec["UPFCV_se"]
+ 
+
+    dfDMED=pd.concat([dfmeasTCSC,dfmeasSVCvar,dfcreate_dfmeasUPFCVsh,dfcreate_dfmeasUPFCtsh,dfcreate_dfmeasUPFCVse,dfcreate_dfmeasUPFCtse])
+    return dfDMED

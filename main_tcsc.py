@@ -71,36 +71,4 @@ with open("conds.csv","w") as f:
 SS_WLS_FACTS(graph,dfDMEDr,ind_i,flatstart=4,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
 #%%
 
-#%%
-# sys="IEEE14_alt"
 
-# dfDBAR,dfDBRAN,dfDMED,dfDFACTS = read_files(sys)
-
-
-# [bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
-
-# [ram,nbran]=create_bran(dfDBRAN,ind_i)
-
-# graph=create_graph(bars,ram)
-# conv = load_flow(graph,tol=1e-7) 
-
-# save_DMED_fp(graph,ram,sys)
-
-
-
-# #%%
-# #%% fluxo de potência
-# conv = load_flow(graph,tol=1e-7)#parei aqui, pensar se a Jacobiana do fluxo vai calcular as derivadas em relação a fluxo de potência e concatenar as matrizes, depois testar
-# #%% salva o DMEDFP com todas as grandezas
-# save_DMED_fp(graph,ram,sys)
-
-# #%% Estimador com QR
-
-# SS_WLS(graph,dfDMED,ind_i,solver="QR")
-# #%% Estimador com Normal
-# SS_WLS(graph,dfDMED,ind_i,solver="Normal")
-# #%% Estimador Lagrangeano
-# SS_WLS_lagrangian(graph,dfDMED,ind_i)
-
-
-# # %%

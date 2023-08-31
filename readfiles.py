@@ -186,9 +186,10 @@ def save_DMED_fp(graph,ram,sys,dUPFC={}):
     medidas=Pinj+Qinj+Pkm+Qkm+Pmk+Qmk+Vmod+Xtcsc+BSVC+Vsh+t_sh+Vse+t_se
 
 
-
+    
     dfDMED=pd.DataFrame(medidas,columns=["type","de","para","zmed","pre"])
     dfDMED.to_csv(sys+"/DMED_fp.csv",index=False,float_format="%.7f",header=False)
+    return dfDMED
 
 
 

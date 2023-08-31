@@ -1109,7 +1109,7 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
             norminicial=liang.norm(grad)
             Jxkin=Jxk
             G=np.matmul(np.matmul(H.T,W),H)
-            D=liang.norm(np.diag(G))*0.000001
+            D=liang.norm(np.diag(G))*0.00001
             print("O valor de D")
             print(D)
             

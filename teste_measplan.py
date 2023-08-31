@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE118_rakp2009"
+sys="IEEE14_rakp2009"
 
 
 dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
@@ -30,9 +30,7 @@ dfDBAR,dfDBRAN,dfDMED,dfDFACTS=read_files(sys)
 [busSVC,BUS_SVC]=create_SVC(dfDFACTS,ind_i)
 
 [ramUPFC,nbranUPFC]=create_UPFC(dfDFACTS,ind_i)
-
-
-
+#%%
 
 graph=create_graph(bars,ram)
 
@@ -42,21 +40,10 @@ addSVCingraph(graph,busSVC)
 
 addUPFCingraph(graph,ramUPFC)
 
-
+ram.update(ramTCSC)
+prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5,"TCSCvar":0.01,"SVCvar":0.01,"UPFCt_sh":0.01,"UPFCV_sh":0.01,"UPFCt_se":0.01,"UPFCV_se":0.01}
+dfDMED=create_DMED(sys,prec,graph,ram,ramUPFC)
+dfDMEDFACTs=create_DMED_FACTS(sys,prec,graph,ram,ramUPFC)
+dfDMEDsr=pd.concat([dfDMED,dfDMEDFACTs])
+dfDMERr=insert_res(dfDMEDsr)
 #%%
-print("EE - GN")
-it1=SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
-
-#%%
-print("EE - GNbc")
-it2=SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
-
-
-#%%
-
-print("EE - LM")
-it3=SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
-# it2=SS_WLS_FACTS_grad(graph,dfDMED,ind_i,flatstart=2,pirntits=1,printcond=1,tol=1e-5,tol2=1e-4)
-
-# %%
-
