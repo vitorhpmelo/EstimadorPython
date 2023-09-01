@@ -269,16 +269,25 @@ def fbacktracking(graph,dx,z,var_t,var_v,H,dz,W):
             print("backtrackin falhou")
         break
     
-def get_state(graph):
-    v=[]
-    teta=[]
+def get_state(graph,sample="ref"):
+    d={}
+    d["tipo"]=[]
+    d["de"]=[]
+    d["val"]=[]
+    d["sample"]=[]
     for no in graph:
-        v.append(float(no.V))
-        teta.append(float(no.teta))
-    v=np.array(v)
-    teta=np.array(teta)
-    state(v,teta)
-    return state(v,teta)
+        #v
+        d["tipo"].append("v")
+        d["de"].append(no.id)
+        d["val"].append(no.V)
+        d["sample"].append(sample)
+        #teta
+        d["tipo"].append("teta")
+        d["de"].append(no.id)
+        d["val"].append(no.teta)
+        d["sample"].append(sample)
+    dfAns=pd.DataFrame(data=d)
+    return dfAns
 
 
 def get_state_TCSC(ramTCSC):
@@ -287,6 +296,46 @@ def get_state_TCSC(ramTCSC):
         x[key]=float(ram.xtcsc)
     return x
 
+def get_state_FACTS(TCSC={},svc={},UPFC={},sample="ref"):
+    d={}
+    d["tipo"]=[]
+    d["de"]=[]
+    d["val"]=[]
+    d["sample"]=[]
+    for key,ram in TCSC.items():
+        d["tipo"].append("x_tcsc")
+        d["de"].append(key)
+        d["val"].append(ram.xtcsc)
+        d["sample"].append(sample)
+    for key,s in svc.items():
+        d["tipo"].append("B_svc")
+        d["de"].append(key)
+        d["val"].append(s.BSVC)
+        d["sample"].append(sample)
+    for key,u in UPFC.items():
+        ##Vsh
+        d["tipo"].append("UPFC_Vsh")
+        d["de"].append(key)
+        d["val"].append(u.Vsh)
+        d["sample"].append(sample)
+        ##tsh
+        d["tipo"].append("UPFC_tsh")
+        d["de"].append(key)
+        d["val"].append(u.t_sh)
+        d["sample"].append(sample)
+        #vse
+        d["tipo"].append("UPFC_Vse")
+        d["de"].append(key)
+        d["val"].append(u.Vse)
+        d["sample"].append(sample)
+        #tse
+        d["tipo"].append("UPFC_tse")
+        d["de"].append(key)
+        d["val"].append(u.t_se)
+        d["sample"].append(sample)
+
+    dfANS=pd.DataFrame(data=d)
+    return dfANS
 
 def SS_WLS_clean(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-9,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,prinnormgrad=0):
     """
@@ -535,7 +584,8 @@ def SS_WLS_FACTS(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=
         df.to_csv('conv_A.csv', index=False)
 
     return conv
-def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
+
+def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printgrad=1,printres=1,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
     
     '''
     WLS state estimator with FACTS devices (only TCSC implemented yet)
@@ -619,7 +669,9 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         calc_cUPFC(graph,var_UPFC,c_upfc)
         b=np.append(dz,c_upfc)
         Jxn=np.matmul(np.matmul(b,W),b)
-        print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
+
+        if printgrad==True:
+            print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)
         lstdx.append(maxdx)
@@ -627,10 +679,11 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         if gradredux <tol2 and maxdx<tol:
             txt="Convergiu em {:d} iteracoes".format(it)
             upfc_angle(graph)
-            print(liang.norm(grad)/norminicial)
-            print(txt)
-            prt_state(graph)
-            prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
+            if printres==True:
+                print(liang.norm(grad)/norminicial)
+                print(txt)
+                prt_state(graph)
+                prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
             conv=1
             break
 
@@ -643,9 +696,9 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         # Save the DataFrame to a CSV file
         df.to_csv('conv_A.csv', index=False)
 
-    return it
+    return conv,it
 
-def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
+def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printres=1,printgrad=1,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
     
     '''
     WLS state estimator with FACTS devices (only TCSC implemented yet)
@@ -745,8 +798,8 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
                 new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-a*dx)
                 # new_X_EE_UPFC_lim(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-dx,a)
                 a=a/2
-                
-        print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
+        if printgrad==True:   
+            print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)
         lstdx.append(maxdx)
@@ -754,10 +807,11 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
         if gradredux <tol2 and maxdx<tol:
             txt="Convergiu em {:d} iteracoes".format(it)
             upfc_angle(graph)
-            print(liang.norm(grad)/norminicial)
-            print(txt)
-            prt_state(graph)
-            prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
+            if printres==True:
+                print(liang.norm(grad)/norminicial)
+                print(txt)
+                prt_state(graph)
+                prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
             conv=1
             break
 
@@ -771,7 +825,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
         # Save the DataFrame to a CSV file
         df.to_csv('conv_A.csv', index=False)
 
-    return it
+    return conv,it
 
 def SS_WLS_FACTS_grad(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
     
@@ -908,7 +962,7 @@ def SS_WLS_FACTS_grad(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
     return it
 
 
-def SS_WLS_FACTS_LM(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
+def SS_WLS_FACTS_LM(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printgrad=1,printres=1,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
     
     '''
     WLS state estimator with FACTS devices LevenberMerquard
@@ -988,8 +1042,7 @@ def SS_WLS_FACTS_LM(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtu
             Jxkin=Jxk
             G=np.matmul(np.matmul(H.T,W),H)
             D=liang.norm(np.diag(G))*0.0001
-            print("O valor de D")
-            print(D)
+
             
         damp=calc_damp_leven_mod_2(grad/norminicial,it+1)
         dx=NormalEQ_lev(H,W,damp,b,D=D)
@@ -1001,8 +1054,8 @@ def SS_WLS_FACTS_LM(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtu
         calc_dz(z,graph,dz)
         calc_cUPFC(graph,var_UPFC,c_upfc)
         b=np.append(dz,c_upfc)
-
-        print("grad {:e}, dx {:e}".format( liang.norm(grad)/norminicial,liang.norm(dx)))
+        if printgrad==True:
+            print("grad {:e}, dx {:e}".format( liang.norm(grad)/norminicial,liang.norm(dx)))
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(dx)
         lstdx.append(maxdx)
@@ -1010,10 +1063,11 @@ def SS_WLS_FACTS_LM(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtu
         if gradredux <tol2 and maxdx<tol:
             txt="Convergiu em {:d} iteracoes".format(it)
             upfc_angle(graph)
-            print(liang.norm(grad)/norminicial)
-            print(txt)
-            prt_state(graph)
-            prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
+            if printres==True:
+                print(liang.norm(grad)/norminicial)
+                print(txt)
+                prt_state(graph)
+                prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
             conv=1
             break
 
@@ -1026,11 +1080,11 @@ def SS_WLS_FACTS_LM(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtu
         # Save the DataFrame to a CSV file
         df.to_csv('conv_A.csv', index=False)
 
-    return it
+    return conv,it
 
 
 
-def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
+def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printgrad=1,printres=1,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
     
     '''
     WLS state estimator with FACTS devices LevenberMerquard
@@ -1110,8 +1164,7 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
             Jxkin=Jxk
             G=np.matmul(np.matmul(H.T,W),H)
             D=liang.norm(np.diag(G))*0.00001
-            print("O valor de D")
-            print(D)
+
             
         damp=calc_damp_leven_mod_2(grad/norminicial,it+1)
         dx=NormalEQ_lev(H,W,damp,b,D=D)
@@ -1138,8 +1191,8 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
                 new_X_EE_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,-a*dx)
                 a=a/2
                 
-
-        print("grad {:e}, dx {:e}".format( liang.norm(grad)/norminicial,liang.norm(dx)))
+        if printgrad==True:
+            print("grad {:e}, dx {:e}".format( liang.norm(grad)/norminicial,liang.norm(dx)))
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(dx)
         lstdx.append(maxdx)
@@ -1147,10 +1200,11 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
         if gradredux <tol2 and maxdx<tol:
             txt="Convergiu em {:d} iteracoes".format(it)
             upfc_angle(graph)
-            print(liang.norm(grad)/norminicial)
-            print(txt)
-            prt_state(graph)
-            prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
+            if printres==True:
+                print(liang.norm(grad)/norminicial)
+                print(txt)
+                prt_state(graph)
+                prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
             conv=1
             break
 
@@ -1163,7 +1217,7 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
         # Save the DataFrame to a CSV file
         df.to_csv('conv_A.csv', index=False)
 
-    return it
+    return conv,it
 
 def SS_WLS_FACTS_LM_3(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
     

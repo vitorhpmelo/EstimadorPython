@@ -1510,7 +1510,7 @@ def new_X_TCSCC_B(graph,nvars,var_x,dx):
 
 
 
-def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=1,itmax=20):
+def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=1,itmax=20,printgrad=1,printres=1):
     """
     Function to run load flow with FACTS devices (only TCSC implemented yet)
     @param graph with the informations of the network
@@ -1560,17 +1560,12 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=1,itmax=20):
 
         Hx=np.concatenate((H,HTCSC,HSVC,HUPFC,HUPFC_sh),axis=1)
         Hx=np.concatenate((Hx,C_UPFC),axis=0)
-        print("{:e}".format(np.linalg.cond(Hx)))
         A=sparse.csc_matrix(Hx, dtype=float)
         b=np.concatenate((dz,c_UPFC))
 
        
         dx=sliang.spsolve(A,b)
-        if it==0:
-            np.savetxt("Hmatrix.csv",Hx,fmt="%.18e",delimiter=",")
-            np.savetxt("bvect.csv",b,fmt="%.18e",delimiter=",")
-            np.savetxt("dx.csv",dx,fmt="%.18e",delimiter=",")
-        
+
         if 0.5<dx_TCSC_max(graph,len(var_t)+len(var_v),var_x,dx):
             X_TCSC_its(graph,len(var_t)+len(var_v),var_x,dx)    
 
@@ -1583,14 +1578,16 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=1,itmax=20):
         maxdx=np.max(np.abs(dx))
         maxdz=np.max(np.abs(dz))
         maxc=np.max(np.abs(c_UPFC),initial=0)
-        print("max dx {:e} | max dz {:e} | max cUPFC {:e}  ".format(maxdx,maxdz,maxc))
+        if printgrad==1:
+            print("max dx {:e} | max dz {:e} | max cUPFC {:e}  ".format(maxdx,maxdz,maxc))
         lstdx.append(maxdx)
         lstdz.append(maxdz)
         if maxdx< tol and maxdz < tol:
             print("convergiu em {} itereacoes".format(it))
-            upfc_angle(graph)
-            prt_state(graph)
-            prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
+            if printres==1:
+                upfc_angle(graph)
+                prt_state(graph)
+                prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
             conv=1
             break
         it=it+1

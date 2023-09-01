@@ -154,7 +154,7 @@ def create_dfV(dfDMEDfp,lst_V):
     return dfDMEDfp[(dfDMEDfp["type"]==4)& (dfDMEDfp["de"].isin(lst_V))]
 
 
-def create_DMED(sys,prec,graph,ram,dUPFC={}):
+def create_DMED(sys,prec,graph,ram,dUPFC={},dfDMEDfp=pd.DataFrame()):
     """
     Creates a DMED file with the measurements according to the "measplan.csv" file
     if, it reads the measurements avaible in the "DMED_fp.csv" file, if it do not exits it runs
@@ -164,20 +164,24 @@ def create_DMED(sys,prec,graph,ram,dUPFC={}):
     @param: prec - dictionary with the precision of each measurement type
     @return: dfDMED - pandas dictionary with the measurement set   
     """
-    #read the file with the measurement plan
-    try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
-        dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
-        dfDMEDfp.columns=["type","de","para","zmed","prec"]
-    except:
-        conv = load_flow(graph,tol=1e-10)
-        save_DMED_fp(graph,ram,sys,dUPFC)
-        dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
-        dfDMEDfp.columns=["type","de","para","zmed","prec"]
+    #read the file with the measurement pla
+    if dfDMEDfp.empty:
+
+        try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
+            dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
+            dfDMEDfp.columns=["type","de","para","zmed","prec"]
+        except:
+            conv = load_flow(graph,tol=1e-10)
+            save_DMED_fp(graph,ram,sys,dUPFC)
+            dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
+            dfDMEDfp.columns=["type","de","para","zmed","prec"]
+
     try:
         df=pd.read_csv(sys+"/measplan.csv",keep_default_na=False)
     except:
         print("There is no measurement plan file")
         exit()
+    
     prec_standard={"SCADAPF":0.01,"SCADAPI":0.01,"SCADAV":0.01,"SMP":0.01,"SMP":0.01,"SMV":0.01,"PSEUDO":0.01,"VIRTUAL":0.01}
     
 
@@ -243,7 +247,7 @@ def insert_res(dfDMEDsr,N=100):
 
 
 
-def create_DMED_FACTS(sys,prec,graph,ram,ramUPFC):
+def create_DMED_FACTS(sys,prec,graph,ram,ramUPFC,dfDMEDfp=pd.DataFrame()):
     """
     Creates a DMED part for the FACTS with the measurements according to the "measplan_FACTS.csv" file
     if, it reads the measurements avaible in the "DMED_fp.csv" file, if it do not exits it runs
@@ -254,14 +258,15 @@ def create_DMED_FACTS(sys,prec,graph,ram,ramUPFC):
     @return: dfDMED - pandas dictionary with the measurement set   
     """
     #read the file with the measurement plan
-    try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
-        dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
-        dfDMEDfp.columns=["type","de","para","zmed","prec"]
-    except:
-        conv = load_flow(graph,tol=1e-10)
-        save_DMED_fp(graph,ram,sys,ramUPFC)
-        dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
-        dfDMEDfp.columns=["type","de","para","zmed","prec"]
+    if dfDMEDfp.empty:
+        try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
+            dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
+            dfDMEDfp.columns=["type","de","para","zmed","prec"]
+        except:
+            conv = load_flow(graph,tol=1e-10)
+            save_DMED_fp(graph,ram,sys,ramUPFC)
+            dfDMEDfp=pd.read_csv(sys+"/DMED_fp.csv",header=None)
+            dfDMEDfp.columns=["type","de","para","zmed","prec"]
     try:
         df=pd.read_csv(sys+"/measplanFACTS.csv",keep_default_na=False)
     except:

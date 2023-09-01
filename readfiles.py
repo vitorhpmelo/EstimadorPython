@@ -187,7 +187,7 @@ def save_DMED_fp(graph,ram,sys,dUPFC={}):
 
 
     
-    dfDMED=pd.DataFrame(medidas,columns=["type","de","para","zmed","pre"])
+    dfDMED=pd.DataFrame(medidas,columns=["type","de","para","zmed","prec"])
     dfDMED.to_csv(sys+"/DMED_fp.csv",index=False,float_format="%.7f",header=False)
     return dfDMED
 
