@@ -617,7 +617,7 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[1])
-            graph[m].V=graph[m].V-0.1
+            graph[m].V=graph[m].V-0.01
 
 
 
@@ -730,8 +730,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[0])
-            graph[m].V=graph[m].V+0.1
-
+            graph[m].V=graph[m].V-0.01
 
 
     Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
@@ -751,7 +750,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
 
     it=0
     it2=0
-    itmax=5
+    itmax=3
     lstdx=[]
     lstdz=[]
     lstc_upfc=[]
@@ -1116,7 +1115,7 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[1])
-            graph[m].V=graph[m].V-0.1
+            graph[m].V=graph[m].V-0.01
 
 
 
@@ -1142,7 +1141,7 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
     lstdz=[]
     lstc_upfc=[]
     
-    while(it <35):
+    while(it <30):
         calc_dz(z,graph,dz)
         calc_cUPFC(graph,var_UPFC,c_upfc)
         calc_H_EE(z,var_t,var_v,graph,Htrad) 
@@ -1161,9 +1160,8 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
 
         if it==0:
             norminicial=liang.norm(grad)
-            Jxkin=Jxk
             G=np.matmul(np.matmul(H.T,W),H)
-            D=liang.norm(np.diag(G))*0.00001
+            D=liang.norm(np.diag(G))*1e-9
 
             
         damp=calc_damp_leven_mod_2(grad/norminicial,it+1)

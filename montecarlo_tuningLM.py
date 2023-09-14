@@ -60,7 +60,7 @@ for key,upfc in ramUPFC.items():
     dfUPFC_original_values[key]["Vp"]=graph[upfc.p].bar.V
         
 
-dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[-2,-1,1,2],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[-2,-1,1,2],"TCSC_ini":[-0.01,-0.01,0.01,0.01],"SVC_ini":[-0.5,-0.5,1.0,5.0]})
+dfcasos=pd.DataFrame(data={"TCSC":[15,10,5,-5,-10,-15],"SVC":[1,-1,-0.5,1,1,1],"UPFC_flow":[15,10,5,-5,-10,-15],"UPFC_V":[1,1,0.5,-0.5,-1,-1],"TCSC_ini":[-0.01,-0.01,-0.01,0.01,0.01,0.01],"SVC_ini":[1.0,1.0,1.0,1.0,1.0,5.0]})
 #%%
 dDMEDfps={}
 dState_ref={}
@@ -107,9 +107,7 @@ else:
 
 
 #%%
-TCSCini=0.1
-Bini=1
-dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[-2,-1,1,2],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[-2,-1,1,2],"TCSC_ini":[TCSCini,TCSCini,TCSCini,TCSCini],"SVC_ini":[Bini,Bini,Bini,Bini]})
+dfcasos=pd.DataFrame(data={"TCSC":[15,10,5,-5,-10,-15],"SVC":[1,1,0.5,-0.5,-1,-1],"UPFC_flow":[15,10,5,-5,-10,-15],"UPFC_V":[1,1,0.5,-0.5,-1,-1],"TCSC_ini":[0.1,0.1,0.1,0.1,0.1,0.1],"SVC_ini":[-0.1,-0.1,-0.1,-0.1,-0.1,-0.1]})
 conv_LMs={}
 conv_BCs={}
 conv_noBCs={}
@@ -152,48 +150,17 @@ for idx, row in dfcasos.iterrows():
         except:
             conv_LM=0
             nits_LM=30
-        for key ,tcsc in ramTCSC.items():
-            tcsc.xtcsc_ini=row["TCSC_ini"]
-        for key,svc in busSVC.items():
-            svc.Bini=row["SVC_ini"]
-        try:
-            conv_BC,nits_BC=SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,flatstart=2,tol=1e-5,tol2=1e-4,printgrad=0,printres=0)
-        except:
-            conv_BC=0
-            nits_BC=30
-        try:
-            conv_noBC,nits_noBC=SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,flatstart=2,tol=1e-5,tol2=1e-4,printgrad=0,printres=0)
-        except:
-            conv_noBC=0
-            nits_noBC=30
+
 
         conv_LMs[idx].append(conv_LM)
-        conv_BCs[idx].append(conv_BC)
-        conv_noBCs[idx].append(conv_noBC)
+
         nits_LMs[idx].append(nits_LM)
-        nits_BCs[idx].append(nits_BC)
-        nits_noBCs[idx].append(nits_noBC)
 
         if conv_LM==True:
             dState_LM[idx].append(get_state(graph,n))
             dStateFACTS_LM[idx].append(get_state(graph,n))
-        if conv_BC==True:
-            dState_BC[idx].append(get_state(graph,n))
-            dStateFACTS_BC[idx].append(get_state(graph,n))
-        if conv_noBC==True:
-            dState_noBC[idx].append(get_state(graph,n))
-            dStateFACTS_noBC[idx].append(get_state(graph,n))
 
 
 
 
 #%%
-
-lstnits_LMs=[x[0] for x in nits_LMs.values()]
-print((str(lstnits_LMs).replace(",","\t")))
-lstnits_BCs=[x[0] for x in nits_BCs.values()]
-print(str(lstnits_BCs).replace(",","\t"))
-lstnits_noBCs=[x[0] for x in nits_noBCs.values()]
-print(str(lstnits_noBCs).replace(",","\t"))
-
-# %%
