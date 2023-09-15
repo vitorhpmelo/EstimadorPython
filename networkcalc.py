@@ -129,7 +129,7 @@ def Vinici(graph,flatStart=0,dfDMED=[],ind_i=[]):
             no.teta=graph[idxref].bar.teta
     elif flatStart==2:
         for no in graph:
-            no.V=no.bar.V
+            no.V=1
             no.teta=tetaini
     elif flatStart==3:
         for no in graph:
@@ -1570,9 +1570,9 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=1,itmax=20,printgrad=1,printres=
             X_TCSC_its(graph,len(var_t)+len(var_v),var_x,dx)    
 
         new_X(graph,var_t,var_v,dx)
-        if it>3:
+        if it>1:
             new_X_TCSC(graph,len(var_t)+len(var_v),var_x,dx)
-        new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
+            new_X_SVC(graph,len(var_t)+len(var_v)+len(var_x),var_svc,dx)
         new_X_UPFC(graph,len(var_t)+len(var_v)+len(var_x)+len(var_svc),var_UPFC,var_UPFC_vsh,dx)#
 
         maxdx=np.max(np.abs(dx))
@@ -1584,8 +1584,8 @@ def load_flow_FACTS(graph,prt=0,tol=1e-12,inici=1,itmax=20,printgrad=1,printres=
         lstdz.append(maxdz)
         if maxdx< tol and maxdz < tol:
             print("convergiu em {} itereacoes".format(it))
+            upfc_angle(graph)
             if printres==1:
-                upfc_angle(graph)
                 prt_state(graph)
                 prt_state_FACTS(graph,var_x,var_svc,var_UPFC)
             conv=1

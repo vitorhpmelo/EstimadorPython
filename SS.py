@@ -617,7 +617,7 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[1])
-            graph[m].V=graph[m].V-0.1
+            graph[m].V=graph[m].V-0.01
 
 
 
@@ -675,6 +675,11 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)
         lstdx.append(maxdx)
+
+        if maxdx>1e4:
+            conv=0
+            it=30
+            break
         lstdz.append(gradredux)
         if gradredux <tol2 and maxdx<tol:
             txt="Convergiu em {:d} iteracoes".format(it)
@@ -691,12 +696,16 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
 
     if pirntits==1:
         iterdict={"dx":lstdx,"dz":lstdz}
-        df = pd.DataFrame(iterdict)
+        dfits = pd.DataFrame(iterdict)
 
         # Save the DataFrame to a CSV file
-        df.to_csv('conv_A.csv', index=False)
-
-    return conv,it
+        dfits.to_csv('conv_GN.csv', index=False)
+    elif pirntits==2:
+        iterdict={"dx":lstdx,"dz":lstdz}
+        dfits = pd.DataFrame(iterdict)
+    else:
+        dfits=[]
+    return conv,it,dfits
 
 def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printres=1,printgrad=1,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
     
@@ -730,8 +739,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[0])
-            graph[m].V=graph[m].V+0.1
-
+            graph[m].V=graph[m].V-0.01
 
 
     Htrad=np.zeros((len(z),len(var_t)+len(var_v)))
@@ -802,6 +810,10 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
             print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)
+        if maxdx>1e5:
+            conv=0
+            it=30
+            break
         lstdx.append(maxdx)
         lstdz.append(gradredux)
         if gradredux <tol2 and maxdx<tol:
@@ -818,14 +830,20 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
 
         it=it+1
 
+
     if pirntits==1:
         iterdict={"dx":lstdx,"dz":lstdz}
-        df = pd.DataFrame(iterdict)
+        dfits = pd.DataFrame(iterdict)
 
         # Save the DataFrame to a CSV file
-        df.to_csv('conv_A.csv', index=False)
+        dfits.to_csv('conv_GNbc.csv', index=False)
+    elif pirntits==2:
+        iterdict={"dx":lstdx,"dz":lstdz}
+        dfits = pd.DataFrame(iterdict)
+    else:
+        dfits=[]
 
-    return conv,it
+    return conv,it,dfits
 
 def SS_WLS_FACTS_grad(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
     
@@ -1116,7 +1134,7 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[1])
-            graph[m].V=graph[m].V-0.1
+            graph[m].V=graph[m].V-0.01
 
 
 
@@ -1161,9 +1179,8 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
 
         if it==0:
             norminicial=liang.norm(grad)
-            Jxkin=Jxk
             G=np.matmul(np.matmul(H.T,W),H)
-            D=liang.norm(np.diag(G))*0.00001
+            D=liang.norm(np.diag(G))*1e-6
 
             
         damp=calc_damp_leven_mod_2(grad/norminicial,it+1)
@@ -1192,7 +1209,7 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
                 a=a/2
                 
         if printgrad==True:
-            print("grad {:e}, dx {:e}".format( liang.norm(grad)/norminicial,liang.norm(dx)))
+            print("grad {:e}, dx {:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(dx)
         lstdx.append(maxdx)
@@ -1212,12 +1229,17 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
 
     if pirntits==1:
         iterdict={"dx":lstdx,"dz":lstdz}
-        df = pd.DataFrame(iterdict)
+        dfits = pd.DataFrame(iterdict)
 
         # Save the DataFrame to a CSV file
-        df.to_csv('conv_A.csv', index=False)
+        dfits.to_csv('conv_LM.csv', index=False)
+    elif pirntits==2:
+        iterdict={"dx":lstdx,"dz":lstdz}
+        dfits = pd.DataFrame(iterdict)
+    else:
+        dfits=[]
 
-    return conv,it
+    return conv,it,dfits
 
 def SS_WLS_FACTS_LM_3(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_virtual=1e-5,printcond=0,printmat=0,pirntits=0,prinnormgrad=0,flatstart=-1):
     
@@ -1412,7 +1434,7 @@ def calc_damp_leven_mod(grad):
     return (np.linalg.norm(grad))
 
 def calc_damp_leven_mod_2(grad,it):
-    return 2*np.linalg.norm(grad)/(3*(it**4))
+    return 2*np.linalg.norm(grad)/(10*(it**4))
 
 def cal_model_quad(grad,Jx,dx,H,damp,D,W):
 
