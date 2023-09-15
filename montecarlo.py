@@ -18,7 +18,7 @@ import copy
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE118_rakp2009"
+sys="IEEE14_rakp2009"
 measFACTS=False
 
 
@@ -60,7 +60,7 @@ for key,upfc in ramUPFC.items():
     dfUPFC_original_values[key]["Vp"]=graph[upfc.p].bar.V
         
 
-dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[-2,-1,1,2],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[-2,-1,1,2],"TCSC_ini":[-0.01,-0.01,0.01,0.01],"SVC_ini":[-0.5,-0.5,1.0,5.0]})
+dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[-1,-1,1,1],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[-1,-1,1,1],"TCSC_ini":[-0.01,-0.01,0.01,0.01],"SVC_ini":[-1.0,-1.0,1.0,1.0]})
 #%%
 dDMEDfps={}
 dState_ref={}
@@ -109,7 +109,7 @@ else:
 #%%
 TCSCini=0.1
 Bini=1
-dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[-2,-1,1,2],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[-2,-1,1,2],"TCSC_ini":[TCSCini,TCSCini,TCSCini,TCSCini],"SVC_ini":[Bini,Bini,Bini,Bini]})
+dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[1,1,1,1],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[1,1,1,1],"TCSC_ini":[TCSCini,TCSCini,TCSCini,TCSCini],"SVC_ini":[Bini,Bini,Bini,Bini]})
 conv_LMs={}
 conv_BCs={}
 conv_noBCs={}
@@ -124,6 +124,7 @@ dState_BC={}
 dStateFACTS_BC={}
 dState_noBC={}
 dStateFACTS_noBC={}
+dfITS=pd.DataFrame()
 
 for idx, row in dfcasos.iterrows():
     conv_LMs[idx]=[]
@@ -148,24 +149,27 @@ for idx, row in dfcasos.iterrows():
         for key,svc in busSVC.items():
             svc.Bini=row["SVC_ini"]
         try:
-            conv_LM,nits_LM=SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,printgrad=0,printres=0,flatstart=2,tol=1e-5,tol2=1e-4)
+            conv_LM,nits_LM,dfITsLM=SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,printgrad=0,printres=0,pirntits=1,flatstart=2,tol=1e-5,tol2=1e-4)
         except:
             conv_LM=0
             nits_LM=30
+            dfITsLM=pd.DataFrame()
         for key ,tcsc in ramTCSC.items():
             tcsc.xtcsc_ini=row["TCSC_ini"]
         for key,svc in busSVC.items():
             svc.Bini=row["SVC_ini"]
         try:
-            conv_BC,nits_BC=SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,flatstart=2,tol=1e-5,tol2=1e-4,printgrad=0,printres=0)
+            conv_BC,nits_BC,dfITsGNbc=SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,flatstart=2,tol=1e-5,tol2=1e-4,printgrad=0,printres=0,pirntits=1)
         except:
             conv_BC=0
             nits_BC=30
+            dfITsGNbc=pd.DataFrame()
         try:
-            conv_noBC,nits_noBC=SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,flatstart=2,tol=1e-5,tol2=1e-4,printgrad=0,printres=0)
+            conv_noBC,nits_noBC,dfITsGN=SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,flatstart=2,tol=1e-5,tol2=1e-4,printgrad=0,printres=0,pirntits=1)
         except:
             conv_noBC=0
             nits_noBC=30
+            dfITsGN=pd.DataFrame()
 
         conv_LMs[idx].append(conv_LM)
         conv_BCs[idx].append(conv_BC)
@@ -173,6 +177,18 @@ for idx, row in dfcasos.iterrows():
         nits_LMs[idx].append(nits_LM)
         nits_BCs[idx].append(nits_BC)
         nits_noBCs[idx].append(nits_noBC)
+
+        if not dfITsLM.empty:
+            dfITsLM["method"]="LM"
+            dfITsLM["caso"]=idx
+        if not dfITsLM.empty:
+            dfITsGNbc["method"]="GNbc"
+            dfITsGNbc["caso"]=idx
+        if not dfITsLM.empty:
+            dfITsGN["method"]="GN"
+            dfITsGN["caso"]=idx
+        dfITS=pd.concat([dfITS,dfITsLM,dfITsGNbc,dfITsGN])
+        
 
         if conv_LM==True:
             dState_LM[idx].append(get_state(graph,n))
@@ -196,4 +212,6 @@ print(str(lstnits_BCs).replace(",","\t"))
 lstnits_noBCs=[x[0] for x in nits_noBCs.values()]
 print(str(lstnits_noBCs).replace(",","\t"))
 
+# %%
+dfITS.to_csv("Its.csv")
 # %%
