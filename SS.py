@@ -617,7 +617,7 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         for key in var_x.keys():
             key=key.split("-")
             m=int(key[1])
-            graph[m].V=graph[m].V-0.01
+            graph[m].V=graph[m].V+0.01
 
 
 
@@ -657,22 +657,12 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         H=np.concatenate((Hx,C_UPFC),axis=0)
         b=np.append(dz,c_upfc)
         grad=np.matmul(np.matmul(H.T,W),b)
-<<<<<<< HEAD
-        try:
-            dx=NormalEQ_QR(H,W,b,printcond=printcond,printmat=printmat)
-=======
         try: 
             dx=NormalEQ(H,W,b,printcond=printcond,printmat=printmat)
->>>>>>> refs/remotes/origin/TCSC+SVC+UPFC
         except:
             conv=0
             it=30
             break
-<<<<<<< HEAD
-            
-=======
-
->>>>>>> refs/remotes/origin/TCSC+SVC+UPFC
         Jxk=np.matmul(np.matmul(b,W),b)
         if it==0:
             norminicial=liang.norm(grad)
@@ -690,11 +680,7 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)
         lstdx.append(maxdx)
-<<<<<<< HEAD
-
-=======
         lstdz.append(gradredux)
->>>>>>> refs/remotes/origin/TCSC+SVC+UPFC
         if maxdx>1e3:
             conv=0
             it=30
@@ -1180,7 +1166,7 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
 
     it=0
     it2=0
-    itmax=1
+    itmax=5
     lstdx=[]
     lstdz=[]
     lstc_upfc=[]

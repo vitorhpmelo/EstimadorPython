@@ -19,7 +19,7 @@ import copy
 #%% Lê arquivos e constroi a estrutura da rede
 
 sys="IEEE118_rakp2009"
-measFACTS=True
+measFACTS=False
 
 
 
@@ -60,11 +60,7 @@ for key,upfc in ramUPFC.items():
     dfUPFC_original_values[key]["Vp"]=graph[upfc.p].bar.V
         
 
-<<<<<<< HEAD
-dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[-1,-1,1,1],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[-1,-1,1,1],"TCSC_ini":[-0.01,-0.01,0.01,0.01],"SVC_ini":[-2.0,-2.0,2.0,2.0]})
-=======
-dfcasos=pd.DataFrame(data={"TCSC":[-15,-10,10,15],"SVC":[2,1,-1,-2],"UPFC_flow":[15,10,-13,-15],"UPFC_V":[-2,-1,1,2],"TCSC_ini":[0.01,0.01,-0.01,-0.01],"SVC_ini":[0.10,0.10,-1.0,-1.0]})
->>>>>>> refs/remotes/origin/TCSC+SVC+UPFC
+dfcasos=pd.DataFrame(data={"TCSC":[-15,-10,10,15],"SVC":[2,1,-1,-2],"UPFC_flow":[15,10,-10,-15],"UPFC_V":[-2,-1,1,2],"TCSC_ini":[0.01,0.01,-0.01,-0.01],"SVC_ini":[0.10,0.10,-1.0,-1.0]})
 #%%
 dDMEDfps={}
 dState_ref={}
@@ -111,9 +107,10 @@ else:
 
 
 #%%
+cx=0.20
 TCSCini=0.1
 Bini=1
-cx=0.5
+
 dfcasos=pd.DataFrame(data={"TCSC":[15,10,-15,-15],"SVC":[-1,-1,1,1],"UPFC_flow":[20,10,-20,-20],"UPFC_V":[-1,-1,1,1],"TCSC_ini":[TCSCini,TCSCini,TCSCini,TCSCini],"SVC_ini":[Bini,Bini,Bini,Bini]})
 conv_LMs={}
 conv_BCs={}
@@ -170,6 +167,8 @@ for idx, row in dfcasos.iterrows():
             upfc.tsh_ini=true_TSH*(1+cx)
             upfc.Vse_ini=true_VSE*(1+cx)
             upfc.tse_ini=true_TSE*(1+cx)
+        for no in graph:
+            V_true=[dState_ref[idx]["de"]==no.id]
         try:
             conv_LM,nits_LM,dfITsLM=SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,printgrad=0,printres=0,pirntits=1,flatstart=2,tol=1e-5,tol2=1e-4)
         except:
@@ -226,5 +225,5 @@ print("".join(lstnits_BCs))
 lstnits_noBCs=[str(x[0])+"\t" for x in nits_noBCs.values()]
 print("".join(lstnits_noBCs))
 
-dfITS.to_csv("Its_"+sys+"MEAS"+"_"+str(cx)+".csv")
+dfITS.to_csv("Its_"+sys+"_"+str(cx)+".csv")
 # %%
