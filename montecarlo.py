@@ -18,8 +18,8 @@ import copy
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE14_rakp2009"
-measFACTS=False
+sys="IEEE118_rakp2009"
+measFACTS=True
 
 
 
@@ -60,7 +60,11 @@ for key,upfc in ramUPFC.items():
     dfUPFC_original_values[key]["Vp"]=graph[upfc.p].bar.V
         
 
+<<<<<<< HEAD
 dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[-1,-1,1,1],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[-1,-1,1,1],"TCSC_ini":[-0.01,-0.01,0.01,0.01],"SVC_ini":[-2.0,-2.0,2.0,2.0]})
+=======
+dfcasos=pd.DataFrame(data={"TCSC":[-15,-10,10,15],"SVC":[2,1,-1,-2],"UPFC_flow":[15,10,-13,-15],"UPFC_V":[-2,-1,1,2],"TCSC_ini":[0.01,0.01,-0.01,-0.01],"SVC_ini":[0.10,0.10,-1.0,-1.0]})
+>>>>>>> refs/remotes/origin/TCSC+SVC+UPFC
 #%%
 dDMEDfps={}
 dState_ref={}
@@ -109,7 +113,8 @@ else:
 #%%
 TCSCini=0.1
 Bini=1
-dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[1,1,1,1],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[1,1,1,1],"TCSC_ini":[TCSCini,TCSCini,TCSCini,TCSCini],"SVC_ini":[Bini,Bini,Bini,Bini]})
+cx=0.5
+dfcasos=pd.DataFrame(data={"TCSC":[15,10,-15,-15],"SVC":[-1,-1,1,1],"UPFC_flow":[20,10,-20,-20],"UPFC_V":[-1,-1,1,1],"TCSC_ini":[TCSCini,TCSCini,TCSCini,TCSCini],"SVC_ini":[Bini,Bini,Bini,Bini]})
 conv_LMs={}
 conv_BCs={}
 conv_noBCs={}
@@ -125,6 +130,9 @@ dStateFACTS_BC={}
 dState_noBC={}
 dStateFACTS_noBC={}
 dfITS=pd.DataFrame()
+
+
+
 
 for idx, row in dfcasos.iterrows():
     conv_LMs[idx]=[]
@@ -145,31 +153,34 @@ for idx, row in dfcasos.iterrows():
         # dfDMED=insert_res(dfDMEDs[idx],n)
         dfDMED=dfDMEDs[idx].copy()
         for key ,tcsc in ramTCSC.items():
-            tcsc.xtcsc_ini=row["TCSC_ini"]
+            true=dStateTCSC_ref[idx][(dStateTCSC_ref[idx]["tipo"]=="x_tcsc")&(dStateTCSC_ref[idx]["de"]==key)]["val"].values[0]
+            # tcsc.xtcsc_ini=row["TCSC_ini"]
+            tcsc.xtcsc_ini=true*(1+cx)
         for key,svc in busSVC.items():
-            svc.Bini=row["SVC_ini"]
+            # svc.Bini=row["SVC_ini"]
+            true=dStateTCSC_ref[idx][(dStateTCSC_ref[idx]["tipo"]=="B_svc")&(dStateTCSC_ref[idx]["de"]==key)]["val"].values[0]
+            svc.Bini=true*(1+cx)
+        for key,upfc in ramUPFC.items():
+            # svc.Bini=row["SVC_ini"]
+            true_VSH=dStateTCSC_ref[idx][(dStateTCSC_ref[idx]["tipo"]=="UPFC_Vsh")&(dStateTCSC_ref[idx]["de"]==key)]["val"].values[0]
+            true_TSH=dStateTCSC_ref[idx][(dStateTCSC_ref[idx]["tipo"]=="UPFC_tsh")&(dStateTCSC_ref[idx]["de"]==key)]["val"].values[0]
+            true_VSE=dStateTCSC_ref[idx][(dStateTCSC_ref[idx]["tipo"]=="UPFC_Vse")&(dStateTCSC_ref[idx]["de"]==key)]["val"].values[0]
+            true_TSE=dStateTCSC_ref[idx][(dStateTCSC_ref[idx]["tipo"]=="UPFC_tse")&(dStateTCSC_ref[idx]["de"]==key)]["val"].values[0]
+            upfc.Vsh_ini=true_VSH*(1+cx)
+            upfc.tsh_ini=true_TSH*(1+cx)
+            upfc.Vse_ini=true_VSE*(1+cx)
+            upfc.tse_ini=true_TSE*(1+cx)
         try:
             conv_LM,nits_LM,dfITsLM=SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,printgrad=0,printres=0,pirntits=1,flatstart=2,tol=1e-5,tol2=1e-4)
         except:
             conv_LM=0
             nits_LM=30
             dfITsLM=pd.DataFrame()
-        for key ,tcsc in ramTCSC.items():
-            tcsc.xtcsc_ini=row["TCSC_ini"]
-        for key,svc in busSVC.items():
-            svc.Bini=row["SVC_ini"]
-        try:
-            conv_BC,nits_BC,dfITsGNbc=SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,flatstart=2,tol=1e-5,tol2=1e-4,printgrad=0,printres=0,pirntits=1)
-        except:
-            conv_BC=0
-            nits_BC=30
-            dfITsGNbc=pd.DataFrame()
-        try:
-            conv_noBC,nits_noBC,dfITsGN=SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,flatstart=2,tol=1e-5,tol2=1e-4,printgrad=0,printres=0,pirntits=1)
-        except:
-            conv_noBC=0
-            nits_noBC=30
-            dfITsGN=pd.DataFrame()
+
+        conv_BC,nits_BC,dfITsGNbc=SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,flatstart=2,tol=1e-5,tol2=1e-4,printgrad=0,printres=0,pirntits=1)
+
+        conv_noBC,nits_noBC,dfITsGN=SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,flatstart=2,tol=1e-5,tol2=1e-4,printgrad=0,printres=0,pirntits=1)
+
 
         conv_LMs[idx].append(conv_LM)
         conv_BCs[idx].append(conv_BC)
@@ -205,13 +216,15 @@ for idx, row in dfcasos.iterrows():
 
 #%%
 
-lstnits_LMs=[x[0] for x in nits_LMs.values()]
-print((str(lstnits_LMs).replace(",","\t")))
-lstnits_BCs=[x[0] for x in nits_BCs.values()]
-print(str(lstnits_BCs).replace(",","\t"))
-lstnits_noBCs=[x[0] for x in nits_noBCs.values()]
-print(str(lstnits_noBCs).replace(",","\t"))
+strnitsLM=[str(x[0])+"\t" for x in nits_LMs.values()]
 
-# %%
-dfITS.to_csv("Its.csv")
+print("".join(strnitsLM))
+
+lstnits_BCs=[str(x[0])+"\t" for x in nits_BCs.values()]
+print("".join(lstnits_BCs))
+
+lstnits_noBCs=[str(x[0])+"\t" for x in nits_noBCs.values()]
+print("".join(lstnits_noBCs))
+
+dfITS.to_csv("Its_"+sys+"MEAS"+"_"+str(cx)+".csv")
 # %%

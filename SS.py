@@ -657,13 +657,22 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         H=np.concatenate((Hx,C_UPFC),axis=0)
         b=np.append(dz,c_upfc)
         grad=np.matmul(np.matmul(H.T,W),b)
+<<<<<<< HEAD
         try:
             dx=NormalEQ_QR(H,W,b,printcond=printcond,printmat=printmat)
+=======
+        try: 
+            dx=NormalEQ(H,W,b,printcond=printcond,printmat=printmat)
+>>>>>>> refs/remotes/origin/TCSC+SVC+UPFC
         except:
             conv=0
             it=30
             break
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> refs/remotes/origin/TCSC+SVC+UPFC
         Jxk=np.matmul(np.matmul(b,W),b)
         if it==0:
             norminicial=liang.norm(grad)
@@ -681,12 +690,15 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)
         lstdx.append(maxdx)
+<<<<<<< HEAD
 
+=======
+        lstdz.append(gradredux)
+>>>>>>> refs/remotes/origin/TCSC+SVC+UPFC
         if maxdx>1e3:
             conv=0
             it=30
             break
-        lstdz.append(gradredux)
         if gradredux <tol2 and maxdx<tol:
             txt="Convergiu em {:d} iteracoes".format(it)
             upfc_angle(graph)
@@ -784,7 +796,13 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
         H=np.concatenate((Hx,C_UPFC),axis=0)
         b=np.append(dz,c_upfc)
         grad=np.matmul(np.matmul(H.T,W),b)
-        dx=NormalEQ(H,W,b,printcond=printcond,printmat=printmat)
+        try: 
+            dx=NormalEQ(H,W,b,printcond=printcond,printmat=printmat)
+        except:
+            conv=0
+            it=30
+            break
+
         # dx=NormalEQ_QR(H,W,b,printcond=printcond,printmat=printmat)
         Jxk=np.matmul(np.matmul(b,W),b)
         if it==0:
@@ -816,12 +834,13 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
             print("{:e},{:e}".format( liang.norm(grad)/norminicial,liang.norm(a*dx)))
         gradredux=liang.norm(grad)/norminicial
         maxdx= liang.norm(a*dx)
-        if maxdx>1e5:
+
+        lstdx.append(maxdx)
+        lstdz.append(gradredux)
+        if maxdx>1e3:
             conv=0
             it=30
             break
-        lstdx.append(maxdx)
-        lstdz.append(gradredux)
         if gradredux <tol2 and maxdx<tol:
             txt="Convergiu em {:d} iteracoes".format(it)
             upfc_angle(graph)
@@ -1161,7 +1180,7 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
 
     it=0
     it2=0
-    itmax=5
+    itmax=1
     lstdx=[]
     lstdz=[]
     lstc_upfc=[]
