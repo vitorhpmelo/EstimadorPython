@@ -657,7 +657,13 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         H=np.concatenate((Hx,C_UPFC),axis=0)
         b=np.append(dz,c_upfc)
         grad=np.matmul(np.matmul(H.T,W),b)
-        dx=NormalEQ_QR(H,W,b,printcond=printcond,printmat=printmat)
+        try:
+            dx=NormalEQ_QR(H,W,b,printcond=printcond,printmat=printmat)
+        except:
+            conv=0
+            it=30
+            break
+            
         Jxk=np.matmul(np.matmul(b,W),b)
         if it==0:
             norminicial=liang.norm(grad)
@@ -676,7 +682,7 @@ def SS_WLS_FACTS_noBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vir
         maxdx= liang.norm(a*dx)
         lstdx.append(maxdx)
 
-        if maxdx>1e4:
+        if maxdx>1e3:
             conv=0
             it=30
             break

@@ -60,7 +60,7 @@ for key,upfc in ramUPFC.items():
     dfUPFC_original_values[key]["Vp"]=graph[upfc.p].bar.V
         
 
-dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[-1,-1,1,1],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[-1,-1,1,1],"TCSC_ini":[-0.01,-0.01,0.01,0.01],"SVC_ini":[-1.0,-1.0,1.0,1.0]})
+dfcasos=pd.DataFrame(data={"TCSC":[20,10,-10,-20],"SVC":[-1,-1,1,1],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[-1,-1,1,1],"TCSC_ini":[-0.01,-0.01,0.01,0.01],"SVC_ini":[-2.0,-2.0,2.0,2.0]})
 #%%
 dDMEDfps={}
 dState_ref={}
