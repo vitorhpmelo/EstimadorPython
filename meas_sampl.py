@@ -271,7 +271,7 @@ def create_DMED_FACTS(sys,prec,graph,ram,ramUPFC,dfDMEDfp=pd.DataFrame()):
         df=pd.read_csv(sys+"/measplanFACTS.csv",keep_default_na=False)
     except:
         print("There is no measurement fatcs plan file")
-        exit()
+        quit()
 
 
     
