@@ -60,7 +60,7 @@ for key,upfc in ramUPFC.items():
     dfUPFC_original_values[key]["Vp"]=graph[upfc.p].bar.V
         
 
-dfcasos=pd.DataFrame(data={"TCSC":[-15,-10,10,15],"SVC":[2,1,-1,-2],"UPFC_flow":[15,10,-10,-15],"UPFC_V":[-2,-1,1,2],"TCSC_ini":[0.01,0.01,-0.01,-0.01],"SVC_ini":[0.10,0.10,-1.0,-1.0]})
+dfcasos=pd.DataFrame(data={"TCSC":[-15,-10,10,15],"SVC":[2,1,-1,-2],"UPFC_flow":[15,10,-13,-15],"UPFC_V":[-2,-1,1,2],"TCSC_ini":[0.01,0.01,-0.01,-0.01],"SVC_ini":[0.10,0.10,-1.0,-1.0]})
 #%%
 dDMEDfps={}
 dState_ref={}
@@ -109,8 +109,8 @@ else:
 #%%
 TCSCini=0.1
 Bini=1
-cx=-0.5
-dfcasos=pd.DataFrame(data={"TCSC":[15,10,-10,-15],"SVC":[-1,-1,1,1],"UPFC_flow":[20,10,-10,-20],"UPFC_V":[-1,-1,1,1],"TCSC_ini":[TCSCini,TCSCini,TCSCini,TCSCini],"SVC_ini":[Bini,Bini,Bini,Bini]})
+cx=0.5
+dfcasos=pd.DataFrame(data={"TCSC":[15,10,-15,-15],"SVC":[-1,-1,1,1],"UPFC_flow":[20,10,-20,-20],"UPFC_V":[-1,-1,1,1],"TCSC_ini":[TCSCini,TCSCini,TCSCini,TCSCini],"SVC_ini":[Bini,Bini,Bini,Bini]})
 conv_LMs={}
 conv_BCs={}
 conv_noBCs={}
