@@ -237,9 +237,9 @@ def insert_res(dfDMEDsr,N=100):
     e=np.random.normal(size=(len(dfDMEDsr)))
     for i in range(len(e)):
         if e[i]>3:
-            e[i]=3
+            e[i]=2.0
         elif e[i]<-3:
-            e[i]=-3
+            e[i]=-3.0
     dfDMEDr=dfDMEDsr.copy()
     dfDMEDr.loc[:,"zmed"]=dfDMEDsr["zmed"]+e*dfDMEDsr["prec"]*np.abs(dfDMEDsr["zmed"])/3
     return dfDMEDr

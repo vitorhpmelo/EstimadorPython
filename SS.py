@@ -764,7 +764,7 @@ def SS_WLS_FACTS_withBC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_v
 
     it=0
     it2=0
-    itmax=5
+    itmax=3
     lstdx=[]
     lstdz=[]
     lstc_upfc=[]
@@ -1167,12 +1167,12 @@ def SS_WLS_FACTS_LM_BC(graph,dfDMED,ind_i,tol=1e-7,tol2=1e-7,solver="QR",prec_vi
 
     it=0
     it2=0
-    itmax=1
+    itmax=3
     lstdx=[]
     lstdz=[]
     lstc_upfc=[]
     
-    while(it <35):
+    while(it <30):
         calc_dz(z,graph,dz)
         calc_cUPFC(graph,var_UPFC,c_upfc)
         calc_H_EE(z,var_t,var_v,graph,Htrad) 
