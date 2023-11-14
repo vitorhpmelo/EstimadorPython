@@ -10,7 +10,7 @@ Pg - Active Power Generation p.u.
 Qg - Reactive Power Generation p.u.
 Pd - Load Active Power p.u.
 Qd - Load Reactive Power p.u.
-
+Bsh - Shunt suceptance in p.u.
 ------------------------------------------------------------------------------------------
 
 DBRAN -- File with the information of the system's branches
