@@ -16,7 +16,7 @@ import scipy.sparse.linalg as sliang
 
 #%% Lê arquivos e constroi a estrutura da rede
 
-sys="IEEE118"
+sys="IEEE14"
 
 dfDBAR,dfDBRAN,dfDMED = read_files(sys)
 
@@ -40,12 +40,13 @@ save_DMED_fp(graph,ram,sys)
 #Rodar o EE
 prec={"SCADAPF":0.02,"SCADAPI":0.02,"SCADAV":0.01,"SMP":0.05,"SMV":0.03,"PSEUDO":0.3,"VIRTUAL":1e-5}
 dfDMEDsr=create_DMED(sys,prec,graph,ram)
-dfDMEDr=insert_res(dfDMEDsr)
+dfDMEDsr.to_csv("DMED_Prova.csv",index=None)
+# dfDMEDr=insert_res(dfDMEDsr)
 
-mask=(((dfDMEDsr["type"]==0) | (dfDMEDsr["type"]==1))&(dfDMEDsr["de"]==9)&(dfDMEDsr["para"]==-1))
+# mask=(((dfDMEDsr["type"]==0) | (dfDMEDsr["type"]==1))&(dfDMEDsr["de"]==9)&(dfDMEDsr["para"]==-1))
 #%%
-dfDMEDsr.loc[mask,"zmed"]=dfDMEDsr.loc[mask].zmed + 20*dfDMEDsr.loc[mask].zmed*dfDMEDsr.loc[mask].prec/3
-dfDMEDsr.to_csv("Prova2DMED.csv",index=None,header=None,float_format="%.9f")
+# dfDMEDsr.loc[mask,"zmed"]=dfDMEDsr.loc[mask].zmed + 20*dfDMEDsr.loc[mask].zmed*dfDMEDsr.loc[mask].prec/3
+# dfDMEDsr.to_csv("Prova2DMED.csv",index=None,header=None,float_format="%.9f")
 #%%
 SS_WLS(graph,dfDMEDsr,ind_i,solver="Normal",tol=1e-5,prec_virtual=1e-5)
 Cov=calcCovRes(graph,dfDMEDsr,ind_i)
